@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>MJCZone.MediaMatic.AspNetCore</PackageId>
+    <Description>ASP.NET Core integration for MediaMatic with browser-aware optimization and minimal API endpoints</Description>
+    <PackageTags>aspnetcore;media;files;storage;webp;avif;api;middleware</PackageTags>
+    <RepositoryUrl>https://github.com/mjczone/MJCZone.MediaMatic</RepositoryUrl>
+    <PackageProjectUrl>https://mjczone.github.io/mediamatic/</PackageProjectUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="DeviceDetector.NET" Version="6.4.7" />
+    <PackageReference Include="JsonFlatFileDataStore" Version="2.4.2" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.20" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MJCZone.MediaMatic\MJCZone.MediaMatic.csproj" />
+  </ItemGroup>
+</Project>

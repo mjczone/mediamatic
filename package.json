@@ -1,0 +1,17 @@
+{
+  "name": "mjczone.mediamatic",
+  "version": "1.0.0",
+  "description": "**Intelligent Media Storage & Optimization Library for .NET**",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "dotnet build",
+    "format": "dotnet tool install -g csharpier && csharpier format ./src/ && csharpier format ./tests/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

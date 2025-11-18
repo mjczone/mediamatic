@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>MJCZone.MediaMatic</PackageId>
+    <Description>Media and file storage management library with intelligent optimization for images and video</Description>
+    <PackageTags>media;files;storage;images;video;s3;azure;optimization;webp;avif;thumbnails;metadata</PackageTags>
+    <RepositoryUrl>https://github.com/mjczone/MJCZone.MediaMatic</RepositoryUrl>
+    <PackageProjectUrl>https://mjczone.github.io/mediamatic/</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentStorage" Version="[6.0.0,7.0.0)" />
+    <PackageReference Include="FluentStorage.AWS" Version="[6.0.0,7.0.0)" />
+    <PackageReference Include="FluentStorage.FTP" Version="[6.0.0,7.0.0)" />
+    <PackageReference Include="FluentStorage.GCP" Version="[6.0.0,7.0.0)" />
+    <PackageReference Include="FluentStorage.SFTP" Version="[6.0.0,7.0.0)" />
+    <PackageReference Include="Mime-Detective" Version="25.8.1" />
+    <PackageReference Include="SkiaSharp" Version="3.119.1" />
+    <PackageReference Include="FFMpegCore" Version="5.4.0" />
+    <PackageReference Include="MetadataExtractor" Version="2.9.0" />
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
+  </ItemGroup>
+</Project>
