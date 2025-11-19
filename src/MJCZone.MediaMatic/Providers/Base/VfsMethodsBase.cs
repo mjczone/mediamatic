@@ -6,6 +6,7 @@
 using FluentStorage.Blobs;
 using MJCZone.MediaMatic.Interfaces;
 using MJCZone.MediaMatic.Models;
+using MJCZone.MediaMatic.Processors;
 
 namespace MJCZone.MediaMatic.Providers.Base;
 
@@ -14,6 +15,14 @@ namespace MJCZone.MediaMatic.Providers.Base;
 /// </summary>
 public abstract partial class VfsMethodsBase : IVfsMethods
 {
+    #region Media processor fields (used by VfsMethodsBase.Media.cs)
+
+    private IMimeTypeDetector? _mimeDetector;
+    private IMetadataReader? _metadataReader;
+    private IImageProcessor? _imageProcessor;
+
+    #endregion
+
     /// <summary>
     /// Initializes a new instance of the <see cref="VfsMethodsBase"/> class.
     /// </summary>
@@ -21,6 +30,7 @@ public abstract partial class VfsMethodsBase : IVfsMethods
     internal VfsMethodsBase(VfsProviderType providerType)
     {
         ProviderType = providerType;
+        InitializeMediaProcessors();
     }
 
     /// <summary>
@@ -43,6 +53,19 @@ public abstract partial class VfsMethodsBase : IVfsMethods
     /// </summary>
     public virtual bool SupportsStreaming => false;
 
+    #region Media processor properties (used by VfsMethodsBase.Media.cs)
+
+    private IMimeTypeDetector MimeDetector =>
+        _mimeDetector ?? throw new InvalidOperationException("Media processors not initialized");
+
+    private IMetadataReader MetadataReader =>
+        _metadataReader ?? throw new InvalidOperationException("Media processors not initialized");
+
+    private IImageProcessor ImageProcessor =>
+        _imageProcessor ?? throw new InvalidOperationException("Media processors not initialized");
+
+    #endregion
+
     #region Basic file operations - Generic implementations using IBlobStorage
 
     /// <inheritdoc/>
@@ -63,18 +86,6 @@ public abstract partial class VfsMethodsBase : IVfsMethods
 
         await blobStorage.WriteAsync(path, stream, false, cancellationToken).ConfigureAwait(false);
         return path;
-    }
-
-    /// <inheritdoc/>
-    public virtual Task<ImageUploadResult> UploadImageAsync(
-        IVfsConnection vfs,
-        Stream stream,
-        string path,
-        ImageUploadOptions? options = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        throw new NotImplementedException($"UploadImageAsync not implemented for {ProviderType}");
     }
 
     /// <inheritdoc/>
@@ -210,18 +221,6 @@ public abstract partial class VfsMethodsBase : IVfsMethods
     #region Media processing operations - Stub implementations (override in provider classes)
 
     /// <inheritdoc/>
-    public virtual Task<ImageProcessingResult> ProcessImageAsync(
-        IVfsConnection vfs,
-        string sourcePath,
-        string destinationPath,
-        ImageProcessingOptions? options = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        throw new NotImplementedException($"ProcessImageAsync not implemented for {ProviderType}");
-    }
-
-    /// <inheritdoc/>
     public virtual Task<List<VideoThumbnail>> GenerateThumbnailsAsync(
         IVfsConnection vfs,
         string sourcePath,
@@ -273,6 +272,11 @@ public abstract partial class VfsMethodsBase : IVfsMethods
 
         return connectionBase.BlobStorage;
     }
+
+    /// <summary>
+    /// Initializes media processor instances (implemented in VfsMethodsBase.Media.cs).
+    /// </summary>
+    partial void InitializeMediaProcessors();
 
     #endregion
 }
