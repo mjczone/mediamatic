@@ -19,7 +19,6 @@ public static class VfsMethodsProvider
         [VfsProviderType.Local] = new Local.LocalMethodsFactory(),
         [VfsProviderType.ZipFile] = new ZipFile.ZipFileMethodsFactory(),
         [VfsProviderType.S3] = new S3.S3MethodsFactory(),
-        [VfsProviderType.FTP] = new FTP.FTPMethodsFactory(),
         [VfsProviderType.SFTP] = new SFTP.SFTPMethodsFactory(),
         [VfsProviderType.GCP] = new GCP.GCPMethodsFactory(),
         [VfsProviderType.B2] = new B2.B2MethodsFactory(),

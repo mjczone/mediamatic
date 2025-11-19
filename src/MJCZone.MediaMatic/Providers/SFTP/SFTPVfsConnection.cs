@@ -17,8 +17,6 @@ namespace MJCZone.MediaMatic.Providers.SFTP;
 /// The connection string should be in one of the following formats:
 /// - "sftp://host=...;port=...;user=...;password=..."
 /// - "sftp://host=...;port=...;user=...;privatekey=...".
-/// Other optional parameters include:
-/// - "path=..." or "root=..." to specify the initial directory.
 /// </remarks>
 public class SFTPVfsConnection : VfsConnectionBase
 {
@@ -104,21 +102,10 @@ public class SFTPVfsConnection : VfsConnectionBase
                 : 22;
 
 #pragma warning disable CA2000 // Dispose objects before losing scope
-        SftpClient sftpClient;
-        if (!string.IsNullOrWhiteSpace(keyFile))
-        {
-            sftpClient = new SftpClient(host, port, userName, new PrivateKeyFile(keyFile));
-        }
-        else
-        {
-            sftpClient = new SftpClient(host, port, userName, password!);
-        }
+        SftpClient sftpClient = !string.IsNullOrWhiteSpace(keyFile)
+            ? new SftpClient(host, port, userName, new PrivateKeyFile(keyFile))
+            : new SftpClient(host, port, userName, password!);
 #pragma warning restore CA2000 // Dispose objects before losing scope
-
-        if (csParts.TryGetFirstMatchingValue(["path", "root"], out var path) && !string.IsNullOrWhiteSpace(path))
-        {
-            sftpClient.ChangeDirectory(path);
-        }
 
         return StorageFactory.Blobs.Sftp(sftpClient, true);
     }

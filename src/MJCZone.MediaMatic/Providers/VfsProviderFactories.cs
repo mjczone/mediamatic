@@ -19,7 +19,6 @@ public static class VfsProviderFactories
         [VfsProviderType.Local] = new Local.LocalVfsConnectionFactory(),
         [VfsProviderType.ZipFile] = new ZipFile.ZipVfsConnectionFactory(),
         [VfsProviderType.S3] = new S3.S3VfsConnectionFactory(),
-        [VfsProviderType.FTP] = new FTP.FTPVfsConnectionFactory(),
         [VfsProviderType.SFTP] = new SFTP.SFTPVfsConnectionFactory(),
         [VfsProviderType.GCP] = new GCP.GCPVfsConnectionFactory(),
         [VfsProviderType.B2] = new B2.B2VfsConnectionFactory(),

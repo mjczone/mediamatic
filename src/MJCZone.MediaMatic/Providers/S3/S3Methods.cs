@@ -52,18 +52,12 @@ public partial class S3Methods : VfsMethodsBase
         var fileKeys = new List<string>();
 
         // List all objects with the specified prefix using AWS SDK directly
-        var request = new ListObjectsV2Request
-        {
-            BucketName = s3Connection.BucketName,
-            Prefix = prefix,
-        };
+        var request = new ListObjectsV2Request { BucketName = s3Connection.BucketName, Prefix = prefix };
 
         ListObjectsV2Response response;
         do
         {
-            response = await s3Connection
-                .S3Client.ListObjectsV2Async(request, cancellationToken)
-                .ConfigureAwait(false);
+            response = await s3Connection.S3Client.ListObjectsV2Async(request, cancellationToken).ConfigureAwait(false);
 
             // Add all objects that are NOT folders (don't end with /)
             foreach (var s3Object in response.S3Objects)
@@ -75,8 +69,7 @@ public partial class S3Methods : VfsMethodsBase
             }
 
             request.ContinuationToken = response.NextContinuationToken;
-        }
-        while (response.IsTruncated == true);
+        } while (response.IsTruncated == true);
 
         return fileKeys;
     }
@@ -114,9 +107,7 @@ public partial class S3Methods : VfsMethodsBase
         ListObjectsV2Response response;
         do
         {
-            response = await s3Connection
-                .S3Client.ListObjectsV2Async(request, cancellationToken)
-                .ConfigureAwait(false);
+            response = await s3Connection.S3Client.ListObjectsV2Async(request, cancellationToken).ConfigureAwait(false);
 
             // CommonPrefixes contains the "folders" (prefixes that end with the delimiter)
             if (response.CommonPrefixes != null)
@@ -129,8 +120,7 @@ public partial class S3Methods : VfsMethodsBase
             }
 
             request.ContinuationToken = response.NextContinuationToken;
-        }
-        while (response.IsTruncated == true);
+        } while (response.IsTruncated == true);
 
         return folderKeys;
     }
@@ -158,18 +148,12 @@ public partial class S3Methods : VfsMethodsBase
         var objectsToDelete = new List<KeyVersion>();
 
         // List all objects with the specified prefix using AWS SDK directly
-        var request = new ListObjectsV2Request
-        {
-            BucketName = s3Connection.BucketName,
-            Prefix = prefix,
-        };
+        var request = new ListObjectsV2Request { BucketName = s3Connection.BucketName, Prefix = prefix };
 
         ListObjectsV2Response response;
         do
         {
-            response = await s3Connection
-                .S3Client.ListObjectsV2Async(request, cancellationToken)
-                .ConfigureAwait(false);
+            response = await s3Connection.S3Client.ListObjectsV2Async(request, cancellationToken).ConfigureAwait(false);
 
             // Add all objects to the delete list
             foreach (var s3Object in response.S3Objects)
@@ -179,8 +163,7 @@ public partial class S3Methods : VfsMethodsBase
 
             // Set continuation token for pagination
             request.ContinuationToken = response.NextContinuationToken;
-        }
-        while (response.IsTruncated == true);
+        } while (response.IsTruncated == true);
 
         // Delete all objects in batches (S3 allows max 1000 per request)
         if (objectsToDelete.Count > 0)
@@ -189,15 +172,9 @@ public partial class S3Methods : VfsMethodsBase
             for (int i = 0; i < objectsToDelete.Count; i += batchSize)
             {
                 var batch = objectsToDelete.Skip(i).Take(batchSize).ToList();
-                var deleteRequest = new DeleteObjectsRequest
-                {
-                    BucketName = s3Connection.BucketName,
-                    Objects = batch,
-                };
+                var deleteRequest = new DeleteObjectsRequest { BucketName = s3Connection.BucketName, Objects = batch };
 
-                await s3Connection
-                    .S3Client.DeleteObjectsAsync(deleteRequest, cancellationToken)
-                    .ConfigureAwait(false);
+                await s3Connection.S3Client.DeleteObjectsAsync(deleteRequest, cancellationToken).ConfigureAwait(false);
             }
         }
     }

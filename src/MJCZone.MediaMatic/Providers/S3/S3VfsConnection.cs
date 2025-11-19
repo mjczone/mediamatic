@@ -29,7 +29,12 @@ public class S3VfsConnection : VfsConnectionBase
     public S3VfsConnection(string connectionString)
         : base(
             VfsProviderType.S3,
-            CreateBlobStorageFromConnectionString(connectionString, out var normalizedConnectionString, out var s3Client, out var bucketName)
+            CreateBlobStorageFromConnectionString(
+                connectionString,
+                out var normalizedConnectionString,
+                out var s3Client,
+                out var bucketName
+            )
         )
     {
         ConnectionString = normalizedConnectionString;

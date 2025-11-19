@@ -47,7 +47,7 @@ MediaMatic integrates these battle-tested libraries (all with permissive license
 - ☁️ **Cloud**: AWS S3, Azure Blob/File/DataLake, Google Cloud Storage
 - 🗄️ **Object Storage**: MinIO, DigitalOcean Spaces, Wasabi, Backblaze B2
 - 📁 **File Systems**: Local disk, in-memory, ZIP files
-- 🔄 **File Transfer**: FTP, FTPS, SFTP
+- 🔄 **File Transfer**: SFTP
 - 📬 **Messaging**: AWS SQS, Azure Queue/Service Bus
 
 ---

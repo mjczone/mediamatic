@@ -31,11 +31,6 @@ public enum VfsProviderType
     S3,
 
     /// <summary>
-    /// FTP file system.
-    /// </summary>
-    FTP,
-
-    /// <summary>
     /// SFTP file system.
     /// </summary>
     SFTP,

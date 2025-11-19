@@ -66,8 +66,8 @@ var result = await storage.UploadImageAsync(stream, "products/shoe.jpg", options
 ### ☁️ Multi-Provider Storage
 - AWS S3, Azure Blob, Google Cloud Storage
 - MinIO, DigitalOcean Spaces, Backblaze B2
-- Local file system, FTP, SFTP
-- 14 storage providers supported
+- Local file system, SFTP
+- 13 storage providers supported
 
 ## Documentation Sections
 
