@@ -9,13 +9,12 @@
     <Nullable>enable</Nullable>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <IncludeSymbols>true</IncludeSymbols>
-  </PropertyGroup>
-  <PropertyGroup>
+    <!-- License Information -->
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+    <Copyright>Copyright 2025 MJCZone Inc.</Copyright>
     <Authors>MJCZone Inc.</Authors>
     <Company>MJCZone Inc.</Company>
-    <Copyright>Copyright 2025 MJCZone Inc.</Copyright>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">

@@ -118,7 +118,8 @@ public abstract partial class VfsMethodsBase : IVfsMethods
             // Upload video to VFS
             using (var uploadStream = File.OpenRead(tempVideoFile))
             {
-                await UploadFileAsync(vfs, uploadStream, path, options.Overwrite, cancellationToken).ConfigureAwait(false);
+                await UploadFileAsync(vfs, uploadStream, path, options.Overwrite, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             // Get file size
@@ -128,7 +129,9 @@ public abstract partial class VfsMethodsBase : IVfsMethods
             MediaMetadata? metadata = null;
             if (options.ExtractMetadata)
             {
-                metadata = await MetadataReader.ExtractVideoMetadataAsync(tempVideoFile, cancellationToken).ConfigureAwait(false);
+                metadata = await MetadataReader
+                    .ExtractVideoMetadataAsync(tempVideoFile, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             var result = new VideoUploadResult
@@ -157,7 +160,8 @@ public abstract partial class VfsMethodsBase : IVfsMethods
                     Width = options.ThumbnailWidth,
                 };
 
-                var thumbnails = await GenerateThumbnailsAsync(vfs, path, thumbnailOptions, cancellationToken).ConfigureAwait(false);
+                var thumbnails = await GenerateThumbnailsAsync(vfs, path, thumbnailOptions, cancellationToken)
+                    .ConfigureAwait(false);
                 result.Thumbnails = thumbnails;
             }
 
@@ -346,11 +350,9 @@ public abstract partial class VfsMethodsBase : IVfsMethods
                 FilePattern = options.FilePattern,
             };
 
-            var thumbnailPaths = await VideoProcessor.GenerateThumbnailsAsync(
-                tempVideoFile,
-                tempOptions,
-                cancellationToken
-            ).ConfigureAwait(false);
+            var thumbnailPaths = await VideoProcessor
+                .GenerateThumbnailsAsync(tempVideoFile, tempOptions, cancellationToken)
+                .ConfigureAwait(false);
 
             // Upload thumbnails to VFS and build result list
             var thumbnails = new List<VideoThumbnail>();
@@ -365,7 +367,8 @@ public abstract partial class VfsMethodsBase : IVfsMethods
 
                 // Upload thumbnail to VFS
                 using var thumbnailStream = File.OpenRead(tempThumbnailPath);
-                await UploadFileAsync(vfs, thumbnailStream, vfsThumbnailPath, true, cancellationToken).ConfigureAwait(false);
+                await UploadFileAsync(vfs, thumbnailStream, vfsThumbnailPath, true, cancellationToken)
+                    .ConfigureAwait(false);
 
                 // Get file info
                 var fileInfo = new FileInfo(tempThumbnailPath);
@@ -375,15 +378,17 @@ public abstract partial class VfsMethodsBase : IVfsMethods
                 using var skStream = File.OpenRead(tempThumbnailPath);
                 using var skBitmap = SkiaSharp.SKBitmap.Decode(skStream);
 
-                thumbnails.Add(new VideoThumbnail
-                {
-                    Path = vfsThumbnailPath,
-                    Timestamp = timestamp,
-                    Width = skBitmap?.Width ?? options.Width,
-                    Height = skBitmap?.Height ?? options.Height ?? -1,
-                    FileSize = fileInfo.Length,
-                    Format = ImageFormat.Jpeg, // FFMpeg generates JPEG by default
-                });
+                thumbnails.Add(
+                    new VideoThumbnail
+                    {
+                        Path = vfsThumbnailPath,
+                        Timestamp = timestamp,
+                        Width = skBitmap?.Width ?? options.Width,
+                        Height = skBitmap?.Height ?? options.Height ?? -1,
+                        FileSize = fileInfo.Length,
+                        Format = ImageFormat.Jpeg, // FFMpeg generates JPEG by default
+                    }
+                );
             }
 
             return thumbnails;
@@ -437,22 +442,22 @@ public abstract partial class VfsMethodsBase : IVfsMethods
             }
 
             // Transcode video
-            await VideoProcessor.TranscodeAsync(
-                tempSourceFile,
-                tempDestFile,
-                options,
-                cancellationToken
-            ).ConfigureAwait(false);
+            await VideoProcessor
+                .TranscodeAsync(tempSourceFile, tempDestFile, options, cancellationToken)
+                .ConfigureAwait(false);
 
             // Upload transcoded video to VFS
             using (var transcodedStream = File.OpenRead(tempDestFile))
             {
-                await UploadFileAsync(vfs, transcodedStream, destinationPath, true, cancellationToken).ConfigureAwait(false);
+                await UploadFileAsync(vfs, transcodedStream, destinationPath, true, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             // Get result metadata
             var fileInfo = new FileInfo(tempDestFile);
-            var metadata = await MetadataReader.ExtractVideoMetadataAsync(tempDestFile, cancellationToken).ConfigureAwait(false);
+            var metadata = await MetadataReader
+                .ExtractVideoMetadataAsync(tempDestFile, cancellationToken)
+                .ConfigureAwait(false);
             var processingTime = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             return new VideoProcessingResult
@@ -530,7 +535,9 @@ public abstract partial class VfsMethodsBase : IVfsMethods
                     }
 
                     // Extract video metadata
-                    return await MetadataReader.ExtractVideoMetadataAsync(tempFile, cancellationToken).ConfigureAwait(false);
+                    return await MetadataReader
+                        .ExtractVideoMetadataAsync(tempFile, cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 finally
                 {

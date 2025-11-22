@@ -44,11 +44,10 @@ MediaMatic integrates these battle-tested libraries (all with permissive license
 
 ### Storage Provider Support (via FluentStorage)
 
-- ☁️ **Cloud**: AWS S3, Azure Blob/File/DataLake, Google Cloud Storage
+- ☁️ **Cloud**: AWS S3, Google Cloud Storage
 - 🗄️ **Object Storage**: MinIO, DigitalOcean Spaces, Wasabi, Backblaze B2
 - 📁 **File Systems**: Local disk, in-memory, ZIP files
 - 🔄 **File Transfer**: SFTP
-- 📬 **Messaging**: AWS SQS, Azure Queue/Service Bus
 
 ---
 
@@ -76,7 +75,7 @@ MJCZone.MediaMatic.AspNetCore (Web Integration)
 
 **MJCZone.MediaMatic** (platform-agnostic):
 
-1. **Storage Operations** - Unified API for S3, Azure, local files, etc.
+1. **Storage Operations** - Unified API for S3, GCP, local files, etc.
 2. **Metadata Extraction** - MIME types, EXIF data, video/audio metadata
 3. **Image Processing** - Format conversion (JPEG ↔ PNG ↔ WebP ↔ AVIF), resizing, optimization
 4. **Video Processing** - Thumbnails, transcoding, resolution scaling
@@ -154,7 +153,7 @@ builder.Services.AddMediaMatic(options =>
 {
     options.UseInMemoryFilesourceRepository(); // or File/Database-based
     options.AddFilesource("default", "aws.s3://...");
-    options.AddFilesource("azure", "azure://...");
+    options.AddFilesource("gcp", "gcs://...");
 });
 
 var app = builder.Build();
@@ -238,13 +237,13 @@ await storage.ProcessVideoAsync(videoStream, "content/tutorial.mp4", opt =>
 ### Cross-Provider Migration
 
 ```csharp
-// Migrate from S3 to Azure
+// Migrate from S3 to GCP
 var s3Storage = StorageFactory.Blobs.FromConnectionString("aws.s3://...");
-var azureStorage = StorageFactory.Blobs.FromConnectionString("azure://...");
+var gcpStorage = StorageFactory.Blobs.FromConnectionString("gcs://...");
 
 await mediaStorage.MigrateContainerAsync(
     source: s3Storage,
-    target: azureStorage,
+    target: gcpStorage,
     containerName: "backups",
     preserveMetadata: true,
     deleteSource: false
@@ -398,8 +397,8 @@ Licensed under the [GNU Lesser General Public License v3.0 or later (LGPL-3.0-or
 
 ## Support
 
-- 🐛 **Bug Reports** - [GitHub Issues](https://github.com/mjczone/MJCZone.MediaMatic/issues)
-- 💬 **Discussions** - [GitHub Discussions](https://github.com/mjczone/MJCZone.MediaMatic/discussions)
+- 🐛 **Bug Reports** - [GitHub Issues](https://github.com/mjczone/mediamatic/issues)
+- 💬 **Discussions** - [GitHub Discussions](https://github.com/mjczone/mediamatic/discussions)
 - 📖 **Documentation** - [https://mjczone.github.io/mediamatic/](https://mjczone.github.io/mediamatic/)
 
 ---

@@ -14,14 +14,14 @@ using MJCZone.MediaMatic.Providers;
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
 
 /// <summary>
-/// Tests for Zip provider basic file operations.
+/// Tests for ZipFile provider basic file operations.
 /// No testcontainer needed - creates zip files on disk.
 /// </summary>
-public class ZipProviderTests : IDisposable
+public class ZipFileProviderTests : IDisposable
 {
     private readonly string _testZipPath;
 
-    public ZipProviderTests()
+    public ZipFileProviderTests()
     {
         // Create unique zip file for this test run
         _testZipPath = Path.Combine(Path.GetTempPath(), $"test-{Guid.NewGuid()}.zip");
@@ -37,13 +37,13 @@ public class ZipProviderTests : IDisposable
     }
 
     [Fact]
-    public async Task UploadFile_Should_Create_Entry_In_Zip()
+    public async Task UploadFile_Should_Create_Entry_In_ZipFile()
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
         using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
 
-        var testContent = "Hello, Zip Storage!";
+        var testContent = "Hello, ZipFile Storage!";
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(testContent));
 
         // Act
@@ -77,7 +77,7 @@ public class ZipProviderTests : IDisposable
         var connectionString = $"zip://path={_testZipPath}";
         using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
 
-        var testContent = "Zip download test";
+        var testContent = "ZipFile download test";
         using var uploadStream = new MemoryStream(Encoding.UTF8.GetBytes(testContent));
         await vfs.UploadFileAsync(uploadStream, "download-test.txt");
 

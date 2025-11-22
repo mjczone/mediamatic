@@ -34,7 +34,9 @@ public class VideoProcessor : IVideoProcessor
         var outputPath = options.OutputPath ?? Path.GetDirectoryName(videoPath) ?? Directory.GetCurrentDirectory();
         Directory.CreateDirectory(outputPath);
 
-        var videoInfo = await FFProbe.AnalyseAsync(videoPath, cancellationToken: cancellationToken).ConfigureAwait(false);
+        var videoInfo = await FFProbe
+            .AnalyseAsync(videoPath, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
         var duration = videoInfo.Duration.TotalSeconds;
 
         // Determine timestamps for thumbnails
@@ -42,21 +44,43 @@ public class VideoProcessor : IVideoProcessor
 
         var generatedThumbnails = new List<string>();
 
+        // Get video dimensions for calculating resize
+        var videoWidth = videoInfo.PrimaryVideoStream?.Width ?? 1920;
+        var videoHeight = videoInfo.PrimaryVideoStream?.Height ?? 1080;
+
         for (int i = 0; i < timestamps.Count; i++)
         {
             var timestamp = TimeSpan.FromSeconds(timestamps[i]);
             var filename = string.Format(options.FilePattern, i, timestamps[i]);
             var thumbnailPath = Path.Combine(outputPath, filename);
 
-            // FFMpegCore SnapshotAsync doesn't support CancellationToken
-#pragma warning disable CA2016 // Forward the CancellationToken parameter to methods
-            await FFMpeg.SnapshotAsync(
-                videoPath,
-                thumbnailPath,
-                new System.Drawing.Size(options.Width, options.Height ?? -1), // -1 maintains aspect ratio
-                timestamp
-            ).ConfigureAwait(false);
-#pragma warning restore CA2016 // Forward the CancellationToken parameter to methods
+            // Build FFMpeg filter based on resize mode
+            var targetWidth = options.Width;
+            var targetHeight = options.Height ?? (int)(options.Width * ((double)videoHeight / videoWidth));
+
+            var filterString = BuildResizeFilter(
+                options.ResizeMode,
+                targetWidth,
+                targetHeight,
+                options.BackgroundColor,
+                options.FocalPoint
+            );
+
+            await FFMpegArguments
+                .FromFileInput(videoPath, true, inputOptions => inputOptions.Seek(timestamp))
+                .OutputToFile(
+                    thumbnailPath,
+                    true,
+                    outputOptions =>
+                    {
+                        outputOptions
+                            .WithCustomArgument($"-vf \"{filterString}\"")
+                            .WithFrameOutputCount(1)
+                            .WithCustomArgument($"-q:v {Math.Max(1, 100 - options.Quality)}"); // Quality for JPEG
+                    }
+                )
+                .ProcessAsynchronously()
+                .ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -93,96 +117,160 @@ public class VideoProcessor : IVideoProcessor
         // Build FFMpeg arguments
         var arguments = FFMpegArguments
             .FromFileInput(sourcePath)
-            .OutputToFile(destinationPath, true, ffOptions =>
-            {
-                // Set video codec
-                if (options.Codec.HasValue)
+            .OutputToFile(
+                destinationPath,
+                true,
+                ffOptions =>
                 {
-                    var videoCodec = options.Codec.Value switch
+                    // Set video codec
+                    if (options.Codec.HasValue)
                     {
-                        ModelCodec.H264 => FFCodec.LibX264,
-                        ModelCodec.H265 => FFCodec.LibX265,
-                        ModelCodec.VP8 => FFCodec.LibVpx,
-                        ModelCodec.VP9 => FFCodec.LibVpx,  // VP9 uses LibVpx
-                        _ => FFCodec.LibX264,
-                    };
-                    ffOptions.WithVideoCodec(videoCodec);
-                }
-                else
-                {
-                    // Use default codec based on format
-                    var defaultCodec = options.Format switch
+                        var videoCodec = options.Codec.Value switch
+                        {
+                            ModelCodec.H264 => FFCodec.LibX264,
+                            ModelCodec.H265 => FFCodec.LibX265,
+                            ModelCodec.VP8 => FFCodec.LibVpx,
+                            ModelCodec.VP9 => FFCodec.LibVpx, // VP9 uses LibVpx
+                            _ => FFCodec.LibX264,
+                        };
+                        ffOptions.WithVideoCodec(videoCodec);
+                    }
+                    else
                     {
-                        VideoFormat.Mp4 => FFCodec.LibX264,
-                        VideoFormat.WebM => FFCodec.LibVpx,  // VP9 for WebM
-                        _ => FFCodec.LibX264,
-                    };
-                    ffOptions.WithVideoCodec(defaultCodec);
-                }
+                        // Use default codec based on format
+                        var defaultCodec = options.Format switch
+                        {
+                            VideoFormat.Mp4 => FFCodec.LibX264,
+                            VideoFormat.WebM => FFCodec.LibVpx, // VP9 for WebM
+                            _ => FFCodec.LibX264,
+                        };
+                        ffOptions.WithVideoCodec(defaultCodec);
+                    }
 
-                // Set video bitrate
-                if (options.VideoBitrate.HasValue)
-                {
-                    ffOptions.WithVideoBitrate(options.VideoBitrate.Value);
-                }
+                    // Set video bitrate
+                    if (options.VideoBitrate.HasValue)
+                    {
+                        ffOptions.WithVideoBitrate(options.VideoBitrate.Value);
+                    }
 
-                // Set frame rate
-                if (options.FrameRate.HasValue)
-                {
-                    ffOptions.WithFramerate(options.FrameRate.Value);
-                }
+                    // Set frame rate
+                    if (options.FrameRate.HasValue)
+                    {
+                        ffOptions.WithFramerate(options.FrameRate.Value);
+                    }
 
-                // Set resolution
-                if (options.Width.HasValue || options.Height.HasValue)
-                {
-                    var width = options.Width ?? -1;   // -1 means maintain aspect ratio
-                    var height = options.Height ?? -1;
-                    ffOptions.WithVideoFilters(filterOptions => filterOptions.Scale(width, height));
-                }
+                    // Set resolution
+                    if (options.Width.HasValue || options.Height.HasValue)
+                    {
+                        var width = options.Width ?? -1; // -1 means maintain aspect ratio
+                        var height = options.Height ?? -1;
+                        ffOptions.WithVideoFilters(filterOptions => filterOptions.Scale(width, height));
+                    }
 
-                // Set CRF (Constant Rate Factor) for quality-based encoding
-                if (options.Crf.HasValue)
-                {
-                    ffOptions.WithConstantRateFactor(options.Crf.Value);
-                }
+                    // Set CRF (Constant Rate Factor) for quality-based encoding
+                    if (options.Crf.HasValue)
+                    {
+                        ffOptions.WithConstantRateFactor(options.Crf.Value);
+                    }
 
-                // Set audio bitrate or strip audio
-                if (options.StripAudio)
-                {
-                    ffOptions.WithCustomArgument("-an");
-                }
-                else if (options.AudioBitrate.HasValue)
-                {
-                    ffOptions.WithAudioBitrate(options.AudioBitrate.Value);
-                }
+                    // Set audio bitrate or strip audio
+                    if (options.StripAudio)
+                    {
+                        ffOptions.WithCustomArgument("-an");
+                    }
+                    else if (options.AudioBitrate.HasValue)
+                    {
+                        ffOptions.WithAudioBitrate(options.AudioBitrate.Value);
+                    }
 
-                // Set encoding preset
-                ffOptions.WithSpeedPreset(options.Preset switch
-                {
-                    "ultrafast" => Speed.UltraFast,
-                    "fast" => Speed.Fast,
-                    "medium" => Speed.Medium,
-                    "slow" => Speed.Slow,
-                    "veryslow" => Speed.VerySlow,
-                    _ => Speed.Medium,
-                });
+                    // Set encoding preset
+                    ffOptions.WithSpeedPreset(
+                        options.Preset switch
+                        {
+                            "ultrafast" => Speed.UltraFast,
+                            "fast" => Speed.Fast,
+                            "medium" => Speed.Medium,
+                            "slow" => Speed.Slow,
+                            "veryslow" => Speed.VerySlow,
+                            _ => Speed.Medium,
+                        }
+                    );
 
-                // Hardware acceleration
-                if (options.UseHardwareAcceleration)
-                {
-                    ffOptions.WithHardwareAcceleration();
-                }
+                    // Hardware acceleration
+                    if (options.UseHardwareAcceleration)
+                    {
+                        ffOptions.WithHardwareAcceleration();
+                    }
 
-                // Strip metadata
-                if (options.StripMetadata)
-                {
-                    ffOptions.WithCustomArgument("-map_metadata -1");
+                    // Strip metadata
+                    if (options.StripMetadata)
+                    {
+                        ffOptions.WithCustomArgument("-map_metadata -1");
+                    }
                 }
-            });
+            );
 
         await arguments.ProcessAsynchronously().ConfigureAwait(false);
 
         return destinationPath;
+    }
+
+    private static string BuildResizeFilter(
+        Models.ResizeMode resizeMode,
+        int targetWidth,
+        int targetHeight,
+        string backgroundColor,
+        FocalPoint? focalPoint
+    )
+    {
+        // Parse background color for pad filter
+        var bgColor = backgroundColor.TrimStart('#');
+        if (bgColor.Length == 6)
+        {
+            bgColor = "0x" + bgColor;
+        }
+
+        return resizeMode switch
+        {
+            Models.ResizeMode.Cover => BuildCoverFilter(targetWidth, targetHeight, focalPoint),
+
+            Models.ResizeMode.Pad =>
+            // Scale to fit, then pad with background color
+            $"scale={targetWidth}:{targetHeight}:force_original_aspect_ratio=decrease,pad={targetWidth}:{targetHeight}:(ow-iw)/2:(oh-ih)/2:{bgColor}",
+
+            Models.ResizeMode.Stretch =>
+            // Stretch to exact dimensions
+            $"scale={targetWidth}:{targetHeight}",
+
+            Models.ResizeMode.Fit or _ =>
+            // Scale to fit within bounds
+            $"scale={targetWidth}:{targetHeight}:force_original_aspect_ratio=decrease",
+        };
+    }
+
+    private static string BuildCoverFilter(int targetWidth, int targetHeight, FocalPoint? focalPoint)
+    {
+        // Scale to cover, then crop
+        if (focalPoint != null)
+        {
+            // Crop around focal point
+            // FFMpeg crop: crop=w:h:x:y
+            // For focal point, we calculate x and y based on the focal point position
+            // The expressions use 'iw' (input width) and 'ih' (input height) after scaling
+            var focalX = focalPoint.X;
+            var focalY = focalPoint.Y;
+
+            // Calculate crop position centered on focal point, clamped to bounds
+            // Using FFMpeg expressions: min(max(...), ...) for clamping
+            // Escape commas with backslash for FFMpeg expression parser
+            var cropX = $"min(max(iw*{focalX:F2}-{targetWidth / 2}\\,0)\\,iw-{targetWidth})";
+            var cropY = $"min(max(ih*{focalY:F2}-{targetHeight / 2}\\,0)\\,ih-{targetHeight})";
+
+            return $"scale={targetWidth}:{targetHeight}:force_original_aspect_ratio=increase,crop={targetWidth}:{targetHeight}:{cropX}:{cropY}";
+        }
+
+        // Default: center crop
+        return $"scale={targetWidth}:{targetHeight}:force_original_aspect_ratio=increase,crop={targetWidth}:{targetHeight}";
     }
 
     private static List<double> GenerateEvenlySpacedTimestamps(double duration, int count)

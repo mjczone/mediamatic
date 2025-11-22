@@ -11,12 +11,12 @@ namespace MJCZone.MediaMatic.Providers.ZipFile;
 /// <summary>
 /// Represents a factory for creating connections to a ZIP virtual file system.
 /// </summary>
-public class ZipVfsConnectionFactory : VfsConnectionFactoryBase<ZipFileVfsConnection>
+public class ZipFileVfsConnectionFactory : VfsConnectionFactoryBase<ZipFileVfsConnection>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ZipVfsConnectionFactory"/> class.
+    /// Initializes a new instance of the <see cref="ZipFileVfsConnectionFactory"/> class.
     /// </summary>
-    public ZipVfsConnectionFactory()
+    public ZipFileVfsConnectionFactory()
         : base(VfsProviderType.ZipFile) { }
 
     /// <summary>

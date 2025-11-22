@@ -60,7 +60,7 @@ public async Task UploadFile_Should_Work_For_Various_Files(string fileName, stri
 ### Future Containers
 
 When additional providers are implemented:
-- **Azure Blob Storage**: Use `Testcontainers.Azurite`
+- **SFTP**: Use SFTP test containers
 
 ## Running Tests
 

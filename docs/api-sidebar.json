@@ -1,0 +1,127 @@
+{
+  "/api/": [
+    {
+      "text": "API Reference",
+      "items": [
+        {
+          "text": "Overview",
+          "link": "/api/"
+        },
+        {
+          "text": "🔧 MediaMatic Core",
+          "link": "/api/mjczone.mediamatic/",
+          "collapsed": true,
+          "items": [
+            {
+              "text": "📦 Root",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic/"
+            },
+            {
+              "text": "📦 / Providers",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers/"
+            },
+            {
+              "text": "📦 / Providers.ZipFile",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.zipfile/"
+            },
+            {
+              "text": "📦 / Providers.SFTP",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.sftp/"
+            },
+            {
+              "text": "📦 / Providers.S3",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.s3/"
+            },
+            {
+              "text": "📦 / Providers.Minio",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.minio/"
+            },
+            {
+              "text": "📦 / Providers.Memory",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.memory/"
+            },
+            {
+              "text": "📦 / Providers.Local",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.local/"
+            },
+            {
+              "text": "📦 / Providers.GCP",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.gcp/"
+            },
+            {
+              "text": "📦 / Providers.Base",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.base/"
+            },
+            {
+              "text": "📦 / Providers.B2",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.providers.b2/"
+            },
+            {
+              "text": "📦 / Processors",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.processors/"
+            },
+            {
+              "text": "📦 / Models",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.models/"
+            },
+            {
+              "text": "📦 / Interfaces",
+              "link": "/api/mjczone.mediamatic/mjczone.mediamatic.interfaces/"
+            }
+          ]
+        },
+        {
+          "text": "🌐 ASP.NET Core",
+          "link": "/api/mjczone.mediamatic.aspnetcore/",
+          "collapsed": true,
+          "items": [
+            {
+              "text": "📦 Root",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore/"
+            },
+            {
+              "text": "📦 / Validation",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.validation/"
+            },
+            {
+              "text": "📦 / Utilities",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.utilities/"
+            },
+            {
+              "text": "📦 / Services",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.services/"
+            },
+            {
+              "text": "📦 / Security",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.security/"
+            },
+            {
+              "text": "📦 / Repositories",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.repositories/"
+            },
+            {
+              "text": "📦 / Models.Responses",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.models.responses/"
+            },
+            {
+              "text": "📦 / Models.Dtos",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.models.dtos/"
+            },
+            {
+              "text": "📦 / Factories",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.factories/"
+            },
+            {
+              "text": "📦 / Endpoints",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.endpoints/"
+            },
+            {
+              "text": "📦 / Auditing",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.auditing/"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

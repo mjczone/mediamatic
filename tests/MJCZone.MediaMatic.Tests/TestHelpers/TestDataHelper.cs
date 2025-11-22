@@ -3,7 +3,13 @@
 // Licensed under the GNU Lesser General Public License v3.0 or later.
 // See LICENSE in the project root for license information.
 
+using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
+using FFMpegCore;
+using FFMpegCore.Enums;
+using FFMpegCore.Pipes;
 using MJCZone.MediaMatic.Models;
 using SkiaSharp;
 
@@ -61,21 +67,16 @@ public static class TestDataHelper
             Shader = SKShader.CreateLinearGradient(
                 new SKPoint(0, 0),
                 new SKPoint(width, height),
-                new[] { SKColors.Blue, SKColors.Green, SKColors.Yellow },
+                [SKColors.Blue, SKColors.Green, SKColors.Yellow],
                 SKShaderTileMode.Clamp
             ),
         };
         canvas.DrawRect(0, 0, width, height, paint);
 
         // Draw some text to make it identifiable
-        using var textPaint = new SKPaint
-        {
-            Color = SKColors.White,
-            TextSize = 48,
-            IsAntialias = true,
-            TextAlign = SKTextAlign.Center,
-        };
-        canvas.DrawText($"{width}x{height}", width / 2, height / 2, textPaint);
+        using var font = new SKFont { Size = 48 };
+        using var textPaint = new SKPaint { Color = SKColors.White, IsAntialias = true };
+        canvas.DrawText($"{width}x{height}", width / 2, height / 2, SKTextAlign.Center, font, textPaint);
 
         // Encode to stream
         using var image = SKImage.FromBitmap(bitmap);
@@ -115,5 +116,228 @@ public static class TestDataHelper
             ".avif" => ImageFormat.Avif,
             _ => ImageFormat.Jpeg,
         };
+    }
+
+    private static bool? _ffmpegAvailable;
+
+    /// <summary>
+    /// Checks if FFmpeg is available on the system.
+    /// </summary>
+    /// <returns>True if FFmpeg is installed and accessible, false otherwise.</returns>
+    public static bool IsFfmpegAvailable()
+    {
+        if (_ffmpegAvailable.HasValue)
+        {
+            return _ffmpegAvailable.Value;
+        }
+
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "ffmpeg",
+                Arguments = "-version",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+
+            using var process = Process.Start(startInfo);
+            process?.WaitForExit(5000);
+            _ffmpegAvailable = process?.ExitCode == 0;
+        }
+        catch
+        {
+            _ffmpegAvailable = false;
+        }
+
+        return _ffmpegAvailable.Value;
+    }
+
+    /// <summary>
+    /// Creates a test MP4 video file using FFmpeg.
+    /// </summary>
+    /// <param name="outputPath">The output file path for the video.</param>
+    /// <param name="width">Video width in pixels.</param>
+    /// <param name="height">Video height in pixels.</param>
+    /// <param name="durationSeconds">Duration of the video in seconds.</param>
+    /// <param name="frameRate">Frame rate of the video.</param>
+    /// <returns>The path to the created video file.</returns>
+    public static async Task<string> CreateTestMp4Async(
+        string outputPath,
+        int width = 320,
+        int height = 240,
+        int durationSeconds = 2,
+        double frameRate = 30
+    )
+    {
+        return await CreateTestVideoAsync(outputPath, width, height, durationSeconds, frameRate, "mp4");
+    }
+
+    /// <summary>
+    /// Creates a test WebM video file using FFmpeg.
+    /// </summary>
+    /// <param name="outputPath">The output file path for the video.</param>
+    /// <param name="width">Video width in pixels.</param>
+    /// <param name="height">Video height in pixels.</param>
+    /// <param name="durationSeconds">Duration of the video in seconds.</param>
+    /// <param name="frameRate">Frame rate of the video.</param>
+    /// <returns>The path to the created video file.</returns>
+    public static async Task<string> CreateTestWebMAsync(
+        string outputPath,
+        int width = 320,
+        int height = 240,
+        int durationSeconds = 2,
+        double frameRate = 30
+    )
+    {
+        return await CreateTestVideoAsync(outputPath, width, height, durationSeconds, frameRate, "webm");
+    }
+
+    /// <summary>
+    /// Creates a test video file using FFmpeg with a test pattern.
+    /// </summary>
+    /// <param name="outputPath">The output file path for the video.</param>
+    /// <param name="width">Video width in pixels.</param>
+    /// <param name="height">Video height in pixels.</param>
+    /// <param name="durationSeconds">Duration of the video in seconds.</param>
+    /// <param name="frameRate">Frame rate of the video.</param>
+    /// <param name="format">Output format (mp4, webm, etc.).</param>
+    /// <returns>The path to the created video file.</returns>
+    public static async Task<string> CreateTestVideoAsync(
+        string outputPath,
+        int width = 320,
+        int height = 240,
+        int durationSeconds = 2,
+        double frameRate = 30,
+        string format = "mp4"
+    )
+    {
+        if (!IsFfmpegAvailable())
+        {
+            throw new InvalidOperationException("FFmpeg is not available on this system.");
+        }
+
+        // Ensure the directory exists
+        var directory = Path.GetDirectoryName(outputPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        // Delete existing file if present
+        if (File.Exists(outputPath))
+        {
+            File.Delete(outputPath);
+        }
+
+        // Use FFmpeg to generate a test video with color bars pattern
+        // testsrc2 creates a more visually interesting test pattern
+        var arguments = format.ToLowerInvariant() switch
+        {
+            "webm" =>
+                $"-f lavfi -i testsrc2=size={width}x{height}:rate={frameRate}:duration={durationSeconds} -c:v libvpx -b:v 1M -y \"{outputPath}\"",
+            _ =>
+                $"-f lavfi -i testsrc2=size={width}x{height}:rate={frameRate}:duration={durationSeconds} -c:v libx264 -pix_fmt yuv420p -y \"{outputPath}\"",
+        };
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "ffmpeg",
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        using var process =
+            Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start FFmpeg process.");
+
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0)
+        {
+            var error = await process.StandardError.ReadToEndAsync();
+            throw new InvalidOperationException($"FFmpeg failed with exit code {process.ExitCode}: {error}");
+        }
+
+        if (!File.Exists(outputPath))
+        {
+            throw new InvalidOperationException($"FFmpeg did not create the output file: {outputPath}");
+        }
+
+        return outputPath;
+    }
+
+    /// <summary>
+    /// Creates a test video file with audio track using FFmpeg.
+    /// </summary>
+    /// <param name="outputPath">The output file path for the video.</param>
+    /// <param name="width">Video width in pixels.</param>
+    /// <param name="height">Video height in pixels.</param>
+    /// <param name="durationSeconds">Duration of the video in seconds.</param>
+    /// <param name="frameRate">Frame rate of the video.</param>
+    /// <returns>The path to the created video file.</returns>
+    public static async Task<string> CreateTestVideoWithAudioAsync(
+        string outputPath,
+        int width = 320,
+        int height = 240,
+        int durationSeconds = 2,
+        double frameRate = 30
+    )
+    {
+        if (!IsFfmpegAvailable())
+        {
+            throw new InvalidOperationException("FFmpeg is not available on this system.");
+        }
+
+        // Ensure the directory exists
+        var directory = Path.GetDirectoryName(outputPath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        // Delete existing file if present
+        if (File.Exists(outputPath))
+        {
+            File.Delete(outputPath);
+        }
+
+        // Generate video with test pattern and sine wave audio
+        var arguments =
+            $"-f lavfi -i testsrc2=size={width}x{height}:rate={frameRate}:duration={durationSeconds} "
+            + $"-f lavfi -i sine=frequency=440:duration={durationSeconds} "
+            + $"-c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 128k -y \"{outputPath}\"";
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "ffmpeg",
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+        };
+
+        using var process =
+            Process.Start(startInfo) ?? throw new InvalidOperationException("Failed to start FFmpeg process.");
+
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0)
+        {
+            var error = await process.StandardError.ReadToEndAsync();
+            throw new InvalidOperationException($"FFmpeg failed with exit code {process.ExitCode}: {error}");
+        }
+
+        if (!File.Exists(outputPath))
+        {
+            throw new InvalidOperationException($"FFmpeg did not create the output file: {outputPath}");
+        }
+
+        return outputPath;
     }
 }

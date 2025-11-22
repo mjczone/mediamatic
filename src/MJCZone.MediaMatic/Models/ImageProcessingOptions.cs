@@ -31,10 +31,10 @@ public class ImageProcessingOptions
     public int Quality { get; set; } = 85;
 
     /// <summary>
-    /// Gets or sets the resize mode (fit, fill, crop, pad).
-    /// Default is "fit".
+    /// Gets or sets the resize mode for fitting content to target dimensions.
+    /// Default is Fit (maintain aspect ratio, scale to fit within bounds).
     /// </summary>
-    public string ResizeMode { get; set; } = "fit";
+    public ResizeMode ResizeMode { get; set; } = ResizeMode.Fit;
 
     /// <summary>
     /// Gets or sets the focal point for smart cropping (x, y as percentage 0-1).

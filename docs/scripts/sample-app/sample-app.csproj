@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SampleApp</RootNamespace>
+    <AssemblyName>sample-app</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.20" />
+    <PackageReference
+      Include="Microsoft.Extensions.ApiDescription.Server"
+      Version="9.0.9"
+      PrivateAssets="All"
+    />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../src/MJCZone.MediaMatic.AspNetCore/MJCZone.MediaMatic.AspNetCore.csproj" />
+  </ItemGroup>
+</Project>

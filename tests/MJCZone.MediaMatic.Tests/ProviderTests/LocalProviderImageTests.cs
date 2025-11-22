@@ -229,11 +229,7 @@ public class LocalProviderImageTests : IDisposable
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
         await vfs.UploadFileAsync(uploadStream, "source.jpg");
 
-        var options = new ImageProcessingOptions
-        {
-            Format = ImageFormat.Png,
-            Quality = 100,
-        };
+        var options = new ImageProcessingOptions { Format = ImageFormat.Png, Quality = 100 };
 
         // Act
         var result = await vfs.ProcessImageAsync("source.jpg", "converted.png", options);
@@ -254,11 +250,7 @@ public class LocalProviderImageTests : IDisposable
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
         await vfs.UploadFileAsync(uploadStream, "source.jpg");
 
-        var options = new ImageProcessingOptions
-        {
-            Format = ImageFormat.WebP,
-            Quality = 80,
-        };
+        var options = new ImageProcessingOptions { Format = ImageFormat.WebP, Quality = 80 };
 
         // Act
         var result = await vfs.ProcessImageAsync("source.jpg", "converted.webp", options);

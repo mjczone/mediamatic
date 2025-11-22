@@ -24,10 +24,7 @@ public class MetadataReader : IMetadataReader
             throw new ArgumentException("Stream must be readable", nameof(stream));
         }
 
-        var metadata = new MediaMetadata
-        {
-            Provider = "MetadataExtractor",
-        };
+        var metadata = new MediaMetadata { Provider = "MetadataExtractor" };
 
         try
         {
@@ -73,7 +70,9 @@ public class MetadataReader : IMetadataReader
                 metadata.CameraMake = exifIfd0.GetDescription(ExifDirectoryBase.TagMake);
                 metadata.CameraModel = exifIfd0.GetDescription(ExifDirectoryBase.TagModel);
                 metadata.Software = exifIfd0.GetDescription(ExifDirectoryBase.TagSoftware);
-                metadata.DateTimeOriginal = exifIfd0.TryGetDateTime(ExifDirectoryBase.TagDateTime, out var dt) ? dt : null;
+                metadata.DateTimeOriginal = exifIfd0.TryGetDateTime(ExifDirectoryBase.TagDateTime, out var dt)
+                    ? dt
+                    : null;
 
                 // Orientation
                 if (exifIfd0.TryGetInt32(ExifDirectoryBase.TagOrientation, out var orientation))
@@ -140,11 +139,17 @@ public class MetadataReader : IMetadataReader
                 metadata.LensMake = exifSubIfd.GetDescription(ExifDirectoryBase.TagLensMake);
 
                 // Timestamps
-                metadata.DateTimeOriginal = exifSubIfd.TryGetDateTime(ExifDirectoryBase.TagDateTimeOriginal, out var dtOriginal)
+                metadata.DateTimeOriginal = exifSubIfd.TryGetDateTime(
+                    ExifDirectoryBase.TagDateTimeOriginal,
+                    out var dtOriginal
+                )
                     ? dtOriginal
                     : metadata.DateTimeOriginal;
 
-                metadata.DateTimeDigitized = exifSubIfd.TryGetDateTime(ExifDirectoryBase.TagDateTimeDigitized, out var dtDigitized)
+                metadata.DateTimeDigitized = exifSubIfd.TryGetDateTime(
+                    ExifDirectoryBase.TagDateTimeDigitized,
+                    out var dtDigitized
+                )
                     ? dtDigitized
                     : null;
             }
@@ -223,7 +228,10 @@ public class MetadataReader : IMetadataReader
     }
 
     /// <inheritdoc/>
-    public async Task<MediaMetadata> ExtractVideoMetadataAsync(string filePath, CancellationToken cancellationToken = default)
+    public async Task<MediaMetadata> ExtractVideoMetadataAsync(
+        string filePath,
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
 
@@ -232,15 +240,13 @@ public class MetadataReader : IMetadataReader
             throw new FileNotFoundException("Video file not found", filePath);
         }
 
-        var metadata = new MediaMetadata
-        {
-            Provider = "FFMpegCore",
-            FileName = Path.GetFileName(filePath),
-        };
+        var metadata = new MediaMetadata { Provider = "FFMpegCore", FileName = Path.GetFileName(filePath) };
 
         try
         {
-            var mediaInfo = await FFMpegCore.FFProbe.AnalyseAsync(filePath, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var mediaInfo = await FFMpegCore
+                .FFProbe.AnalyseAsync(filePath, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
 
             // Basic file properties
             metadata.Size = new FileInfo(filePath).Length;

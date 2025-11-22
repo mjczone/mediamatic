@@ -8,7 +8,7 @@ using MJCZone.MediaMatic.Providers.Base;
 namespace MJCZone.MediaMatic.Providers.ZipFile;
 
 /// <summary>
-/// Represents the Zip specific VFS methods.
+/// Represents the ZipFile specific VFS methods.
 /// </summary>
 public partial class ZipFileMethods : VfsMethodsBase
 {

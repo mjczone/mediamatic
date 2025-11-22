@@ -11,7 +11,7 @@ namespace MJCZone.MediaMatic.Providers.Base;
 
 /// <summary>
 /// Partial class containing stream-based media processing operations.
-/// These operations work for ALL VFS providers (Local, S3, Azure, etc.).
+/// These operations work for ALL VFS providers (Local, S3, GCP, SFTP, etc.).
 /// </summary>
 public abstract partial class VfsMethodsBase
 {
@@ -38,11 +38,15 @@ public abstract partial class VfsMethodsBase
             memoryStream.Position = 0;
 
             // Detect MIME type
-            var mimeType = await MimeDetector.DetectMimeTypeAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+            var mimeType = await MimeDetector
+                .DetectMimeTypeAsync(memoryStream, cancellationToken)
+                .ConfigureAwait(false);
             memoryStream.Position = 0;
 
             // Extract metadata
-            var metadata = await MetadataReader.ExtractImageMetadataAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+            var metadata = await MetadataReader
+                .ExtractImageMetadataAsync(memoryStream, cancellationToken)
+                .ConfigureAwait(false);
             memoryStream.Position = 0;
 
             // Determine original image format
@@ -53,17 +57,20 @@ public abstract partial class VfsMethodsBase
             if (options.MaxWidth.HasValue || options.MaxHeight.HasValue)
             {
                 memoryStream.Position = 0;
-                originalImage = await ImageProcessor.ResizeAsync(
-                    memoryStream,
-                    options.MaxWidth,
-                    options.MaxHeight,
-                    new ImageProcessingOptions { Format = originalFormat, Quality = options.JpegQuality },
-                    cancellationToken
-                ).ConfigureAwait(false);
+                originalImage = await ImageProcessor
+                    .ResizeAsync(
+                        memoryStream,
+                        options.MaxWidth,
+                        options.MaxHeight,
+                        new ImageProcessingOptions { Format = originalFormat, Quality = options.JpegQuality },
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
 
                 // Upload resized image (which has its own stream)
                 originalImage.stream.Position = 0;
-                await UploadFileAsync(vfs, originalImage.stream, path, options.Overwrite, cancellationToken).ConfigureAwait(false);
+                await UploadFileAsync(vfs, originalImage.stream, path, options.Overwrite, cancellationToken)
+                    .ConfigureAwait(false);
             }
             else
             {
@@ -73,11 +80,18 @@ public abstract partial class VfsMethodsBase
                 var uploadCopy = new MemoryStream();
                 await memoryStream.CopyToAsync(uploadCopy, cancellationToken).ConfigureAwait(false);
                 uploadCopy.Position = 0;
-                await UploadFileAsync(vfs, uploadCopy, path, options.Overwrite, cancellationToken).ConfigureAwait(false);
+                await UploadFileAsync(vfs, uploadCopy, path, options.Overwrite, cancellationToken)
+                    .ConfigureAwait(false);
                 await uploadCopy.DisposeAsync().ConfigureAwait(false);
 
                 // Create ProcessedImage record pointing to memoryStream (which we keep for further processing)
-                originalImage = new ProcessedImage(memoryStream, metadata.Width ?? 0, metadata.Height ?? 0, memoryStream.Length, originalFormat);
+                originalImage = new ProcessedImage(
+                    memoryStream,
+                    metadata.Width ?? 0,
+                    metadata.Height ?? 0,
+                    memoryStream.Length,
+                    originalFormat
+                );
             }
 
             var result = new ImageUploadResult
@@ -122,12 +136,9 @@ public abstract partial class VfsMethodsBase
                         await originalImage.stream.CopyToAsync(convertStream, cancellationToken).ConfigureAwait(false);
                         convertStream.Position = 0;
 
-                        var convertedImage = await ImageProcessor.ConvertFormatAsync(
-                            convertStream,
-                            format,
-                            quality,
-                            cancellationToken
-                        ).ConfigureAwait(false);
+                        var convertedImage = await ImageProcessor
+                            .ConvertFormatAsync(convertStream, format, quality, cancellationToken)
+                            .ConfigureAwait(false);
 
                         await convertStream.DisposeAsync().ConfigureAwait(false);
 
@@ -139,21 +150,32 @@ public abstract partial class VfsMethodsBase
                             // Create a copy for upload (FluentStorage may dispose the stream)
                             convertedImage.stream.Position = 0;
                             var variantUploadCopy = new MemoryStream();
-                            await convertedImage.stream.CopyToAsync(variantUploadCopy, cancellationToken).ConfigureAwait(false);
+                            await convertedImage
+                                .stream.CopyToAsync(variantUploadCopy, cancellationToken)
+                                .ConfigureAwait(false);
                             variantUploadCopy.Position = 0;
 
-                            await UploadFileAsync(vfs, variantUploadCopy, variantPath, options.Overwrite, cancellationToken).ConfigureAwait(false);
+                            await UploadFileAsync(
+                                    vfs,
+                                    variantUploadCopy,
+                                    variantPath,
+                                    options.Overwrite,
+                                    cancellationToken
+                                )
+                                .ConfigureAwait(false);
                             await variantUploadCopy.DisposeAsync().ConfigureAwait(false);
 
-                            result.Variants.Add(new ImageVariant
-                            {
-                                Path = variantPath,
-                                Format = format,
-                                Width = convertedImage.width,
-                                Height = convertedImage.height,
-                                FileSize = convertedImage.fileSize,
-                                VariantType = "format",
-                            });
+                            result.Variants.Add(
+                                new ImageVariant
+                                {
+                                    Path = variantPath,
+                                    Format = format,
+                                    Width = convertedImage.width,
+                                    Height = convertedImage.height,
+                                    FileSize = convertedImage.fileSize,
+                                    VariantType = "format",
+                                }
+                            );
                         }
                         finally
                         {
@@ -191,13 +213,15 @@ public abstract partial class VfsMethodsBase
                     await originalImage.stream.CopyToAsync(thumbnailStream, cancellationToken).ConfigureAwait(false);
                     thumbnailStream.Position = 0;
 
-                    var thumbnail = await ImageProcessor.ResizeAsync(
-                        thumbnailStream,
-                        size,
-                        null,
-                        new ImageProcessingOptions { Format = originalFormat, Quality = options.JpegQuality },
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    var thumbnail = await ImageProcessor
+                        .ResizeAsync(
+                            thumbnailStream,
+                            size,
+                            null,
+                            new ImageProcessingOptions { Format = originalFormat, Quality = options.JpegQuality },
+                            cancellationToken
+                        )
+                        .ConfigureAwait(false);
 
                     await thumbnailStream.DisposeAsync().ConfigureAwait(false);
 
@@ -208,21 +232,32 @@ public abstract partial class VfsMethodsBase
                         // Create a copy for upload (FluentStorage may dispose the stream)
                         thumbnail.stream.Position = 0;
                         var thumbnailUploadCopy = new MemoryStream();
-                        await thumbnail.stream.CopyToAsync(thumbnailUploadCopy, cancellationToken).ConfigureAwait(false);
+                        await thumbnail
+                            .stream.CopyToAsync(thumbnailUploadCopy, cancellationToken)
+                            .ConfigureAwait(false);
                         thumbnailUploadCopy.Position = 0;
 
-                        await UploadFileAsync(vfs, thumbnailUploadCopy, thumbnailPath, options.Overwrite, cancellationToken).ConfigureAwait(false);
+                        await UploadFileAsync(
+                                vfs,
+                                thumbnailUploadCopy,
+                                thumbnailPath,
+                                options.Overwrite,
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
                         await thumbnailUploadCopy.DisposeAsync().ConfigureAwait(false);
 
-                        result.Variants.Add(new ImageVariant
-                        {
-                            Path = thumbnailPath,
-                            Format = thumbnail.format,
-                            Width = thumbnail.width,
-                            Height = thumbnail.height,
-                            FileSize = thumbnail.fileSize,
-                            VariantType = $"thumbnail-{size}w",
-                        });
+                        result.Variants.Add(
+                            new ImageVariant
+                            {
+                                Path = thumbnailPath,
+                                Format = thumbnail.format,
+                                Width = thumbnail.width,
+                                Height = thumbnail.height,
+                                FileSize = thumbnail.fileSize,
+                                VariantType = $"thumbnail-{size}w",
+                            }
+                        );
                     }
                     finally
                     {
@@ -282,34 +317,30 @@ public abstract partial class VfsMethodsBase
                 if (options.Width.HasValue || options.Height.HasValue)
                 {
                     // Resize operation
-                    processedImage = await ImageProcessor.ResizeAsync(
-                        sourceStream,
-                        options.Width,
-                        options.Height,
-                        options,
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    processedImage = await ImageProcessor
+                        .ResizeAsync(sourceStream, options.Width, options.Height, options, cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 else if (options.Format.HasValue)
                 {
                     // Format conversion
-                    processedImage = await ImageProcessor.ConvertFormatAsync(
-                        sourceStream,
-                        options.Format.Value,
-                        options.Quality,
-                        cancellationToken
-                    ).ConfigureAwait(false);
+                    processedImage = await ImageProcessor
+                        .ConvertFormatAsync(sourceStream, options.Format.Value, options.Quality, cancellationToken)
+                        .ConfigureAwait(false);
                 }
                 else
                 {
-                    throw new ArgumentException("Either dimensions (Width/Height) or Format must be specified for image processing");
+                    throw new ArgumentException(
+                        "Either dimensions (Width/Height) or Format must be specified for image processing"
+                    );
                 }
 
                 try
                 {
                     // Upload processed image to VFS
                     processedImage.stream.Position = 0; // Reset stream position
-                    await UploadFileAsync(vfs, processedImage.stream, destinationPath, true, cancellationToken).ConfigureAwait(false);
+                    await UploadFileAsync(vfs, processedImage.stream, destinationPath, true, cancellationToken)
+                        .ConfigureAwait(false);
 
                     var processingTime = (DateTime.UtcNow - startTime).TotalMilliseconds;
 

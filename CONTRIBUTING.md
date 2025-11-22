@@ -40,7 +40,7 @@ While we're not actively seeking large code contributions at this time, **your i
 When reporting bugs, please include:
 
 1. **Library version** you're using
-2. **Storage provider** and configuration (S3, Azure Blob, Local, etc.)
+2. **Storage provider** and configuration (S3, GCP, Local, SFTP, etc.)
 3. **Minimal reproduction code** that demonstrates the issue
 4. **Expected vs actual behavior**
 5. **Error messages** or stack traces if applicable
@@ -83,7 +83,7 @@ If you want to explore the codebase:
 
 ```bash
 # Clone the repository
-git clone https://github.com/mjczone/MJCZone.MediaMatic.git
+git clone https://github.com/mjczone/mediamatic.git
 cd MJCZone.MediaMatic
 
 # Build the solution

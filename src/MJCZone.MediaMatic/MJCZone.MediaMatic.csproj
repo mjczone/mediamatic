@@ -3,7 +3,7 @@
     <PackageId>MJCZone.MediaMatic</PackageId>
     <Description>Media and file storage management library with intelligent optimization for images and video</Description>
     <PackageTags>media;files;storage;images;video;s3;azure;optimization;webp;avif;thumbnails;metadata</PackageTags>
-    <RepositoryUrl>https://github.com/mjczone/MJCZone.MediaMatic</RepositoryUrl>
+    <RepositoryUrl>https://github.com/mjczone/mediamatic</RepositoryUrl>
     <PackageProjectUrl>https://mjczone.github.io/mediamatic/</PackageProjectUrl>
   </PropertyGroup>
 
@@ -17,5 +17,13 @@
     <PackageReference Include="FFMpegCore" Version="5.4.0" />
     <PackageReference Include="MetadataExtractor" Version="2.9.0" />
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>MJCZone.MediaMatic.Tests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>MJCZone.MediaMatic.AspNetCore</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 </Project>

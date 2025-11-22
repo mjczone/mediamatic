@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "**Intelligent Media Storage & Optimization Library for .NET**",
   "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
   "scripts": {
     "build": "dotnet build",
+    "docs": "dotnet test tests/MJCZone.MediaMatic.Tests --filter \"Can_generate_docs\" && cd ./docs && npm run docs:dev",
+    "test": "dotnet test",
+    "test:aspnet": "dotnet test tests/MJCZone.MediaMatic.AspNetCore.Tests",
+    "test:core": "dotnet test tests/MJCZone.MediaMatic.Tests",
+    "website": "cd tests/MJCZone.MediaMatic.AspNetCore.TestWebsite && dotnet watch run",
     "format": "dotnet tool install -g csharpier && csharpier format ./src/ && csharpier format ./tests/"
   },
   "keywords": [],

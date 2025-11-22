@@ -13,10 +13,8 @@ namespace MJCZone.MediaMatic.Processors;
 public class MimeTypeDetector : IMimeTypeDetector
 {
     private static readonly Lazy<IContentInspector> Inspector = new(() =>
-        new ContentInspectorBuilder()
-        {
-            Definitions = MimeDetective.Definitions.DefaultDefinitions.All(),
-        }.Build());
+        new ContentInspectorBuilder() { Definitions = MimeDetective.Definitions.DefaultDefinitions.All() }.Build()
+    );
 
     /// <inheritdoc/>
     public async Task<string?> DetectMimeTypeAsync(Stream stream, CancellationToken cancellationToken = default)
@@ -42,7 +40,9 @@ public class MimeTypeDetector : IMimeTypeDetector
             // Read up to 560 bytes for MIME detection (default buffer size for Mime-Detective)
             const int bufferSize = 560;
             var buffer = new byte[bufferSize];
-            var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, bufferSize), cancellationToken).ConfigureAwait(false);
+            var bytesRead = await stream
+                .ReadAsync(buffer.AsMemory(0, bufferSize), cancellationToken)
+                .ConfigureAwait(false);
 
             if (bytesRead == 0)
             {

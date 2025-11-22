@@ -1,0 +1,20 @@
+{
+  "name": "mjczone-mediamatic-docs",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Documentation for MJCZone.MediaMatic",
+  "scripts": {
+    "generate-api": "node scripts/generate-api-docs.js",
+    "generate-openapi": "./scripts/generate-openapi.sh && node scripts/convert-openapi-to-js.js",
+    "docs:dev": "npm install && npm run generate-api && npm run generate-openapi && vitepress dev",
+    "docs:build": "npm install && npm run generate-api && npm run generate-openapi && vitepress build",
+    "docs:preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.18"
+  },
+  "overrides": {
+    "esbuild": ">=0.25.0"
+  }
+}

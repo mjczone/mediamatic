@@ -61,7 +61,7 @@ public interface IMediaMaticFilesourceRepository
     Task<bool> FilesourceExistsAsync(string id);
 
     /// <summary>
-    /// Gets a connection string for internal use by DapperMatic services.
+    /// Gets a connection string for internal use by MediaMatic services.
     /// This method is for internal use only and should not be exposed through APIs.
     /// </summary>
     /// <param name="id">The ID of the filesource.</param>

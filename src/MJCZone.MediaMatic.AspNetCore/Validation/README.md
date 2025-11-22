@@ -1,6 +1,6 @@
 # Validation System
 
-This folder contains the validation infrastructure for DapperMatic AspNetCore. The system provides two distinct validation approaches:
+This folder contains the validation infrastructure for MediaMatic AspNetCore. The system provides two distinct validation approaches:
 
 1. **Object Validation** (`ObjectValidationBuilder<T>`) - For validating objects with flexible exception handling
 2. **Argument Validation** (`ArgumentsValidationBuilder`) - For validating service method arguments with fail-fast behavior

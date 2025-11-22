@@ -1,32 +1,57 @@
-# MediaMatic Documentation
+---
+layout: home
 
-**Intelligent Media Storage & Optimization for .NET**
+hero:
+  name: "MediaMatic"
+  text: "Intelligent Media Storage & Optimization"
+  tagline: A comprehensive .NET library for media storage, optimization, and processing
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /guide/getting-started
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/mjczone/mediamatic
 
-Welcome to the MediaMatic documentation! MediaMatic is a comprehensive file storage and media processing library that integrates 6 best-in-class .NET libraries to provide intelligent image optimization, video processing, and browser-aware format serving.
+features:
+  - icon: 🖼️
+    title: Image Processing
+    details: Resize, convert, and optimize images with SkiaSharp. Support for JPEG, PNG, WebP, AVIF with multiple resize modes and focal point cropping.
+  - icon: 🎬
+    title: Video Processing
+    details: Generate thumbnails, transcode videos, and extract metadata using FFMpegCore. Support for multiple formats and resolutions.
+  - icon: ☁️
+    title: Multi-Provider Storage
+    details: Built on FluentStorage with 10+ storage providers including AWS S3, Google Cloud, MinIO, Backblaze B2, SFTP, and local file system.
+  - icon: 🔍
+    title: Intelligent Metadata
+    details: Auto-detect MIME types with MimeDetective, extract EXIF data with MetadataExtractor, and read audio/video tags with TagLibSharp.
+  - icon: 🌐
+    title: Browser-Aware Serving
+    details: Serve optimal image formats based on browser capabilities using DeviceDetector.NET for intelligent format negotiation.
+  - icon: ⚡
+    title: ASP.NET Core Integration
+    details: Ready-to-use middleware, DI integration, and minimal API endpoints for web applications.
+---
 
-## What is MediaMatic?
+## Why MediaMatic?
 
-MediaMatic builds on [FluentStorage](https://github.com/robinrodricks/FluentStorage) to add:
+MediaMatic integrates **6 best-in-class .NET libraries** into a unified, fluent API:
 
-- **Intelligent Metadata Management** - Auto-detect MIME types, extract EXIF/video metadata
-- **Automatic Image Optimization** - Upload JPEG → auto-generate WebP/AVIF + responsive sizes
-- **Video Processing** - Thumbnail generation, transcoding, format standardization
-- **Browser-Aware Serving** - Serve optimal format based on browser capabilities
-- **Unified API** - One fluent interface instead of learning 6 different libraries
+| Library | Purpose | License |
+|---------|---------|---------|
+| [FluentStorage](https://github.com/robinrodricks/FluentStorage) | Storage abstraction (13+ providers) | MIT |
+| [SkiaSharp](https://github.com/mono/SkiaSharp) | Image processing | MIT |
+| [FFMpegCore](https://github.com/rosenbjerg/FFMpegCore) | Video processing | MIT |
+| [MimeDetective](https://github.com/MediatedCommunications/Mime-Detective) | Content-based MIME detection | MIT |
+| [MetadataExtractor](https://github.com/drewnoakes/metadata-extractor-dotnet) | EXIF/metadata extraction | Apache-2.0 |
+| [DeviceDetector.NET](https://github.com/totpero/DeviceDetector.NET) | Browser/device detection | Apache-2.0 |
 
-## Quick Start
-
-```bash
-# Install core library
-dotnet add package MJCZone.MediaMatic
-
-# Install ASP.NET Core integration (optional)
-dotnet add package MJCZone.MediaMatic.AspNetCore
-```
+## Quick Example
 
 ```csharp
-using MJCZone.MediaMatic;
 using FluentStorage;
+using MJCZone.MediaMatic;
 
 // Create storage provider
 var storage = StorageFactory.Blobs.FromConnectionString(
@@ -43,61 +68,12 @@ var result = await storage.UploadImageAsync(stream, "products/shoe.jpg", options
 });
 ```
 
-## Key Features
-
-### 🖼️ Image Processing
-- Format conversion (JPEG, PNG, WebP, AVIF)
-- Responsive image generation (multiple sizes)
-- Quality optimization
-- EXIF metadata extraction and preservation
-
-### 🎬 Video Processing
-- Thumbnail and poster frame generation
-- Video transcoding and format conversion
-- Resolution scaling
-- Metadata extraction
-
-### 🌐 Browser-Aware Optimization
-- Automatic format negotiation (AVIF/WebP/JPEG)
-- User-Agent detection
-- Accept header parsing
-- Optimal format serving per browser
-
-### ☁️ Multi-Provider Storage
-- AWS S3, Azure Blob, Google Cloud Storage
-- MinIO, DigitalOcean Spaces, Backblaze B2
-- Local file system, SFTP
-- 13 storage providers supported
-
-## Documentation Sections
-
-### Getting Started
-- [Installation & Setup](guide/getting-started.md)
-- [Architecture Overview](guide/architecture.md)
-- [Storage Providers](guide/storage-providers.md)
-
-### Guides
-- [Image Processing](guide/image-processing.md)
-- [Video Processing](guide/video-processing.md)
-- [Metadata Extraction](guide/metadata-extraction.md)
-- [Browser Detection](guide/browser-detection.md)
-- [ASP.NET Core Integration](guide/aspnetcore-integration.md)
-
-### API Reference
-- [Core Library API](api/MJCZone.MediaMatic.md)
-- [ASP.NET Core API](api/MJCZone.MediaMatic.AspNetCore.md)
-
-## Related Libraries
+## Related Projects
 
 MediaMatic is part of the **MJCZone *Matic** family:
 
-- **[DapperMatic](https://github.com/mjczone/MJCZone.DapperMatic)** - Database schema management
-
-## Support
-
-- [GitHub Issues](https://github.com/mjczone/MJCZone.MediaMatic/issues) - Bug reports and feature requests
-- [GitHub Discussions](https://github.com/mjczone/MJCZone.MediaMatic/discussions) - Questions and community chat
+- **[DapperMatic](https://github.com/mjczone/MJCZone.DapperMatic)** - Database schema management for Dapper
 
 ## License
 
-Licensed under [LGPL-3.0-or-later](https://github.com/mjczone/MJCZone.MediaMatic/blob/main/LICENSE)
+Licensed under [LGPL-3.0-or-later](https://github.com/mjczone/mediamatic/blob/main/LICENSE)

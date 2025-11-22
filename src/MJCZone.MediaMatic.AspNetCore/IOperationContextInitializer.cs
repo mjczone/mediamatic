@@ -6,7 +6,7 @@
 using Microsoft.AspNetCore.Http;
 using MJCZone.MediaMatic.AspNetCore;
 
-namespace MJCZone.DapperMatic.AspNetCore;
+namespace MJCZone.MediaMatic.AspNetCore;
 
 /// <summary>
 /// Interface for initializing operation context with HTTP-specific information.

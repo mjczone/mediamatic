@@ -1,4 +1,4 @@
-# Getting Started with MediaMatic
+# Getting Started
 
 This guide will help you get started with MediaMatic in just a few minutes.
 
@@ -60,9 +60,9 @@ var storage = StorageFactory.Blobs.FromConnectionString(
     "aws.s3://keyId=YOUR_KEY;key=YOUR_SECRET;bucket=my-bucket;region=us-east-1"
 );
 
-// Azure Blob Storage
+// Google Cloud Storage
 var storage = StorageFactory.Blobs.FromConnectionString(
-    "azure://accountName=myaccount;accountKey=KEY;container=my-container"
+    "gcs://projectId=my-project;bucket=my-bucket;jsonKeyPath=/path/to/service-account.json"
 );
 
 // Local File System
@@ -172,7 +172,7 @@ builder.Services.AddMediaMatic(options =>
 
     // Register filesources
     options.AddFilesource("default", "aws.s3://...");
-    options.AddFilesource("azure", "azure://...");
+    options.AddFilesource("gcp", "gcs://...");
 });
 
 var app = builder.Build();
@@ -303,10 +303,10 @@ Image/video processing can be CPU-intensive. Consider:
 
 1. **Parallel Processing** - Process multiple files concurrently
 2. **Background Jobs** - Use Hangfire or similar for async processing
-3. **Cloud Functions** - Offload processing to AWS Lambda, Azure Functions
+3. **Cloud Functions** - Offload processing to AWS Lambda, Google Cloud Functions
 
 ## Getting Help
 
-- [GitHub Issues](https://github.com/mjczone/MJCZone.MediaMatic/issues) - Bug reports
-- [GitHub Discussions](https://github.com/mjczone/MJCZone.MediaMatic/discussions) - Questions
+- [GitHub Issues](https://github.com/mjczone/mediamatic/issues) - Bug reports
+- [GitHub Discussions](https://github.com/mjczone/mediamatic/discussions) - Questions
 - [API Reference](../api/MJCZone.MediaMatic.md) - Detailed API documentation
