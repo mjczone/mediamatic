@@ -70,7 +70,7 @@ const dynamicCss = computed(() => `
 const apiConfig = ref({
   content: openApiSpec,
   theme: 'light', // Set to light and override with CSS
-  //layout: 'classic',
+  layout: 'modern',
   showSidebar: true,
   customCss: dynamicCss.value
 })
