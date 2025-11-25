@@ -22,10 +22,10 @@ public class MemoryVfsConnectionFactory : VfsConnectionFactoryBase<MemoryVfsConn
     /// <summary>
     /// Creates a new connection to the Memory virtual file system.
     /// </summary>
-    /// <param name="connectionString">The connection string for the Memory virtual file system. This parameter is ignored.</param>
+    /// <param name="connectionString">The connection string for the Memory virtual file system (e.g., "memory://" or "memory://name=mystore").</param>
     /// <returns>A new instance of the <see cref="IVfsConnection"/> class.</returns>
     public override IVfsConnection CreateConnection(string connectionString)
     {
-        return new MemoryVfsConnection();
+        return new MemoryVfsConnection(connectionString);
     }
 }

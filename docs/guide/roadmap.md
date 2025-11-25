@@ -85,6 +85,56 @@ MediaMatic follows a phased development approach, building functionality increme
 
 ## Future Considerations
 
+### Batch Processing Utility (Planned)
+
+A comprehensive batch processing system for performing operations on multiple files:
+
+**Thumbnail Generation**
+- Automatically generate thumbnails for all images in a folder
+- Generate video thumbnails for all videos
+- Support for recursive folder processing
+- Configurable output paths and naming conventions
+
+**Transformation Application**
+- Apply transformations to all images in a folder
+- Example: Bulk resize, format conversion, quality optimization
+- Support for filtering by file extension or MIME type
+- Parallel processing for improved performance
+
+**Format Conversion**
+- Bulk convert images between formats (JPEG → WebP, PNG → AVIF)
+- Batch video transcoding
+- PDF conversion and thumbnail generation
+- Preserve or strip metadata options
+
+**Implementation Details**
+```
+POST /fs/{filesourceId}/batch/thumbnails/{*folderPath}
+POST /fs/{filesourceId}/batch/transform/{*folderPath}
+POST /fs/{filesourceId}/batch/convert/{*folderPath}
+GET  /fs/{filesourceId}/jobs/{jobId}
+```
+
+**Request Example**:
+```json
+{
+  "transformation": "w_800,h_600,c_fill,q_80,f_webp",
+  "filter": {
+    "extensions": [".jpg", ".png"],
+    "recursive": true
+  },
+  "outputPath": "optimized/",
+  "parallel": 4
+}
+```
+
+**Features**:
+- Background job processing with status tracking
+- Progress reporting (files processed / total files)
+- Error handling and retry logic
+- Configurable parallelism
+- Filtering by file type, size, or date
+
 ### Potential Features
 
 - AVIF format support

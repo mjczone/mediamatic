@@ -1,3 +1,8 @@
+// Copyright 2025 MJCZone Inc.
+// SPDX-License-Identifier: LGPL-3.0-or-later
+// Licensed under the GNU Lesser General Public License v3.0 or later.
+// See LICENSE in the project root for license information.
+
 namespace MJCZone.MediaMatic.AspNetCore;
 
 /// <summary>
@@ -24,4 +29,9 @@ public static class OperationTags
     /// Tag for all MediaMatic Utility-related operations.
     /// </summary>
     public const string FilesourceUtilities = "MediaMatic Utilities";
+
+    /// <summary>
+    /// Tag for all MediaMatic Image Transformation operations.
+    /// </summary>
+    public const string FilesourceTransformations = "MediaMatic Transformations";
 }

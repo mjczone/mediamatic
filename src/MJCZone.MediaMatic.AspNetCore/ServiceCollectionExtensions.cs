@@ -45,7 +45,7 @@ public static class ServiceCollectionExtensions
         }
 
         // Register defaults (do this AFTER the fluent configuration to allow overrides by the user)
-        // services.TryAddSingleton<IFilesourceDbConnectionFactory, FilesourceDbConnectionFactory>();
+        services.TryAddSingleton<IVfsConnectionFactory, VfsConnectionFactory>();
         services.TryAddSingleton<IFilesourceIdFactory, GuidFilesourceIdFactory>();
         services.TryAddSingleton<IMediaMaticPermissions, DefaultMediaMaticPermissions>();
         services.TryAddSingleton<IMediaMaticAuditLogger, DefaultMediaMaticAuditLogger>();

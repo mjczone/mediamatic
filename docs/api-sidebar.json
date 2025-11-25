@@ -88,6 +88,10 @@
               "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.utilities/"
             },
             {
+              "text": "📦 / Transformations",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.transformations/"
+            },
+            {
               "text": "📦 / Services",
               "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.services/"
             },
@@ -98,6 +102,10 @@
             {
               "text": "📦 / Repositories",
               "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.repositories/"
+            },
+            {
+              "text": "📦 / Models",
+              "link": "/api/mjczone.mediamatic.aspnetcore/mjczone.mediamatic.aspnetcore.models/"
             },
             {
               "text": "📦 / Models.Responses",

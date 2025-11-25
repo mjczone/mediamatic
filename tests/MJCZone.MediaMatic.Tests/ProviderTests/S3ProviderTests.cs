@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using FluentAssertions;
+using MJCZone.MediaMatic.Interfaces;
 using MJCZone.MediaMatic.Providers;
 using MJCZone.MediaMatic.Tests.Fixtures;
 
@@ -20,7 +21,7 @@ namespace MJCZone.MediaMatic.Tests.ProviderTests;
 /// Uses shared LocalStack testcontainer via Collection Fixture.
 /// </summary>
 [Collection("S3Provider")]
-public class S3ProviderTests : IAsyncLifetime
+public class S3ProviderTests : VfsProviderTestsBase, IAsyncLifetime
 {
     private readonly LocalStackFixture _localStackFixture;
     private IAmazonS3? _s3Client;
@@ -59,14 +60,22 @@ public class S3ProviderTests : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    [Fact]
-    public async Task UploadFile_Should_Create_File_In_S3_Bucket()
+    protected override Task<IVfsConnection> CreateConnectionAsync()
     {
-        // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(
+        var connection = VfsProviderFactories.CreateConnection(
             VfsProviderType.S3,
             _localStackFixture.S3ConnectionString
         );
+        return Task.FromResult(connection);
+    }
+
+    #region Additional S3-Specific Tests
+
+    [Fact]
+    public async Task UploadFile_Should_Create_File_Verifiable_Via_AWS_SDK()
+    {
+        // Arrange
+        using var vfs = await CreateConnectionAsync();
 
         var testContent = "Hello, MediaMatic S3!";
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(testContent));
@@ -75,144 +84,13 @@ public class S3ProviderTests : IAsyncLifetime
         // Act
         var result = await vfs.UploadFileAsync(stream, testKey);
 
-        // Assert
+        // Assert - Verify via AWS SDK directly
         result.Should().Be(testKey);
-
-        // Verify file exists in S3
         var response = await _s3Client!.GetObjectAsync(LocalStackFixture.TestBucketName, testKey);
         using var reader = new StreamReader(response.ResponseStream);
         var content = await reader.ReadToEndAsync();
         content.Should().Be(testContent);
     }
 
-    [Fact]
-    public async Task DownloadAsync_Should_Return_S3_Object_Content()
-    {
-        // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(
-            VfsProviderType.S3,
-            _localStackFixture.S3ConnectionString
-        );
-
-        var testContent = "S3 download test content";
-        var testKey = $"download-{Guid.NewGuid()}.txt";
-
-        using var uploadStream = new MemoryStream(Encoding.UTF8.GetBytes(testContent));
-        await vfs.UploadFileAsync(uploadStream, testKey);
-
-        // Act
-        using var downloadStream = await vfs.DownloadAsync(testKey);
-        using var reader = new StreamReader(downloadStream);
-        var content = await reader.ReadToEndAsync();
-
-        // Assert
-        content.Should().Be(testContent);
-    }
-
-    [Fact]
-    public async Task ExistsAsync_Should_Return_True_When_Object_Exists()
-    {
-        // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(
-            VfsProviderType.S3,
-            _localStackFixture.S3ConnectionString
-        );
-
-        var testKey = $"exists-{Guid.NewGuid()}.txt";
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes("content"));
-        await vfs.UploadFileAsync(stream, testKey);
-
-        // Act
-        var exists = await vfs.ExistsAsync(testKey);
-
-        // Assert
-        exists.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task ExistsAsync_Should_Return_False_When_Object_Does_Not_Exist()
-    {
-        // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(
-            VfsProviderType.S3,
-            _localStackFixture.S3ConnectionString
-        );
-
-        // Act
-        var exists = await vfs.ExistsAsync($"non-existent-{Guid.NewGuid()}.txt");
-
-        // Assert
-        exists.Should().BeFalse();
-    }
-
-    [Theory]
-    [InlineData("file1.txt", "S3 File 1")]
-    [InlineData("file2.txt", "S3 File 2")]
-    [InlineData("file3.txt", "S3 File 3")]
-    public async Task ListFilesAsync_Should_Include_Uploaded_File(string fileName, string content)
-    {
-        // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(
-            VfsProviderType.S3,
-            _localStackFixture.S3ConnectionString
-        );
-
-        var uniqueFileName = $"{Guid.NewGuid()}-{fileName}";
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-        await vfs.UploadFileAsync(stream, uniqueFileName);
-
-        // Act
-        var files = await vfs.ListFilesAsync();
-
-        // Assert
-        files.Should().Contain(f => f.Contains(uniqueFileName));
-    }
-
-    [Fact]
-    public async Task DeleteAsync_Should_Remove_S3_Object()
-    {
-        // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(
-            VfsProviderType.S3,
-            _localStackFixture.S3ConnectionString
-        );
-
-        var testKey = $"delete-{Guid.NewGuid()}.txt";
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes("content"));
-        await vfs.UploadFileAsync(stream, testKey);
-
-        // Act
-        await vfs.DeleteAsync(testKey);
-
-        // Assert
-        var exists = await vfs.ExistsAsync(testKey);
-        exists.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task DeleteFolderAsync_Should_Remove_All_Objects_With_Prefix()
-    {
-        // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(
-            VfsProviderType.S3,
-            _localStackFixture.S3ConnectionString
-        );
-
-        var folderPrefix = $"folder-{Guid.NewGuid()}";
-
-        using var stream1 = new MemoryStream(Encoding.UTF8.GetBytes("content1"));
-        await vfs.UploadFileAsync(stream1, $"{folderPrefix}/file1.txt");
-
-        using var stream2 = new MemoryStream(Encoding.UTF8.GetBytes("content2"));
-        await vfs.UploadFileAsync(stream2, $"{folderPrefix}/file2.txt");
-
-        // Act
-        await vfs.DeleteFolderAsync(folderPrefix);
-
-        // Assert
-        var exists1 = await vfs.ExistsAsync($"{folderPrefix}/file1.txt");
-        var exists2 = await vfs.ExistsAsync($"{folderPrefix}/file2.txt");
-        exists1.Should().BeFalse();
-        exists2.Should().BeFalse();
-    }
+    #endregion
 }

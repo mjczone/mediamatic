@@ -550,7 +550,12 @@ public abstract partial class VfsMethodsBase : IVfsMethods
             }
             else
             {
-                throw new InvalidOperationException($"Unsupported file type: {mimeType}");
+                // For non-media files, return basic metadata with just MIME type
+                return new MediaMetadata
+                {
+                    MimeType = mimeType ?? "application/octet-stream",
+                    FileName = Path.GetFileName(path),
+                };
             }
         }
         finally

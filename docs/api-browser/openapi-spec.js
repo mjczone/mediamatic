@@ -17,6 +17,714 @@ export default {
     "version": "v1"
   },
   "paths": {
+    "/api/mm/fs/{filesourceId}/fi": {
+      "get": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "List files at root",
+        "description": "Returns a list of all files in the root directory.",
+        "operationId": "ListFiles",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileListResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/fi/{filePath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Download a file",
+        "description": "Downloads the specified file and returns it as a stream.",
+        "operationId": "DownloadFile",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Void"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Upload a file",
+        "description": "Uploads a file to the specified path. Use multipart/form-data or send binary data directly.",
+        "operationId": "UploadFile",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Overwrite a file",
+        "description": "Overwrites an existing file or creates it if it doesn't exist.",
+        "operationId": "OverwriteFile",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Delete a file",
+        "description": "Deletes the specified file.",
+        "operationId": "DeleteFile",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Check if file exists",
+        "description": "Returns 200 if file exists, 404 if not.",
+        "operationId": "FileExists",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/fi": {
+      "get": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "List files at root in a bucket",
+        "description": "Returns a list of all files in the root directory in a bucket.",
+        "operationId": "ListBucketFiles",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileListResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/fi/{filePath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Download a file in a bucket",
+        "description": "Downloads the specified file in a bucket and returns it as a stream.",
+        "operationId": "DownloadBucketFile",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Void"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Upload a file in a bucket",
+        "description": "Uploads a file to the specified path in a bucket. Use multipart/form-data or send binary data directly.",
+        "operationId": "UploadBucketFile",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Overwrite a file in a bucket",
+        "description": "Overwrites an existing file in a bucket or creates it if it doesn't exist.",
+        "operationId": "OverwriteBucketFile",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Delete a file in a bucket",
+        "description": "Deletes the specified file in a bucket.",
+        "operationId": "DeleteBucketFile",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "head": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Check if file exists in a bucket",
+        "description": "Returns 200 if file exists in a bucket, 404 if not.",
+        "operationId": "BucketFileExists",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/metadata/{filePath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Get file metadata",
+        "description": "Returns metadata for the specified file (MIME type, size, dimensions, EXIF, etc.).",
+        "operationId": "GetFileMetadata",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMetadataResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/metadata/{filePath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Files"
+        ],
+        "summary": "Get file metadata from a bucket",
+        "description": "Returns metadata for the specified file in a storage bucket (MIME type, size, dimensions, EXIF, etc.).",
+        "operationId": "GetBucketFileMetadata",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMetadataResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/mm/fs": {
       "get": {
         "tags": [
@@ -317,10 +1025,1400 @@ export default {
           }
         }
       }
+    },
+    "/api/mm/fs/{filesourceId}/fo": {
+      "get": {
+        "tags": [
+          "MediaMatic Folders"
+        ],
+        "summary": "List folders at root",
+        "description": "Returns a list of all folders in the root directory.",
+        "operationId": "ListFolders",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderListResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/fo/{folderPath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Folders"
+        ],
+        "summary": "List contents in a folder",
+        "description": "Returns a list of files or folders in the specified folder.",
+        "operationId": "ListFolderContents",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Content type to list. Valid values: 'files' (default), 'folders'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MediaMatic Folders"
+        ],
+        "summary": "Delete a folder",
+        "description": "Deletes the specified folder and all its contents recursively.",
+        "operationId": "DeleteFolder",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/fo": {
+      "get": {
+        "tags": [
+          "MediaMatic Folders"
+        ],
+        "summary": "List folders at root in a bucket",
+        "description": "Returns a list of all folders in the root directory in a bucket.",
+        "operationId": "ListBucketFolders",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderListResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/fo/{folderPath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Folders"
+        ],
+        "summary": "List contents in a folder in a bucket",
+        "description": "Returns a list of files or folders in the specified folder in a bucket.",
+        "operationId": "ListBucketFolderContents",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Content type to list. Valid values: 'files' (default), 'folders'",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MediaMatic Folders"
+        ],
+        "summary": "Delete a folder in a bucket",
+        "description": "Deletes the specified folder and all its contents recursively in a bucket.",
+        "operationId": "DeleteBucketFolder",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/transform/{transformations}/{filePath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Transformations"
+        ],
+        "summary": "Transform an image using URL parameters",
+        "description": "Apply transformations to an image (resize, crop, format conversion, quality optimization) using URL parameters. Supports parameters like w_400 (width), h_300 (height), c_fill (crop mode), q_80 (quality), f_auto (format), and more. Results are cached for performance.",
+        "operationId": "TransformImage",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transformations",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "image/bmp": {
+                "schema": {
+                  "$ref": "#/components/schemas/Void"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/transform/{transformations}/{filePath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Transformations"
+        ],
+        "summary": "Transform an image from a bucket using URL parameters",
+        "description": "Apply transformations to an image in a storage bucket (S3, Azure, etc.). Same transformation parameters as the root endpoint.",
+        "operationId": "TransformImageFromBucket",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transformations",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "image/bmp": {
+                "schema": {
+                  "$ref": "#/components/schemas/Void"
+                }
+              }
+            }
+          },
+          "304": {
+            "description": "Not Modified"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/archive/fo/{folderPath}": {
+      "post": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Create an archive of a folder",
+        "description": "Creates a compressed archive (zip, tar, tar.gz) of the specified folder. Returns job ID for tracking progress.",
+        "operationId": "CreateFolderArchive",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/archive/fi": {
+      "post": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Create an archive from a list of files",
+        "description": "Creates a compressed archive from a list of specified files and folders. Returns job ID for tracking progress.",
+        "operationId": "CreateFileListArchive",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/archives/fo/{folderPath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "List all archives in a folder",
+        "description": "Returns a list of all archives stored in the __archives subfolder.",
+        "operationId": "ListArchives",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveListResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/archives/{archiveId}": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Download a specific archive",
+        "description": "Downloads the specified archive file.",
+        "operationId": "DownloadArchive",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archiveId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "$ref": "#/components/schemas/Void"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Delete a specific archive",
+        "description": "Deletes the specified archive file.",
+        "operationId": "DeleteArchive",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archiveId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/jobs/{jobId}": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Get archive job status",
+        "description": "Returns the current status of an archive creation job.",
+        "operationId": "GetArchiveJobStatus",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveJobStatus"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archive/fo/{folderPath}": {
+      "post": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Create an archive of a folder in a bucket",
+        "description": "Creates a compressed archive of the specified folder in a storage bucket.",
+        "operationId": "CreateBucketFolderArchive",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archive/fi": {
+      "post": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Create an archive from a list of files in a bucket",
+        "description": "Creates a compressed archive from files and folders in a storage bucket.",
+        "operationId": "CreateBucketFileListArchive",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archives/fo/{folderPath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "List all archives in a bucket folder",
+        "description": "Returns archives stored in the __archives subfolder within a bucket.",
+        "operationId": "ListBucketArchives",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArchiveListResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archives/{archiveId}": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Download a specific archive from a bucket",
+        "description": "Downloads an archive file from a storage bucket.",
+        "operationId": "DownloadBucketArchive",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archiveId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "$ref": "#/components/schemas/Void"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Delete a specific archive from a bucket",
+        "description": "Deletes an archive file from a storage bucket.",
+        "operationId": "DeleteBucketArchive",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "archiveId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/stats/fo/{folderPath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Get folder statistics",
+        "description": "Returns statistics for a folder including total size, file count, folder count, and breakdown by MIME type. Use ?recursive=true to include subdirectories.",
+        "operationId": "GetFolderStats",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderStatsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/stats": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Get filesource statistics",
+        "description": "Returns comprehensive statistics for the entire filesource including total size, file count, top folders by size, and breakdown by MIME type.",
+        "operationId": "GetFilesourceStats",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesourceStatsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/stats/fo/{folderPath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Get folder statistics from a bucket",
+        "description": "Returns statistics for a folder in a storage bucket including total size, file count, and breakdown by MIME type.",
+        "operationId": "GetBucketFolderStats",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FolderStatsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/stats": {
+      "get": {
+        "tags": [
+          "MediaMatic Utilities"
+        ],
+        "summary": "Get bucket statistics",
+        "description": "Returns comprehensive statistics for an entire storage bucket including total size, file count, top folders by size, and breakdown by MIME type.",
+        "operationId": "GetBucketStats",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesourceStatsResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ArchiveInfo": {
+        "type": "object",
+        "properties": {
+          "archiveId": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArchiveJobStatus": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "progress": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "filesProcessed": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalFiles": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "archivePath": {
+            "type": "string",
+            "nullable": true
+          },
+          "archiveSize": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArchiveListResponse": {
+        "type": "object",
+        "properties": {
+          "archives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArchiveInfo"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArchiveRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "paths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "compression": {
+            "type": "string",
+            "nullable": true
+          },
+          "recursive": {
+            "type": "boolean"
+          },
+          "deleteAfter": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArchiveResponse": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "nullable": true
+          },
+          "archiveId": {
+            "type": "string",
+            "nullable": true
+          },
+          "archivePath": {
+            "type": "string",
+            "nullable": true
+          },
+          "downloadUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/ArchiveJobStatus"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileListResponse": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileMetadataResponse": {
+        "type": "object",
+        "properties": {
+          "metadata": {
+            "$ref": "#/components/schemas/MediaMetadata"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileUploadResponse": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "FilesourceConnectivityTestDto": {
         "type": "object",
         "properties": {
@@ -429,6 +2527,67 @@ export default {
         },
         "additionalProperties": false
       },
+      "FilesourceStatsResponse": {
+        "type": "object",
+        "properties": {
+          "filesourceId": {
+            "type": "string",
+            "nullable": true
+          },
+          "bucketName": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalSize": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalSizeFormatted": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "folderCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "oldestFile": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "newestFile": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "byType": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TypeStats"
+            },
+            "nullable": true
+          },
+          "topFolders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FolderSizeInfo"
+            },
+            "nullable": true
+          },
+          "calculatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cached": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "FilesourceTestResponse": {
         "type": "object",
         "properties": {
@@ -436,6 +2595,361 @@ export default {
             "$ref": "#/components/schemas/FilesourceConnectivityTestDto"
           }
         },
+        "additionalProperties": false
+      },
+      "FolderListResponse": {
+        "type": "object",
+        "properties": {
+          "folders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FolderSizeInfo": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sizeFormatted": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileCount": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FolderStatsResponse": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalSize": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalSizeFormatted": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "folderCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "oldestFile": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "newestFile": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "byType": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TypeStats"
+            },
+            "nullable": true
+          },
+          "calculatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cached": {
+            "type": "boolean"
+          },
+          "recursive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "MediaMetadata": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string",
+            "nullable": true
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "mimeType": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modifiedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "provider": {
+            "type": "string",
+            "nullable": true
+          },
+          "customMetadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "colorSpace": {
+            "type": "string",
+            "nullable": true
+          },
+          "orientation": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "bitDepth": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "cameraMake": {
+            "type": "string",
+            "nullable": true
+          },
+          "cameraModel": {
+            "type": "string",
+            "nullable": true
+          },
+          "lensMake": {
+            "type": "string",
+            "nullable": true
+          },
+          "lensModel": {
+            "type": "string",
+            "nullable": true
+          },
+          "software": {
+            "type": "string",
+            "nullable": true
+          },
+          "iso": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "aperture": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "shutterSpeed": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "focalLength": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "focalLengthIn35mm": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "exposureMode": {
+            "type": "string",
+            "nullable": true
+          },
+          "exposureProgram": {
+            "type": "string",
+            "nullable": true
+          },
+          "exposureBias": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "meteringMode": {
+            "type": "string",
+            "nullable": true
+          },
+          "flash": {
+            "type": "string",
+            "nullable": true
+          },
+          "whiteBalance": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "longitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "altitude": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "dateTimeOriginal": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "dateTimeDigitized": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "duration": {
+            "type": "string",
+            "format": "date-span",
+            "nullable": true
+          },
+          "videoCodec": {
+            "type": "string",
+            "nullable": true
+          },
+          "audioCodec": {
+            "type": "string",
+            "nullable": true
+          },
+          "frameRate": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "videoBitrate": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "audioBitrate": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "containerFormat": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalBitrate": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "sampleRate": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "channels": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "artist": {
+            "type": "string",
+            "nullable": true
+          },
+          "album": {
+            "type": "string",
+            "nullable": true
+          },
+          "albumArtist": {
+            "type": "string",
+            "nullable": true
+          },
+          "genre": {
+            "type": "string",
+            "nullable": true
+          },
+          "year": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "trackNumber": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "copyright": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TypeStats": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "sizeFormatted": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Void": {
+        "type": "object",
         "additionalProperties": false
       }
     }
