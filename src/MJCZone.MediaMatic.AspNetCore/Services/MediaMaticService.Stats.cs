@@ -85,8 +85,7 @@ public partial class MediaMaticService
             TopFolders = new List<FolderSizeInfo>(),
         };
 
-        var bucketDisplay =
-            bucketName != null ? $" (bucket '{bucketName}')" : string.Empty;
+        var bucketDisplay = bucketName != null ? $" (bucket '{bucketName}')" : string.Empty;
         await LogAuditEventAsync(context, true, $"Retrieved stats for filesource '{filesourceId}'{bucketDisplay}")
             .ConfigureAwait(false);
 

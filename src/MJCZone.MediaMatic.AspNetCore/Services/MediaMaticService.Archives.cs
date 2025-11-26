@@ -44,7 +44,8 @@ public partial class MediaMaticService
         var response = new ArchiveResponse
         {
             JobId = Guid.NewGuid().ToString(),
-            ArchiveId = $"{folderPath.Replace("/", "_", StringComparison.Ordinal)}_{DateTime.UtcNow:yyyyMMddHHmmss}.zip",
+            ArchiveId =
+                $"{folderPath.Replace("/", "_", StringComparison.Ordinal)}_{DateTime.UtcNow:yyyyMMddHHmmss}.zip",
         };
 
         await LogAuditEventAsync(context, true, $"Created archive for folder '{folderPath}'").ConfigureAwait(false);

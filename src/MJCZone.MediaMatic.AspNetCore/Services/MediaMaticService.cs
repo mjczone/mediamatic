@@ -53,9 +53,7 @@ public partial class MediaMaticService : IMediaMaticService
     {
         if (!await _permissions.IsAuthorizedAsync(context).ConfigureAwait(false))
         {
-            throw new UnauthorizedAccessException(
-                $"User is not authorized to perform operation: {context.Operation}"
-            );
+            throw new UnauthorizedAccessException($"User is not authorized to perform operation: {context.Operation}");
         }
     }
 
@@ -102,9 +100,7 @@ public partial class MediaMaticService : IMediaMaticService
     /// <exception cref="KeyNotFoundException">Thrown when the filesource is not found.</exception>
     protected async Task<IVfsConnection> GetVfsConnectionAsync(string filesourceId)
     {
-        var connectionString = await _filesourceRepository
-            .GetConnectionStringAsync(filesourceId)
-            .ConfigureAwait(false);
+        var connectionString = await _filesourceRepository.GetConnectionStringAsync(filesourceId).ConfigureAwait(false);
 
         if (string.IsNullOrEmpty(connectionString))
         {

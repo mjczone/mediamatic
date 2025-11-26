@@ -36,7 +36,8 @@ public class MemoryVfsConnection : VfsConnectionBase
     /// <summary>
     /// Gets the connection string for the virtual file system.
     /// </summary>
-    public override string ConnectionString => string.IsNullOrEmpty(_instanceName) ? "memory://" : $"memory://name={_instanceName}";
+    public override string ConnectionString =>
+        string.IsNullOrEmpty(_instanceName) ? "memory://" : $"memory://name={_instanceName}";
 
     private static string ParseInstanceName(string connectionString)
     {

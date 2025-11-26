@@ -61,10 +61,7 @@ public class MinioProviderTests : VfsProviderTestsBase, IAsyncLifetime
 
     protected override Task<IVfsConnection> CreateConnectionAsync()
     {
-        var connection = VfsProviderFactories.CreateConnection(
-            VfsProviderType.S3,
-            _minioFixture.S3ConnectionString
-        );
+        var connection = VfsProviderFactories.CreateConnection(VfsProviderType.S3, _minioFixture.S3ConnectionString);
         return Task.FromResult(connection);
     }
 
