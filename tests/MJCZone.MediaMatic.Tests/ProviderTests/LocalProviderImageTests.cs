@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MJCZone.MediaMatic.Models;
-using MJCZone.MediaMatic.Providers;
 using MJCZone.MediaMatic.Tests.TestHelpers;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
@@ -40,7 +39,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
         using var imageStream = TestDataHelper.CreateTestJpeg(800, 600);
 
         // Act
@@ -66,7 +65,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
         using var imageStream = TestDataHelper.CreateTestJpeg(800, 600);
 
         var options = new ImageUploadOptions
@@ -108,7 +107,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
         using var imageStream = TestDataHelper.CreateTestJpeg(1920, 1080);
 
         var options = new ImageUploadOptions
@@ -149,7 +148,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
         using var imageStream = TestDataHelper.CreateTestJpeg(1920, 1080);
 
         var options = new ImageUploadOptions
@@ -173,7 +172,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
         using var imageStream = TestDataHelper.CreateTestPng(640, 480);
 
         // Act
@@ -190,7 +189,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         // Upload original image
         using var uploadStream = TestDataHelper.CreateTestJpeg(1920, 1080);
@@ -223,7 +222,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         // Upload JPEG image
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
@@ -245,7 +244,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
         await vfs.UploadFileAsync(uploadStream, "source.jpg");
@@ -266,7 +265,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
         await vfs.UploadFileAsync(uploadStream, "metadata-test.jpg");
@@ -289,7 +288,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
         using var imageStream = TestDataHelper.CreateTestJpeg(width, height);
 
         // Act
@@ -306,7 +305,7 @@ public class LocalProviderImageTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
         using var imageStream = TestDataHelper.CreateTestJpeg(640, 480); // Small image
 
         var options = new ImageUploadOptions

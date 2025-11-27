@@ -12,6 +12,7 @@ using MJCZone.MediaMatic.AspNetCore.Factories;
 using MJCZone.MediaMatic.AspNetCore.Repositories;
 using MJCZone.MediaMatic.AspNetCore.Security;
 using MJCZone.MediaMatic.AspNetCore.Services;
+using MJCZone.MediaMatic.Processors;
 
 namespace MJCZone.MediaMatic.AspNetCore;
 
@@ -49,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IFilesourceIdFactory, GuidFilesourceIdFactory>();
         services.TryAddSingleton<IMediaMaticPermissions, DefaultMediaMaticPermissions>();
         services.TryAddSingleton<IMediaMaticAuditLogger, DefaultMediaMaticAuditLogger>();
+        services.TryAddSingleton<IImageProcessor, ImageProcessor>();
 
         // Register default in-memory repository if no repository was explicitly configured
         // This ensures that filesources added via configuration or fluent API are captured

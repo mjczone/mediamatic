@@ -4,7 +4,7 @@
     <Description>Media and file storage management library with intelligent optimization for images and video</Description>
     <PackageTags>media;files;storage;images;video;s3;azure;optimization;webp;avif;thumbnails;metadata</PackageTags>
     <RepositoryUrl>https://github.com/mjczone/mediamatic</RepositoryUrl>
-    <PackageProjectUrl>https://mjczone.github.io/mediamatic/</PackageProjectUrl>
+    <PackageProjectUrl>https://mediamatic.mjczone.com/</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

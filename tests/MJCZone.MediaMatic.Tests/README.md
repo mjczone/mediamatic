@@ -2,7 +2,7 @@
 
 ## Overview
 
-This test suite uses **xUnit**, **FluentAssertions**, and **Testcontainers** to provide comprehensive coverage of MediaMatic's file storage and media processing capabilities.
+This test suite uses **xUnit**, **FluentAssertions**, and **Testcontainers** to provide  coverage of MediaMatic's file storage and media processing capabilities.
 
 ## Test Organization
 
@@ -108,7 +108,7 @@ When adding new tests:
 public async Task Operation_Should_Succeed_When_Valid()
 {
     // Arrange
-    var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+    var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
     using var stream = CreateTestStream();
 
     // Act
@@ -123,7 +123,7 @@ public async Task Operation_Should_Succeed_When_Valid()
 public async Task Operation_Should_Throw_When_Invalid()
 {
     // Arrange
-    var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+    var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
     // Act
     var act = async () => await vfs.UploadFileAsync(null!, "test.txt");

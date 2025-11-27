@@ -42,7 +42,7 @@ export default defineConfig({
           ],
         },
         {
-          text: "Media Processing",
+          text: "🖼️ Media Processing",
           collapsed: false,
           items: [
             { text: "Image Processing", link: "/guide/image-processing" },

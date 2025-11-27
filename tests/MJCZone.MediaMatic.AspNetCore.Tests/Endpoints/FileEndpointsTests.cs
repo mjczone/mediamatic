@@ -18,12 +18,15 @@ namespace MJCZone.MediaMatic.AspNetCore.Tests.Endpoints;
 /// </summary>
 public class FileEndpointsTests
 {
-    private static FilesourceDto CreateMemoryFilesource(string id = "test-memory") =>
+    private static FilesourceDto CreateMemoryFilesource(
+        string id = "test-memory",
+        [System.Runtime.CompilerServices.CallerMemberName] string? testName = null
+    ) =>
         new()
         {
             Id = id,
             Provider = "Memory",
-            ConnectionString = "memory://",
+            ConnectionString = $"memory://name=FileEndpointsTests_{testName ?? Guid.NewGuid().ToString()}",
             DisplayName = $"Test Memory Storage {id}",
             IsEnabled = true,
         };

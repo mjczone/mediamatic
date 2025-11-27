@@ -1,6 +1,6 @@
 # Testing
 
-MediaMatic provides comprehensive testing support using Testcontainers for integration tests and in-memory storage for unit tests.
+MediaMatic provides  testing support using Testcontainers for integration tests and in-memory storage for unit tests.
 
 ## Testing Philosophy
 
@@ -108,7 +108,8 @@ public class ImageProcessorTests
 ### Testing with In-Memory Storage
 
 ```csharp
-using FluentStorage;
+using MJCZone.MediaMatic;
+using MJCZone.MediaMatic;
 
 public class StorageTests
 {
@@ -116,15 +117,21 @@ public class StorageTests
     public async Task Should_Upload_And_Download_File()
     {
         // Arrange
-        var storage = StorageFactory.Blobs.InMemory();
+        using var vfs = VfsConnection.Create(
+            VfsProviderType.Memory,
+            "memory://name=test"
+        );
         var content = "Hello, World!"u8.ToArray();
+        using var stream = new MemoryStream(content);
 
         // Act
-        await storage.WriteAsync("test.txt", content);
-        var downloaded = await storage.ReadBytesAsync("test.txt");
+        await vfs.UploadFileAsync(stream, "test.txt");
+        using var downloaded = await vfs.DownloadAsync("test.txt");
+        using var ms = new MemoryStream();
+        await downloaded.CopyToAsync(ms);
 
         // Assert
-        downloaded.Should().BeEquivalentTo(content);
+        ms.ToArray().Should().BeEquivalentTo(content);
     }
 }
 ```
@@ -135,12 +142,14 @@ public class StorageTests
 
 ```csharp
 using Testcontainers.LocalStack;
-using FluentStorage;
+using MJCZone.MediaMatic;
+using MJCZone.MediaMatic;
+using MJCZone.MediaMatic.Interfaces;
 
 public class S3IntegrationTests : IAsyncLifetime
 {
     private LocalStackContainer _localstack = null!;
-    private IBlobStorage _storage = null!;
+    private IVfsConnection _vfs = null!;
 
     public async Task InitializeAsync()
     {
@@ -150,15 +159,17 @@ public class S3IntegrationTests : IAsyncLifetime
 
         await _localstack.StartAsync();
 
-        // Create S3 client
+        // Create VFS connection
         var endpoint = _localstack.GetConnectionString();
-        _storage = StorageFactory.Blobs.FromConnectionString(
-            $"aws.s3://keyId=test;key=test;bucket=test;region=us-east-1;serviceUrl={endpoint}"
+        _vfs = VfsConnection.Create(
+            VfsProviderType.S3,
+            $"s3://keyId=test;key=test;bucket=test;region=us-east-1;serviceUrl={endpoint}"
         );
     }
 
     public async Task DisposeAsync()
     {
+        _vfs?.Dispose();
         await _localstack.DisposeAsync();
     }
 
@@ -169,10 +180,10 @@ public class S3IntegrationTests : IAsyncLifetime
         using var stream = CreateTestImage(800, 600);
 
         // Act
-        await _storage.WriteAsync("images/test.jpg", stream);
+        await _vfs.UploadFileAsync(stream, "images/test.jpg");
 
         // Assert
-        var exists = await _storage.ExistsAsync("images/test.jpg");
+        var exists = await _vfs.ExistsAsync("images/test.jpg");
         exists.Should().BeTrue();
     }
 
@@ -180,16 +191,18 @@ public class S3IntegrationTests : IAsyncLifetime
     public async Task Should_Process_And_Upload_Image()
     {
         // Arrange
-        var processor = new ImageProcessor();
         using var stream = CreateTestImage(1920, 1080);
 
         // Act
-        var result = await processor.ResizeAsync(stream, 640, null);
-        await _storage.WriteAsync("images/resized.webp", result.stream);
+        var result = await _vfs.UploadImageAsync(stream, "images/test.jpg", new ImageUploadOptions
+        {
+            GenerateThumbnails = true,
+            ThumbnailSizes = [320, 640],
+        });
 
         // Assert
-        var downloaded = await _storage.OpenReadAsync("images/resized.webp");
-        downloaded.Should().NotBeNull();
+        result.Success.Should().BeTrue();
+        result.Variants.Should().HaveCount(2);
     }
 }
 ```
@@ -306,23 +319,28 @@ public static class TestDataHelper
 Share expensive resources across tests:
 
 ```csharp
+using MJCZone.MediaMatic.Interfaces;
+using MJCZone.MediaMatic;
+
 public class LocalStackFixture : IAsyncLifetime
 {
     public LocalStackContainer Container { get; private set; } = null!;
-    public IBlobStorage Storage { get; private set; } = null!;
+    public IVfsConnection Vfs { get; private set; } = null!;
 
     public async Task InitializeAsync()
     {
         Container = new LocalStackBuilder().Build();
         await Container.StartAsync();
 
-        Storage = StorageFactory.Blobs.FromConnectionString(
-            $"aws.s3://keyId=test;key=test;bucket=test;region=us-east-1;serviceUrl={Container.GetConnectionString()}"
+        Vfs = VfsConnection.Create(
+            VfsProviderType.S3,
+            $"s3://keyId=test;key=test;bucket=test;region=us-east-1;serviceUrl={Container.GetConnectionString()}"
         );
     }
 
     public async Task DisposeAsync()
     {
+        Vfs?.Dispose();
         await Container.DisposeAsync();
     }
 }

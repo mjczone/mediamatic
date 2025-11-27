@@ -518,8 +518,19 @@ public abstract partial class VfsMethodsBase : IVfsMethods
 
             if (mimeType?.StartsWith("image/", StringComparison.OrdinalIgnoreCase) == true)
             {
+                // Reset stream position for metadata extraction
+                if (stream.CanSeek)
+                {
+                    stream.Position = 0;
+                }
+
                 // Extract image metadata from stream
-                return await MetadataReader.ExtractImageMetadataAsync(stream, cancellationToken).ConfigureAwait(false);
+                var metadata = await MetadataReader
+                    .ExtractImageMetadataAsync(stream, cancellationToken)
+                    .ConfigureAwait(false);
+                metadata.MimeType = mimeType;
+                metadata.FileName = Path.GetFileName(path);
+                return metadata;
             }
             else if (mimeType?.StartsWith("video/", StringComparison.OrdinalIgnoreCase) == true)
             {
@@ -535,9 +546,11 @@ public abstract partial class VfsMethodsBase : IVfsMethods
                     }
 
                     // Extract video metadata
-                    return await MetadataReader
+                    var videoMetadata = await MetadataReader
                         .ExtractVideoMetadataAsync(tempFile, cancellationToken)
                         .ConfigureAwait(false);
+                    videoMetadata.MimeType = mimeType;
+                    return videoMetadata;
                 }
                 finally
                 {
@@ -551,10 +564,18 @@ public abstract partial class VfsMethodsBase : IVfsMethods
             else
             {
                 // For non-media files, return basic metadata with just MIME type
+                // Try to get file size from stream if possible
+                long size = 0;
+                if (stream.CanSeek)
+                {
+                    size = stream.Length;
+                }
+
                 return new MediaMetadata
                 {
                     MimeType = mimeType ?? "application/octet-stream",
                     FileName = Path.GetFileName(path),
+                    Size = size,
                 };
             }
         }

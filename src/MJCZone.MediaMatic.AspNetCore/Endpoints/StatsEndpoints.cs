@@ -62,7 +62,7 @@ public static class StatsEndpoints
             .WithName("GetFilesourceStats")
             .WithSummary("Get filesource statistics")
             .WithDescription(
-                "Returns comprehensive statistics for the entire filesource including total size, file count, "
+                "Returns  statistics for the entire filesource including total size, file count, "
                     + "top folders by size, and breakdown by MIME type."
             )
             .Produces<FilesourceStatsResponse>((int)HttpStatusCode.OK)
@@ -107,7 +107,7 @@ public static class StatsEndpoints
             .WithName("GetBucketStats")
             .WithSummary("Get bucket statistics")
             .WithDescription(
-                "Returns comprehensive statistics for an entire storage bucket including total size, file count, "
+                "Returns  statistics for an entire storage bucket including total size, file count, "
                     + "top folders by size, and breakdown by MIME type."
             )
             .Produces<FilesourceStatsResponse>((int)HttpStatusCode.OK)

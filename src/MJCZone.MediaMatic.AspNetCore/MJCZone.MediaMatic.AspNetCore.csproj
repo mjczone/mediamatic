@@ -7,7 +7,7 @@
     <PackageTags>aspnetcore;media;files;storage;webp;avif;api;middleware</PackageTags>
     <RepositoryUrl>https://github.com/mjczone/mediamatic</RepositoryUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <PackageProjectUrl>https://mjczone.github.io/mediamatic/</PackageProjectUrl>
+    <PackageProjectUrl>https://mediamatic.mjczone.com/</PackageProjectUrl>
     <DisableImplicitAspNetCoreAnalyzers>true</DisableImplicitAspNetCoreAnalyzers>
     <NoWarn>AD0001</NoWarn>
   </PropertyGroup>

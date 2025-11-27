@@ -8,7 +8,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MJCZone.MediaMatic.Providers;
 using MJCZone.MediaMatic.Tests.Fixtures;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
@@ -34,7 +33,7 @@ public class SftpProviderTests
     public async Task UploadFile_Should_Create_File_On_SFTP_Server()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         var testContent = "Hello, MediaMatic SFTP!";
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(testContent));
@@ -55,7 +54,7 @@ public class SftpProviderTests
     public async Task DownloadAsync_Should_Return_SFTP_File_Content()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         var testContent = "SFTP download test content";
         var testFileName = $"upload/download-{Guid.NewGuid()}.txt";
@@ -76,7 +75,7 @@ public class SftpProviderTests
     public async Task ExistsAsync_Should_Return_True_When_File_Exists()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         var testFileName = $"upload/exists-{Guid.NewGuid()}.txt";
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes("content"));
@@ -93,7 +92,7 @@ public class SftpProviderTests
     public async Task ExistsAsync_Should_Return_False_When_File_Does_Not_Exist()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         // Act
         var exists = await vfs.ExistsAsync($"upload/non-existent-{Guid.NewGuid()}.txt");
@@ -109,7 +108,7 @@ public class SftpProviderTests
     public async Task Multiple_Files_Can_Be_Stored_And_Retrieved(string fileName, string content)
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         var uniqueFileName = $"upload/{Guid.NewGuid()}-{fileName}";
 
@@ -129,7 +128,7 @@ public class SftpProviderTests
     public async Task ListFilesAsync_Should_Include_Uploaded_Files()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         var fileName1 = $"/upload/list-{Guid.NewGuid()}-1.txt";
         var fileName2 = $"/upload/list-{Guid.NewGuid()}-2.txt";
@@ -152,7 +151,7 @@ public class SftpProviderTests
     public async Task DeleteAsync_Should_Remove_SFTP_File()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         var testFileName = $"upload/delete-{Guid.NewGuid()}.txt";
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes("content"));
@@ -170,7 +169,7 @@ public class SftpProviderTests
     public async Task Files_In_Subdirectories_Should_Work()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         var testContent = "Nested SFTP content";
         var nestedPath = $"upload/folder-{Guid.NewGuid()}/subfolder/nested.txt";
@@ -194,7 +193,7 @@ public class SftpProviderTests
     public async Task DeleteFolderAsync_Should_Remove_All_Files_In_Folder()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.SFTP, _sftpFixture.SftpConnectionString);
 
         var folderName = $"upload/deletefolder-{Guid.NewGuid()}";
 

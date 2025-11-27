@@ -2094,7 +2094,7 @@ export default {
           "MediaMatic Utilities"
         ],
         "summary": "Get filesource statistics",
-        "description": "Returns comprehensive statistics for the entire filesource including total size, file count, top folders by size, and breakdown by MIME type.",
+        "description": "Returns statistics for the entire filesource including total size, file count, top folders by size, and breakdown by MIME type.",
         "operationId": "GetFilesourceStats",
         "parameters": [
           {
@@ -2194,7 +2194,7 @@ export default {
           "MediaMatic Utilities"
         ],
         "summary": "Get bucket statistics",
-        "description": "Returns comprehensive statistics for an entire storage bucket including total size, file count, top folders by size, and breakdown by MIME type.",
+        "description": "Returns  statistics for an entire storage bucket including total size, file count, top folders by size, and breakdown by MIME type.",
         "operationId": "GetBucketStats",
         "parameters": [
           {

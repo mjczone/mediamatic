@@ -9,7 +9,6 @@ using System.IO.Compression;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using MJCZone.MediaMatic.Providers;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
 
@@ -41,7 +40,7 @@ public class ZipFileProviderTests : IDisposable
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
 
         var testContent = "Hello, ZipFile Storage!";
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(testContent));
@@ -75,7 +74,7 @@ public class ZipFileProviderTests : IDisposable
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
 
         var testContent = "ZipFile download test";
         using var uploadStream = new MemoryStream(Encoding.UTF8.GetBytes(testContent));
@@ -95,7 +94,7 @@ public class ZipFileProviderTests : IDisposable
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes("content"));
         await vfs.UploadFileAsync(stream, "exists-test.txt");
@@ -112,7 +111,7 @@ public class ZipFileProviderTests : IDisposable
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
 
         // Act
         var exists = await vfs.ExistsAsync("non-existent.txt");
@@ -129,7 +128,7 @@ public class ZipFileProviderTests : IDisposable
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
 
         // Act
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
@@ -148,7 +147,7 @@ public class ZipFileProviderTests : IDisposable
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
 
         // Upload multiple files
         using var stream1 = new MemoryStream(Encoding.UTF8.GetBytes("content1"));
@@ -170,7 +169,7 @@ public class ZipFileProviderTests : IDisposable
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
 
         var testContent = "Nested content";
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(testContent));
@@ -193,7 +192,7 @@ public class ZipFileProviderTests : IDisposable
     {
         // Arrange
         var connectionString = $"zip://path={_testZipPath}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
 
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes("content"));
         await vfs.UploadFileAsync(stream, "delete-test.txt");

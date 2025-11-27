@@ -97,7 +97,7 @@ dotnet test
 
 - **GitHub Issues** - For bugs, features, and questions
 - **GitHub Discussions** - For general questions and community chat
-- **Documentation** - Check [our docs](https://mjczone.github.io/mediamatic/) first
+- **Documentation** - Check [our docs](https://mediamatic.mjczone.com/) first
 
 ## 🤝 Code of Conduct
 

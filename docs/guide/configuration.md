@@ -204,8 +204,11 @@ builder.Services.Configure<MediaMaticOptions>(
 ### AWS S3
 
 ```csharp
-var storage = StorageFactory.Blobs.FromConnectionString(
-    "aws.s3://keyId=AKIAIOSFODNN7EXAMPLE;key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY;bucket=my-bucket;region=us-east-1"
+using MJCZone.MediaMatic;
+
+using var vfs = VfsConnection.Create(
+    VfsProviderType.S3,
+    "s3://keyId=AKIAIOSFODNN7EXAMPLE;key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY;bucket=my-bucket;region=us-east-1"
 );
 ```
 
@@ -219,7 +222,10 @@ AWS_DEFAULT_REGION=us-east-1
 ### Local File System
 
 ```csharp
-var storage = StorageFactory.Blobs.DirectoryFiles("/var/media");
+using var vfs = VfsConnection.Create(
+    VfsProviderType.Local,
+    "/var/media"
+);
 ```
 
 See [Storage Providers](storage-providers.md) for detailed configuration of all providers.

@@ -84,11 +84,30 @@ public partial class MediaMaticService
         // Download the file
         var sourceStream = await connection.DownloadAsync(fullPath, cancellationToken).ConfigureAwait(false);
 
-        // TODO: Process the image with options (needs ImageProcessor implementation)
-        // For now, return the original stream
+        // Process the image with options
+        var hasResize = options.Width.HasValue || options.Height.HasValue;
+        var hasFormatConversion = options.Format.HasValue;
+
+        Stream resultStream = sourceStream;
+
+        if (hasResize)
+        {
+            var processedImage = await _imageProcessor
+                .ResizeAsync(sourceStream, options.Width, options.Height, options, cancellationToken)
+                .ConfigureAwait(false);
+            resultStream = processedImage.stream;
+        }
+        else if (hasFormatConversion)
+        {
+            var processedImage = await _imageProcessor
+                .ConvertFormatAsync(sourceStream, options.Format!.Value, options.Quality, cancellationToken)
+                .ConfigureAwait(false);
+            resultStream = processedImage.stream;
+        }
+
         await LogAuditEventAsync(context, true, $"Transformed image '{filePath}'").ConfigureAwait(false);
 
-        return sourceStream;
+        return resultStream;
     }
 
     /// <inheritdoc />

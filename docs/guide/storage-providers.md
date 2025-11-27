@@ -1,36 +1,40 @@
 # Storage Providers
 
-MediaMatic uses [FluentStorage](https://github.com/robinrodricks/FluentStorage) for storage abstraction, providing access to 13+ storage providers with a unified API.
+MediaMatic provides a Virtual File System (VFS) abstraction supporting multiple storage providers with a unified API.
 
 ## Supported Providers
 
-| Provider | Package | Connection String Prefix |
-|----------|---------|--------------------------|
-| AWS S3 | `FluentStorage.AWS` | `aws.s3://` |
-| Google Cloud | `FluentStorage.GCP` | `gcs://` |
-| MinIO | `FluentStorage.AWS` | `aws.s3://` |
-| DigitalOcean Spaces | `FluentStorage.AWS` | `aws.s3://` |
-| Backblaze B2 | `FluentStorage.AWS` | `aws.s3://` |
-| Local File System | (built-in) | N/A |
-| In-Memory | (built-in) | N/A |
-| SFTP | `FluentStorage.SFTP` | `sftp://` |
-| Zip File | (built-in) | N/A |
+| Provider | VfsProviderType | Connection String Prefix |
+|----------|-----------------|--------------------------|
+| AWS S3 | `S3` | `s3://` |
+| Google Cloud Storage | `GCP` | `gcp://` |
+| MinIO | `Minio` | `minio://` |
+| Backblaze B2 | `B2` | `b2://` |
+| Local File System | `Local` | (path) |
+| In-Memory | `Memory` | `memory://` |
+| SFTP | `SFTP` | `sftp://` |
+| Zip File | `ZipFile` | (path to .zip) |
+
+## Creating Connections
+
+Use `VfsConnection.Create()` to create connections:
+
+```csharp
+using MJCZone.MediaMatic;
+
+// Create a connection
+using var vfs = VfsConnection.Create(
+    VfsProviderType.S3,
+    "s3://keyId=...;key=...;bucket=my-bucket;region=us-east-1"
+);
+```
 
 ## AWS S3
 
-### Installation
-
-```bash
-dotnet add package FluentStorage.AWS
-```
-
-### Configuration
-
 ```csharp
-using FluentStorage;
-
-var storage = StorageFactory.Blobs.FromConnectionString(
-    "aws.s3://keyId=AKIAIOSFODNN7EXAMPLE;key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY;bucket=my-bucket;region=us-east-1"
+using var s3 = VfsConnection.Create(
+    VfsProviderType.S3,
+    "s3://keyId=AKIAIOSFODNN7EXAMPLE;key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY;bucket=my-bucket;region=us-east-1"
 );
 ```
 
@@ -45,27 +49,21 @@ var storage = StorageFactory.Blobs.FromConnectionString(
 
 ### Using IAM Roles
 
-For EC2/ECS with IAM roles, omit credentials:
+For EC2/ECS with IAM roles, credentials can be omitted if the environment is configured:
 
 ```csharp
-var storage = StorageFactory.Blobs.FromConnectionString(
-    "aws.s3://bucket=my-bucket;region=us-east-1"
+using var s3 = VfsConnection.Create(
+    VfsProviderType.S3,
+    "s3://bucket=my-bucket;region=us-east-1"
 );
 ```
 
 ## Google Cloud Storage
 
-### Installation
-
-```bash
-dotnet add package FluentStorage.GCP
-```
-
-### Configuration
-
 ```csharp
-var storage = StorageFactory.Blobs.FromConnectionString(
-    "gcs://projectId=my-project;bucket=my-bucket;jsonKeyPath=/path/to/service-account.json"
+using var gcp = VfsConnection.Create(
+    VfsProviderType.GCP,
+    "gcp://projectId=my-project;bucket=my-bucket;jsonKeyPath=/path/to/service-account.json"
 );
 ```
 
@@ -79,14 +77,18 @@ var storage = StorageFactory.Blobs.FromConnectionString(
 
 ## Local File System
 
-No additional packages required.
-
 ```csharp
 // Absolute path
-var storage = StorageFactory.Blobs.DirectoryFiles("/var/media");
+using var local = VfsConnection.Create(
+    VfsProviderType.Local,
+    "/var/media"
+);
 
 // Relative path
-var storage = StorageFactory.Blobs.DirectoryFiles("./uploads");
+using var local = VfsConnection.Create(
+    VfsProviderType.Local,
+    "./uploads"
+);
 ```
 
 ::: warning
@@ -95,63 +97,61 @@ Ensure the application has read/write permissions to the directory.
 
 ## In-Memory Storage
 
-No additional packages required. Useful for testing.
+Useful for testing. Data persists only during application lifetime.
 
 ```csharp
-var storage = StorageFactory.Blobs.InMemory();
+// Default instance
+using var memory = VfsConnection.Create(
+    VfsProviderType.Memory,
+    "memory://"
+);
+
+// Named instance (useful for test isolation)
+using var memory = VfsConnection.Create(
+    VfsProviderType.Memory,
+    "memory://name=test-instance"
+);
 ```
 
 ::: tip
-In-memory storage is perfect for unit tests as it doesn't require any external services.
+Named instances share storage across connections with the same name. Use unique names for test isolation.
 :::
 
 ## MinIO
 
-MinIO is S3-compatible, so use the AWS package with a custom endpoint:
+MinIO is an S3-compatible object storage server:
 
 ```csharp
-using Amazon.S3;
-using FluentStorage;
-
-var config = new AmazonS3Config
-{
-    ServiceURL = "http://localhost:9000",
-    ForcePathStyle = true,
-};
-
-var client = new AmazonS3Client("minioadmin", "minioadmin", config);
-var storage = StorageFactory.Blobs.FromAwsS3(client, "my-bucket");
+using var minio = VfsConnection.Create(
+    VfsProviderType.Minio,
+    "minio://endpoint=localhost:9000;accessKey=minioadmin;secretKey=minioadmin;bucket=my-bucket"
+);
 ```
 
-## DigitalOcean Spaces
+### Connection String Parameters
 
-DigitalOcean Spaces is S3-compatible:
+| Parameter | Description | Required |
+|-----------|-------------|----------|
+| `endpoint` | MinIO server endpoint | Yes |
+| `accessKey` | Access key | Yes |
+| `secretKey` | Secret key | Yes |
+| `bucket` | Bucket name | Yes |
+| `secure` | Use HTTPS (default: false) | No |
+
+## Backblaze B2
 
 ```csharp
-using Amazon.S3;
-using FluentStorage;
-
-var config = new AmazonS3Config
-{
-    ServiceURL = "https://nyc3.digitaloceanspaces.com",
-};
-
-var client = new AmazonS3Client("DO_ACCESS_KEY", "DO_SECRET_KEY", config);
-var storage = StorageFactory.Blobs.FromAwsS3(client, "my-space");
+using var b2 = VfsConnection.Create(
+    VfsProviderType.B2,
+    "b2://keyId=...;applicationKey=...;bucketId=..."
+);
 ```
 
 ## SFTP
 
-### Installation
-
-```bash
-dotnet add package FluentStorage.SFTP
-```
-
-### Configuration
-
 ```csharp
-var storage = StorageFactory.Blobs.FromConnectionString(
+using var sftp = VfsConnection.Create(
+    VfsProviderType.SFTP,
     "sftp://host=sftp.example.com;port=22;username=user;password=pass;path=/uploads"
 );
 ```
@@ -166,64 +166,96 @@ var storage = StorageFactory.Blobs.FromConnectionString(
 | `password` | Password | Yes* |
 | `path` | Base path on server | No |
 
-## Provider Operations
+## VFS Operations
 
-All providers support the same operations:
+All providers support the same operations via extension methods:
 
-### Write Files
+### Upload Files
 
 ```csharp
-// From stream
-await storage.WriteAsync("path/to/file.jpg", stream);
+using MJCZone.MediaMatic;
 
-// From bytes
-await storage.WriteAsync("path/to/file.jpg", bytes);
+// Upload a file
+using var stream = File.OpenRead("photo.jpg");
+await vfs.UploadFileAsync(stream, "images/photo.jpg");
 
-// From text
-await storage.WriteTextAsync("path/to/file.txt", "content");
+// Upload with overwrite
+await vfs.UploadFileAsync(stream, "images/photo.jpg", overwrite: true);
+
+// Upload an image with processing
+var result = await vfs.UploadImageAsync(stream, "images/photo.jpg", new ImageUploadOptions
+{
+    GenerateThumbnails = true,
+    ThumbnailSizes = [320, 640, 1024],
+    GenerateFormats = true,
+    Formats = [ImageFormat.WebP],
+});
 ```
 
-### Read Files
+### Download Files
 
 ```csharp
-// To stream
-using var stream = await storage.OpenReadAsync("path/to/file.jpg");
+// Download to stream
+using var stream = await vfs.DownloadAsync("images/photo.jpg");
 
-// To bytes
-var bytes = await storage.ReadBytesAsync("path/to/file.jpg");
-
-// To text
-var text = await storage.ReadTextAsync("path/to/file.txt");
+// Copy to file
+using var fileStream = File.Create("downloaded.jpg");
+await stream.CopyToAsync(fileStream);
 ```
 
-### List Files
+### List Files and Folders
 
 ```csharp
-// List all files
-var files = await storage.ListAsync();
+// List files in a folder
+var files = await vfs.ListFilesAsync("images/");
 
-// List files with prefix
-var images = await storage.ListAsync("images/");
-
-// Recursive listing
-var all = await storage.ListAsync(recurse: true);
+// List folders
+var folders = await vfs.ListFoldersAsync("images/");
 ```
 
-### Delete Files
+### Delete Files and Folders
 
 ```csharp
-await storage.DeleteAsync("path/to/file.jpg");
+// Delete a file
+await vfs.DeleteAsync("images/photo.jpg");
+
+// Delete a folder and all contents
+await vfs.DeleteFolderAsync("images/gallery/");
 ```
 
 ### Check Existence
 
 ```csharp
-var exists = await storage.ExistsAsync("path/to/file.jpg");
+var exists = await vfs.ExistsAsync("images/photo.jpg");
+```
+
+### Get Metadata
+
+```csharp
+var metadata = await vfs.GetMetadataAsync("images/photo.jpg");
+Console.WriteLine($"MIME Type: {metadata.MimeType}");
+Console.WriteLine($"Dimensions: {metadata.Width}x{metadata.Height}");
+```
+
+### Process Images
+
+```csharp
+// Resize an image
+var result = await vfs.ProcessImageAsync(
+    "images/photo.jpg",
+    "images/photo_thumb.jpg",
+    new ImageProcessingOptions
+    {
+        Width = 300,
+        Format = ImageFormat.WebP,
+        Quality = 80,
+    }
+);
 ```
 
 ## Testing with Testcontainers
 
-MediaMatic uses Testcontainers for integration testing:
+MediaMatic includes test fixtures for Testcontainers:
 
 ### LocalStack (S3)
 
@@ -234,8 +266,24 @@ await using var localstack = new LocalStackBuilder()
 
 await localstack.StartAsync();
 
-var storage = StorageFactory.Blobs.FromConnectionString(
-    $"aws.s3://keyId=test;key=test;bucket=test;region=us-east-1;serviceUrl={localstack.GetConnectionString()}"
+using var s3 = VfsConnection.Create(
+    VfsProviderType.S3,
+    $"s3://keyId=test;key=test;bucket=test;region=us-east-1;serviceUrl={localstack.GetConnectionString()}"
+);
+```
+
+### MinIO Container
+
+```csharp
+await using var minio = new MinioBuilder()
+    .WithImage("minio/minio:latest")
+    .Build();
+
+await minio.StartAsync();
+
+using var vfs = VfsConnection.Create(
+    VfsProviderType.Minio,
+    $"minio://endpoint={minio.GetConnectionString()};accessKey=minioadmin;secretKey=minioadmin;bucket=test"
 );
 ```
 
@@ -244,28 +292,34 @@ var storage = StorageFactory.Blobs.FromConnectionString(
 ### Environment-Based Configuration
 
 ```csharp
-var connectionString = builder.Configuration.GetConnectionString("MediaStorage");
-var storage = StorageFactory.Blobs.FromConnectionString(connectionString);
+var provider = Enum.Parse<VfsProviderType>(
+    builder.Configuration["Storage:Provider"] ?? "Local"
+);
+var connectionString = builder.Configuration["Storage:ConnectionString"]!;
+
+using var vfs = VfsConnection.Create(provider, connectionString);
 ```
 
 ```json
 {
-  "ConnectionStrings": {
-    "MediaStorage": "aws.s3://keyId=...;key=...;bucket=...;region=..."
+  "Storage": {
+    "Provider": "S3",
+    "ConnectionString": "s3://keyId=...;key=...;bucket=...;region=..."
   }
 }
 ```
 
-### Dependency Injection
+### ASP.NET Core Integration
+
+For web applications, use the MediaMatic ASP.NET Core package with filesources:
 
 ```csharp
-builder.Services.AddSingleton<IBlobStorage>(sp =>
+builder.Services.AddMediaMatic(options =>
 {
-    var config = sp.GetRequiredService<IConfiguration>();
-    return StorageFactory.Blobs.FromConnectionString(
-        config.GetConnectionString("MediaStorage")
-    );
+    options.UseInMemoryFilesourceRepository();
 });
+
+// Configure filesources via REST API or programmatically
 ```
 
 ### Error Handling
@@ -273,12 +327,15 @@ builder.Services.AddSingleton<IBlobStorage>(sp =>
 ```csharp
 try
 {
-    await storage.WriteAsync(path, stream);
+    await vfs.UploadFileAsync(stream, path);
 }
-catch (StorageException ex)
+catch (InvalidOperationException ex) when (ex.Message.Contains("already exists"))
 {
-    logger.LogError(ex, "Failed to upload to {Path}", path);
-    throw;
+    logger.LogWarning("File already exists at {Path}", path);
+}
+catch (KeyNotFoundException ex)
+{
+    logger.LogError("File not found: {Path}", path);
 }
 ```
 
@@ -286,4 +343,5 @@ catch (StorageException ex)
 
 - [Image Processing](image-processing.md) - Process images with SkiaSharp
 - [Video Processing](video-processing.md) - Process videos with FFMpegCore
+- [ASP.NET Core Integration](aspnetcore-integration.md) - Web application integration
 - [Testing](testing.md) - Test with Testcontainers

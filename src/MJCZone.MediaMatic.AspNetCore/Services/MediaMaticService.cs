@@ -7,6 +7,7 @@ using MJCZone.MediaMatic.AspNetCore.Auditing;
 using MJCZone.MediaMatic.AspNetCore.Repositories;
 using MJCZone.MediaMatic.AspNetCore.Security;
 using MJCZone.MediaMatic.Interfaces;
+using MJCZone.MediaMatic.Processors;
 using IVfsConnectionFactory = MJCZone.MediaMatic.AspNetCore.Factories.IVfsConnectionFactory;
 
 namespace MJCZone.MediaMatic.AspNetCore.Services;
@@ -20,6 +21,7 @@ public partial class MediaMaticService : IMediaMaticService
     private readonly IVfsConnectionFactory _vfsConnectionFactory;
     private readonly IMediaMaticPermissions _permissions;
     private readonly IMediaMaticAuditLogger _auditLogger;
+    private readonly IImageProcessor _imageProcessor;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MediaMaticService"/> class.
@@ -28,17 +30,20 @@ public partial class MediaMaticService : IMediaMaticService
     /// <param name="vfsConnectionFactory">The VFS connection factory.</param>
     /// <param name="permissions">The permissions manager.</param>
     /// <param name="auditLogger">The audit logger.</param>
+    /// <param name="imageProcessor">The image processor.</param>
     public MediaMaticService(
         IMediaMaticFilesourceRepository filesourceRepository,
         IVfsConnectionFactory vfsConnectionFactory,
         IMediaMaticPermissions permissions,
-        IMediaMaticAuditLogger auditLogger
+        IMediaMaticAuditLogger auditLogger,
+        IImageProcessor imageProcessor
     )
     {
         _filesourceRepository = filesourceRepository;
         _vfsConnectionFactory = vfsConnectionFactory;
         _permissions = permissions;
         _auditLogger = auditLogger;
+        _imageProcessor = imageProcessor;
     }
 
     #region Shared Protected Methods

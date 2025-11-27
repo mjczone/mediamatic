@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MJCZone.MediaMatic.Models;
-using MJCZone.MediaMatic.Providers;
 using MJCZone.MediaMatic.Tests.TestHelpers;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
@@ -43,7 +42,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -73,7 +72,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 3);
@@ -110,7 +109,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 4);
@@ -131,7 +130,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 3);
@@ -159,7 +158,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 2, 30);
@@ -184,7 +183,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -209,7 +208,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         // Upload video first without thumbnails
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
@@ -243,7 +242,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 2);
@@ -267,7 +266,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -295,7 +294,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -324,7 +323,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 2);
@@ -349,7 +348,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -374,7 +373,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source-with-audio.mp4");
         await TestDataHelper.CreateTestVideoWithAudioAsync(sourceVideoPath, 320, 240, 2);
@@ -401,7 +400,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -428,7 +427,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2, 30);
@@ -452,7 +451,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -483,7 +482,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 3, 25);
@@ -511,7 +510,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source-audio.mp4");
         await TestDataHelper.CreateTestVideoWithAudioAsync(sourceVideoPath, 320, 240, 2);
@@ -540,7 +539,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, $"source-{format}.{format}");
         await TestDataHelper.CreateTestVideoAsync(sourceVideoPath, 320, 240, 2, 30, format);
@@ -564,7 +563,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, $"source-{durationSeconds}s.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, durationSeconds);
@@ -588,7 +587,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, $"source-preset-{preset}.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -616,7 +615,7 @@ public class LocalProviderVideoTests : IDisposable
     {
         // Arrange
         var connectionString = $"local://path={_tempDirectory}";
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        using var vfs = VfsConnection.Create(VfsProviderType.Local, connectionString);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 3);

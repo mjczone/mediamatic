@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MJCZone.MediaMatic.Interfaces;
-using MJCZone.MediaMatic.Providers;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
 
@@ -40,7 +39,7 @@ public class LocalProviderTests : VfsProviderTestsBase, IDisposable
     protected override Task<IVfsConnection> CreateConnectionAsync()
     {
         var connectionString = $"local://path={_tempDirectory}";
-        var connection = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+        var connection = VfsConnection.Create(VfsProviderType.Local, connectionString);
         return Task.FromResult(connection);
     }
 

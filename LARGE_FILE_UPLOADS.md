@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document contains comprehensive research on implementing large file upload support for MediaMatic, including analysis of the TUS protocol vs custom implementation approaches.
+This document contains  research on implementing large file upload support for MediaMatic, including analysis of the TUS protocol vs custom implementation approaches.
 
 **Recommendation:** Implement a **custom chunked upload solution** rather than adopting the TUS protocol.
 

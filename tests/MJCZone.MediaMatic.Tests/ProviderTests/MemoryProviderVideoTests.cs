@@ -9,7 +9,6 @@ using System.IO;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MJCZone.MediaMatic.Models;
-using MJCZone.MediaMatic.Providers;
 using MJCZone.MediaMatic.Tests.TestHelpers;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
@@ -42,7 +41,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_Should_Upload_Video_Successfully()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -72,7 +71,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_Should_Generate_Default_Thumbnails()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 3);
@@ -105,7 +104,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_Should_Generate_Custom_Number_Of_Thumbnails()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 4);
@@ -125,7 +124,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_Should_Generate_Thumbnails_At_Specific_Timestamps()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 3);
@@ -152,7 +151,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_Should_Extract_Metadata()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 2, 30);
@@ -176,7 +175,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_Should_Handle_Without_Thumbnail_Generation()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -200,7 +199,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task GenerateThumbnailsAsync_Should_Generate_Thumbnails_From_Existing_Video()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 3);
@@ -233,7 +232,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task GenerateThumbnailsAsync_Should_Handle_Single_Thumbnail()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -260,7 +259,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task TranscodeVideoAsync_Should_Convert_Mp4_To_WebM()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);
@@ -290,7 +289,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task TranscodeVideoAsync_Should_Resize_Video()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 2);
@@ -314,7 +313,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task TranscodeVideoAsync_Should_Strip_Audio()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source-with-audio.mp4");
         await TestDataHelper.CreateTestVideoWithAudioAsync(sourceVideoPath, 320, 240, 2);
@@ -346,7 +345,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task GetMetadataAsync_Should_Extract_Video_Metadata()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 3, 25);
@@ -373,7 +372,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task GetMetadataAsync_Should_Include_Audio_Metadata()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source-audio.mp4");
         await TestDataHelper.CreateTestVideoWithAudioAsync(sourceVideoPath, 320, 240, 2);
@@ -401,7 +400,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_Should_Handle_Various_Formats(string format)
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, $"source-{format}.{format}");
         await TestDataHelper.CreateTestVideoAsync(sourceVideoPath, 320, 240, 2, 30, format);
@@ -424,7 +423,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_Should_Handle_Various_Durations(int durationSeconds)
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, $"source-{durationSeconds}s.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, durationSeconds);
@@ -444,7 +443,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task UploadVideoAsync_With_Custom_Thumbnail_Width()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 640, 480, 3);
@@ -470,7 +469,7 @@ public class MemoryProviderVideoTests : IDisposable
     public async Task DownloadAsync_Should_Retrieve_Uploaded_Video()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         var sourceVideoPath = Path.Combine(_tempDirectory, "source.mp4");
         await TestDataHelper.CreateTestMp4Async(sourceVideoPath, 320, 240, 2);

@@ -11,7 +11,6 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using FluentAssertions;
 using MJCZone.MediaMatic.Interfaces;
-using MJCZone.MediaMatic.Providers;
 using MJCZone.MediaMatic.Tests.Fixtures;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
@@ -62,7 +61,7 @@ public class S3ProviderTests : VfsProviderTestsBase, IAsyncLifetime
 
     protected override Task<IVfsConnection> CreateConnectionAsync()
     {
-        var connection = VfsProviderFactories.CreateConnection(
+        var connection = VfsConnection.Create(
             VfsProviderType.S3,
             _localStackFixture.S3ConnectionString
         );

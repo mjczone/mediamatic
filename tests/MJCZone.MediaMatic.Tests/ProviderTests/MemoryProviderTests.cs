@@ -5,7 +5,6 @@
 
 using System.Threading.Tasks;
 using MJCZone.MediaMatic.Interfaces;
-using MJCZone.MediaMatic.Providers;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
 
@@ -18,7 +17,7 @@ public class MemoryProviderTests : VfsProviderTestsBase
     protected override Task<IVfsConnection> CreateConnectionAsync()
     {
         var connectionString = "memory://";
-        var connection = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, connectionString);
+        var connection = VfsConnection.Create(VfsProviderType.Memory, connectionString);
         return Task.FromResult(connection);
     }
 }

@@ -1,21 +1,47 @@
 # MediaMatic - TODO
 
-**Last Updated:** 2025-11-25
+**Last Updated:** 2025-11-27
 
 ## 📊 Current Test Status
 
 | Test Suite | Tests | Status |
 |------------|-------|--------|
-| ASP.NET Core Integration | 30 | ✅ All passing |
+| ASP.NET Core Integration | 51 | ✅ All passing |
 | Core Library | 252 | ✅ All passing |
-| **Total** | **282** | ✅ All passing |
+| **Total** | **303** | ✅ All passing |
 
 ---
 
 ## ✅ Completed (Recent Sessions)
 
+### Metadata Endpoint Tests (Latest)
+- ✅ MetadataEndpointsTests: 8/8 tests passing
+  - JPEG/PNG image metadata extraction (dimensions, MIME type)
+  - Nested path and bucket support
+  - Error handling (non-existent file/filesource)
+  - Non-media file support (text files return basic metadata)
+  - Provider identification in metadata response
+- ✅ Fixed VfsMethodsBase.GetMetadataAsync
+  - Stream position reset after MIME detection
+  - MimeType now included in image/video metadata response
+  - File size included for non-media files
+
+### Image Transformation
+- ✅ Implemented `MediaMaticService.Files.TransformImageAsync`
+  - Wired up to existing `ImageProcessor` (SkiaSharp)
+  - Supports resize, crop modes (fit, cover, pad, stretch), format conversion
+  - Quality settings, focal point cropping
+- ✅ TransformationEndpoints: 13/13 tests passing
+  - Basic resize (width, height, both dimensions)
+  - Format conversion (WebP, PNG)
+  - Resize modes (cover/fill, pad)
+  - Combined transformations
+  - Error handling, caching headers
+- ✅ Registered `IImageProcessor` in DI container
+- ✅ Fixed MemoryProviderImageTests test isolation (unique file names per test)
+
 ### Core VFS Provider Tests
-- ✅ Created VfsProviderTestsBase with 13 comprehensive tests covering:
+- ✅ Created VfsProviderTestsBase with 13  tests covering:
   - Basic file operations (upload, download, delete, exists)
   - File listing (root, nested paths)
   - Folder operations (list, delete, nested folders)
@@ -50,18 +76,12 @@
 
 ## 🚧 In Progress / Remaining Work
 
-### Endpoint Tests (4 remaining)
+### Endpoint Tests (2 remaining)
 - ⏸️ ArchiveEndpoints - needs implementation first
 - ⏸️ StatsEndpoints - needs implementation first
-- ⏸️ MetadataEndpoints - basic structure exists, needs tests
-- ⏸️ TransformationEndpoints - needs implementation first
 
 ### Service Implementation (TODOs marked in code)
 **High Priority:**
-- [ ] Implement image transformation in `MediaMaticService.Files.TransformImageAsync`
-  - Location: `src/MJCZone.MediaMatic.AspNetCore/Services/MediaMaticService.Files.cs:87`
-  - Needs: SkiaSharp integration for resize, crop, format conversion
-
 - [ ] Add recursive parameter support to VFS `ListFilesAsync` method
   - Location: `src/MJCZone.MediaMatic.AspNetCore/Services/MediaMaticService.Files.cs:115`
   - Note: FluentStorage extension may not support recursive listing yet
@@ -92,40 +112,34 @@
 
 ### Current State
 - **All core VFS operations working** across Memory, Local, S3, Minio providers
-- **All ASP.NET Core endpoints tested** for filesources, files, and folders
-- **Memory provider now uses shared storage** - connection strings with same name share storage instances
+- **All ASP.NET Core endpoints tested** for filesources, files, folders, and transformations
+- **Image transformations fully working** - resize, crop, format conversion via URL parameters
+- **Memory provider uses shared storage** - connection strings with same name share storage instances
 - **Non-media file support** - text files, PDFs, etc. now return basic metadata instead of throwing
-- **282 total tests passing** (30 ASP.NET Core + 252 Core library)
+- **Metadata endpoint fully tested** - 8 tests covering images, non-media files, error handling
+- **303 total tests passing** (51 ASP.NET Core + 252 Core library)
 
 ### Recommended Next Steps (Priority Order)
-1. **Implement image transformation** (most requested feature)
-   - Use existing SkiaSharp `ImageProcessor` for resize, crop, format conversion
-   - Wire up `MediaMaticService.Files.TransformImageAsync` to call processor
-   - Add transformation endpoint tests
+1. **Implement recursive file listing**
+   - Add recursive parameter support to `ListFilesAsync`
+   - May need VFS layer changes
 
-2. **Implement metadata extraction endpoint tests**
-   - Test image EXIF extraction via `/metadata` endpoints
-   - Test video metadata extraction
-   - Test MIME type detection
-
-3. **Consider archive functionality**
+2. **Consider archive functionality**
    - Design API for creating archives (sync vs async?)
    - Implement background job tracking if needed (Hangfire?)
 
-4. **Documentation** (Phase 5 per PROJECT_ROADMAP.md)
+3. **Documentation** (Phase 5 per PROJECT_ROADMAP.md)
    - XML documentation for public APIs
    - Update VitePress docs site
 
 ### Known Limitations
 - Archive operations: stubs only (not implemented)
 - Statistics operations: stubs only (not implemented)
-- Image transformations: stub only (endpoint exists, processor needs wiring)
 - Recursive file listing: parameter exists but not fully implemented in VFS layer
 
 ### Code TODOs in Source
 | File | Line | Description |
 |------|------|-------------|
-| `MediaMaticService.Files.cs` | 87 | Implement image transformation |
 | `MediaMaticService.Files.cs` | 115 | Implement recursive listing |
 | `MediaMaticService.Stats.cs` | 41 | Implement folder stats |
 | `MediaMaticService.Stats.cs` | 75 | Implement filesource stats |
@@ -140,4 +154,4 @@ The testing infrastructure is fully in place and follows the exact pattern used 
 - ✅ Testcontainers ready for S3/Minio (LocalStack, Minio fixtures working)
 - ✅ FFmpeg skip attributes for graceful video test skipping
 
-Adding new endpoint tests should be straightforward by following the File/Folder endpoint test patterns.
+Adding new endpoint tests should be straightforward by following the File/Folder/Transformation endpoint test patterns.

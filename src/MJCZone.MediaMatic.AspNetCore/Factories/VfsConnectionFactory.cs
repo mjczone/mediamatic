@@ -4,7 +4,6 @@
 // See LICENSE in the project root for license information.
 
 using MJCZone.MediaMatic.Interfaces;
-using MJCZone.MediaMatic.Providers;
 
 namespace MJCZone.MediaMatic.AspNetCore.Factories;
 
@@ -30,35 +29,35 @@ public sealed class VfsConnectionFactory : IVfsConnectionFactory
             || provider.Contains("local", StringComparison.OrdinalIgnoreCase)
         )
         {
-            connection = VfsProviderFactories.CreateConnection(VfsProviderType.Local, connectionString);
+            connection = VfsConnection.Create(VfsProviderType.Local, connectionString);
         }
         else if (provider.Contains("sftp", StringComparison.OrdinalIgnoreCase))
         {
-            connection = VfsProviderFactories.CreateConnection(VfsProviderType.SFTP, connectionString);
+            connection = VfsConnection.Create(VfsProviderType.SFTP, connectionString);
         }
         else if (provider.Contains("zip", StringComparison.OrdinalIgnoreCase))
         {
-            connection = VfsProviderFactories.CreateConnection(VfsProviderType.ZipFile, connectionString);
+            connection = VfsConnection.Create(VfsProviderType.ZipFile, connectionString);
         }
         else if (provider.Contains("minio", StringComparison.OrdinalIgnoreCase))
         {
-            connection = VfsProviderFactories.CreateConnection(VfsProviderType.Minio, connectionString);
+            connection = VfsConnection.Create(VfsProviderType.Minio, connectionString);
         }
         else if (provider.Contains("b2", StringComparison.OrdinalIgnoreCase))
         {
-            connection = VfsProviderFactories.CreateConnection(VfsProviderType.B2, connectionString);
+            connection = VfsConnection.Create(VfsProviderType.B2, connectionString);
         }
         else if (provider.Contains("s3", StringComparison.OrdinalIgnoreCase))
         {
-            connection = VfsProviderFactories.CreateConnection(VfsProviderType.S3, connectionString);
+            connection = VfsConnection.Create(VfsProviderType.S3, connectionString);
         }
         else if (provider.Contains("gcp", StringComparison.OrdinalIgnoreCase))
         {
-            connection = VfsProviderFactories.CreateConnection(VfsProviderType.GCP, connectionString);
+            connection = VfsConnection.Create(VfsProviderType.GCP, connectionString);
         }
         else if (provider.Contains("memory", StringComparison.OrdinalIgnoreCase))
         {
-            connection = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, connectionString);
+            connection = VfsConnection.Create(VfsProviderType.Memory, connectionString);
         }
 
         return connection ?? throw new ArgumentException($"Unsupported vfs provider: {provider}", nameof(provider));

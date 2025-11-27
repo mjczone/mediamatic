@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MJCZone.MediaMatic.Models;
-using MJCZone.MediaMatic.Providers;
 using MJCZone.MediaMatic.Tests.TestHelpers;
 
 namespace MJCZone.MediaMatic.Tests.ProviderTests;
@@ -21,7 +20,7 @@ public class MemoryProviderImageTests
     public async Task UploadImageAsync_Should_Upload_Image_Successfully()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
         using var imageStream = TestDataHelper.CreateTestJpeg(800, 600);
 
         // Act
@@ -46,7 +45,7 @@ public class MemoryProviderImageTests
     public async Task UploadImageAsync_Should_Generate_WebP_And_Avif_Variants()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
         using var imageStream = TestDataHelper.CreateTestJpeg(800, 600);
 
         var options = new ImageUploadOptions
@@ -80,7 +79,7 @@ public class MemoryProviderImageTests
     public async Task UploadImageAsync_Should_Generate_Thumbnail_Variants()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
         using var imageStream = TestDataHelper.CreateTestJpeg(1920, 1080);
 
         var options = new ImageUploadOptions
@@ -122,7 +121,7 @@ public class MemoryProviderImageTests
     public async Task UploadImageAsync_Should_Resize_When_MaxWidth_Specified()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
         using var imageStream = TestDataHelper.CreateTestJpeg(1920, 1080);
 
         var options = new ImageUploadOptions
@@ -145,7 +144,7 @@ public class MemoryProviderImageTests
     public async Task UploadImageAsync_Should_Handle_PNG_Format()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
         using var imageStream = TestDataHelper.CreateTestPng(640, 480);
 
         // Act
@@ -161,7 +160,7 @@ public class MemoryProviderImageTests
     public async Task ProcessImageAsync_Should_Resize_Image()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         // Upload original image
         using var uploadStream = TestDataHelper.CreateTestJpeg(1920, 1080);
@@ -195,16 +194,16 @@ public class MemoryProviderImageTests
     public async Task ProcessImageAsync_Should_Convert_Format()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         // Upload JPEG image
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
-        await vfs.UploadFileAsync(uploadStream, "source.jpg");
+        await vfs.UploadFileAsync(uploadStream, "source-convert-format.jpg");
 
         var options = new ImageProcessingOptions { Format = ImageFormat.Png, Quality = 100 };
 
         // Act
-        var result = await vfs.ProcessImageAsync("source.jpg", "converted.png", options);
+        var result = await vfs.ProcessImageAsync("source-convert-format.jpg", "converted.png", options);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -216,15 +215,15 @@ public class MemoryProviderImageTests
     public async Task ProcessImageAsync_Should_Convert_To_WebP()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
-        await vfs.UploadFileAsync(uploadStream, "source.jpg");
+        await vfs.UploadFileAsync(uploadStream, "source-convert-webp.jpg");
 
         var options = new ImageProcessingOptions { Format = ImageFormat.WebP, Quality = 80 };
 
         // Act
-        var result = await vfs.ProcessImageAsync("source.jpg", "converted.webp", options);
+        var result = await vfs.ProcessImageAsync("source-convert-webp.jpg", "converted.webp", options);
 
         // Assert
         result.Success.Should().BeTrue();
@@ -236,7 +235,7 @@ public class MemoryProviderImageTests
     public async Task GetMetadataAsync_Should_Extract_Image_Metadata()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
         await vfs.UploadFileAsync(uploadStream, "metadata-test.jpg");
@@ -258,7 +257,7 @@ public class MemoryProviderImageTests
     public async Task UploadImageAsync_Should_Handle_Various_Dimensions(int width, int height)
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
         using var imageStream = TestDataHelper.CreateTestJpeg(width, height);
 
         // Act
@@ -274,7 +273,7 @@ public class MemoryProviderImageTests
     public async Task UploadImageAsync_Should_Skip_Thumbnails_Larger_Than_Original()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
         using var imageStream = TestDataHelper.CreateTestJpeg(640, 480);
 
         var options = new ImageUploadOptions
@@ -299,7 +298,7 @@ public class MemoryProviderImageTests
     public async Task UploadImageAsync_Should_Handle_Multiple_Uploads_To_Same_Provider()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
 
         // Act - Upload multiple images
         using var stream1 = TestDataHelper.CreateTestJpeg(640, 480);
@@ -328,7 +327,7 @@ public class MemoryProviderImageTests
     public async Task DownloadAsync_Should_Retrieve_Uploaded_Image()
     {
         // Arrange
-        using var vfs = VfsProviderFactories.CreateConnection(VfsProviderType.Memory, string.Empty);
+        using var vfs = VfsConnection.Create(VfsProviderType.Memory, string.Empty);
         using var uploadStream = TestDataHelper.CreateTestJpeg(800, 600);
         var originalLength = uploadStream.Length;
 

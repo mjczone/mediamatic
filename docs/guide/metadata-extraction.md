@@ -1,6 +1,6 @@
 # Metadata Extraction
 
-MediaMatic provides comprehensive metadata extraction using three specialized libraries:
+MediaMatic provides  metadata extraction using three specialized libraries:
 
 | Library | Purpose | Formats |
 |---------|---------|---------|

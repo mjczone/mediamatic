@@ -3,7 +3,7 @@
 // Licensed under the GNU Lesser General Public License v3.0 or later.
 // See LICENSE in the project root for license information.
 
-namespace MJCZone.MediaMatic.Providers;
+namespace MJCZone.MediaMatic;
 
 /// <summary>
 /// Represents the type of a virtual file system provider.

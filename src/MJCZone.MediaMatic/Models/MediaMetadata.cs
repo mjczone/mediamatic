@@ -6,7 +6,7 @@
 namespace MJCZone.MediaMatic.Models;
 
 /// <summary>
-/// Represents comprehensive metadata for a media file.
+/// Represents  metadata for a media file.
 /// </summary>
 public class MediaMetadata
 {

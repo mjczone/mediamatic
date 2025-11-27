@@ -47,29 +47,37 @@ RUN apt-get update && apt-get install -y ffmpeg
 
 ## Basic Usage
 
-### 1. Create a Storage Provider
+### 1. Create a VFS Connection
 
-MediaMatic uses [FluentStorage](https://github.com/robinrodricks/FluentStorage) for storage abstraction:
+MediaMatic uses a Virtual File System (VFS) abstraction for storage:
 
 ```csharp
-using FluentStorage;
 using MJCZone.MediaMatic;
+using MJCZone.MediaMatic.Models;
 
 // AWS S3
-var storage = StorageFactory.Blobs.FromConnectionString(
-    "aws.s3://keyId=YOUR_KEY;key=YOUR_SECRET;bucket=my-bucket;region=us-east-1"
+using var s3 = VfsConnection.Create(
+    VfsProviderType.S3,
+    "s3://keyId=YOUR_KEY;key=YOUR_SECRET;bucket=my-bucket;region=us-east-1"
 );
 
-// Google Cloud Storage
-var storage = StorageFactory.Blobs.FromConnectionString(
-    "gcs://projectId=my-project;bucket=my-bucket;jsonKeyPath=/path/to/service-account.json"
+// MinIO (S3-compatible)
+using var minio = VfsConnection.Create(
+    VfsProviderType.Minio,
+    "minio://endpoint=localhost:9000;accessKey=minioadmin;secretKey=minioadmin;bucket=my-bucket"
 );
 
 // Local File System
-var storage = StorageFactory.Blobs.DirectoryFiles("/path/to/storage");
+using var local = VfsConnection.Create(
+    VfsProviderType.Local,
+    "/path/to/storage"
+);
 
 // In-Memory (for testing)
-var storage = StorageFactory.Blobs.InMemory();
+using var memory = VfsConnection.Create(
+    VfsProviderType.Memory,
+    "memory://name=test"
+);
 ```
 
 ### 2. Upload and Optimize an Image
@@ -77,27 +85,28 @@ var storage = StorageFactory.Blobs.InMemory();
 ```csharp
 using var fileStream = File.OpenRead("photo.jpg");
 
-var result = await storage.UploadImageAsync(fileStream, "gallery/photo.jpg", options =>
+var result = await vfs.UploadImageAsync(fileStream, "gallery/photo.jpg", new ImageUploadOptions
 {
     // Generate multiple sizes
-    options.GenerateThumbnails(new[] { 320, 640, 960, 1280, 1920 });
+    GenerateThumbnails = true,
+    ThumbnailSizes = [320, 640, 960, 1280, 1920],
 
     // Generate modern formats
-    options.GenerateFormats(ImageFormat.WebP, ImageFormat.Avif);
+    GenerateFormats = true,
+    Formats = [ImageFormat.WebP, ImageFormat.Avif],
 
     // Optimize quality (1-100)
-    options.OptimizeQuality(85);
-
-    // Extract metadata
-    options.ExtractMetadata();
+    JpegQuality = 85,
+    WebPQuality = 80,
 
     // Strip EXIF data for privacy
-    options.PreserveExif(false);
+    PreserveExif = false,
 });
 
-Console.WriteLine($"Uploaded {result.FilesGenerated} files");
-Console.WriteLine($"Original: {result.OriginalSize} bytes");
-Console.WriteLine($"Total: {result.TotalSize} bytes");
+Console.WriteLine($"Uploaded: {result.Path}");
+Console.WriteLine($"Dimensions: {result.Width}x{result.Height}");
+Console.WriteLine($"File Size: {result.FileSize} bytes");
+Console.WriteLine($"Generated {result.Variants.Count} variants");
 ```
 
 ### 3. Process a Video
@@ -105,48 +114,66 @@ Console.WriteLine($"Total: {result.TotalSize} bytes");
 ```csharp
 using var videoStream = File.OpenRead("video.mp4");
 
-var result = await storage.ProcessVideoAsync(videoStream, "videos/demo.mp4", options =>
+var result = await vfs.UploadVideoAsync(videoStream, "videos/demo.mp4", new VideoUploadOptions
 {
-    // Generate thumbnail at 3 seconds
-    options.GenerateThumbnail(TimeSpan.FromSeconds(3));
-
-    // Generate poster image at 10 seconds
-    options.GeneratePosterImage(TimeSpan.FromSeconds(10));
-
-    // Transcode to multiple resolutions
-    options.TranscodeTo(VideoFormat.Mp4, resolution: 1080, bitrate: 5000);
-    options.TranscodeTo(VideoFormat.Mp4, resolution: 720, bitrate: 2500);
-    options.TranscodeTo(VideoFormat.Mp4, resolution: 480, bitrate: 1000);
+    // Generate thumbnails
+    GenerateThumbnails = true,
+    ThumbnailCount = 3,
 
     // Extract metadata
-    options.ExtractMetadata();
+    ExtractMetadata = true,
 });
 
-Console.WriteLine($"Generated {result.Variants.Count} video variants");
-Console.WriteLine($"Thumbnail: {result.ThumbnailPath}");
+Console.WriteLine($"Duration: {result.Duration} seconds");
+Console.WriteLine($"Dimensions: {result.Width}x{result.Height}");
+Console.WriteLine($"Generated {result.Thumbnails?.Count ?? 0} thumbnails");
 ```
 
 ### 4. Extract Metadata
 
 ```csharp
-// Get comprehensive metadata
-var metadata = await storage.GetMetadataAsync("gallery/photo.jpg");
+// Get file metadata
+var metadata = await vfs.GetMetadataAsync("gallery/photo.jpg");
 
 Console.WriteLine($"MIME Type: {metadata.MimeType}");
 Console.WriteLine($"Dimensions: {metadata.Width}x{metadata.Height}");
 Console.WriteLine($"File Size: {metadata.Size} bytes");
-Console.WriteLine($"Created: {metadata.CreatedAt}");
+Console.WriteLine($"Provider: {metadata.Provider}");
 
 // EXIF data (if available)
-if (metadata.CustomMetadata.TryGetValue("Camera", out var camera))
+if (metadata.CameraMake != null)
 {
-    Console.WriteLine($"Camera: {camera}");
+    Console.WriteLine($"Camera: {metadata.CameraMake} {metadata.CameraModel}");
 }
 
-if (metadata.CustomMetadata.TryGetValue("DateTaken", out var dateTaken))
+if (metadata.DateTimeOriginal != null)
 {
-    Console.WriteLine($"Date Taken: {dateTaken}");
+    Console.WriteLine($"Date Taken: {metadata.DateTimeOriginal}");
 }
+
+if (metadata.Latitude != null && metadata.Longitude != null)
+{
+    Console.WriteLine($"Location: {metadata.Latitude}, {metadata.Longitude}");
+}
+```
+
+### 5. Process Images
+
+```csharp
+// Resize an existing image
+var resizeResult = await vfs.ProcessImageAsync(
+    "gallery/photo.jpg",
+    "gallery/photo_thumb.jpg",
+    new ImageProcessingOptions
+    {
+        Width = 300,
+        Height = 200,
+        Format = ImageFormat.WebP,
+        Quality = 80,
+    }
+);
+
+Console.WriteLine($"Resized to: {resizeResult.Width}x{resizeResult.Height}");
 ```
 
 ## ASP.NET Core Integration
@@ -158,78 +185,70 @@ using MJCZone.MediaMatic.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add MediaMatic with filesource repository
-builder.Services.AddMediaMatic(options =>
-{
-    // Use in-memory repository (for development/testing)
-    options.UseInMemoryFilesourceRepository();
-
-    // Or use file-based repository
-    // options.UseFileFilesourceRepository("./filesources.json");
-
-    // Or use database repository
-    // options.UseDatabaseFilesourceRepository(connectionString);
-
-    // Register filesources
-    options.AddFilesource("default", "aws.s3://...");
-    options.AddFilesource("gcp", "gcs://...");
-});
+// Add MediaMatic services
+builder.Services.AddMediaMatic();
 
 var app = builder.Build();
 
-// Map MediaMatic API endpoints
-app.MapMediaMaticEndpoints();
+// Map MediaMatic REST API endpoints
+app.MapMediaMaticFilesourceEndpoints();  // Filesource CRUD
+app.MapMediaMaticFileEndpoints();         // File upload/download
+app.MapMediaMaticFolderEndpoints();       // Folder operations
+app.MapMediaMaticTransformationEndpoints(); // Image transformations
+app.MapMediaMaticMetadataEndpoints();     // Metadata extraction
 
 app.Run();
 ```
 
-### 2. Use MediaMatic in Controllers/Endpoints
+### 2. Configure Filesources
+
+Filesources define storage backends for your application:
 
 ```csharp
-app.MapPost("/upload-image", async (
-    IFormFile file,
-    IMediaStorage storage) =>
+builder.Services.AddMediaMatic(options =>
 {
-    using var stream = file.OpenReadStream();
-
-    var result = await storage.UploadImageAsync(stream, $"uploads/{file.FileName}", opt =>
-    {
-        opt.GenerateThumbnails(new[] { 320, 640, 1280 });
-        opt.GenerateFormats(ImageFormat.WebP);
-        opt.OptimizeQuality(85);
-    });
-
-    return Results.Ok(new
-    {
-        message = "Upload successful",
-        filesGenerated = result.FilesGenerated,
-        originalPath = result.OriginalPath,
-        thumbnails = result.Thumbnails
-    });
+    // Use in-memory repository (for development/testing)
+    options.UseInMemoryFilesourceRepository();
 });
 ```
 
-### 3. Browser-Aware Image Serving
+Or configure via the REST API:
 
-```csharp
-app.MapGet("/images/{*path}", async (
-    string path,
-    HttpContext context,
-    IMediaStorage storage) =>
-{
-    var optimizedImage = await storage.GetOptimizedImageAsync(
-        path,
-        userAgent: context.Request.Headers["User-Agent"].ToString(),
-        accept: context.Request.Headers["Accept"].ToString()
-    );
+```bash
+# Create a filesource
+curl -X POST http://localhost:5000/api/mm/fs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "images",
+    "provider": "S3",
+    "connectionString": "s3://keyId=...;key=...;bucket=my-bucket",
+    "displayName": "Image Storage",
+    "isEnabled": true
+  }'
+```
 
-    return Results.File(optimizedImage.Stream, optimizedImage.ContentType);
-});
+### 3. Use the REST API
+
+```bash
+# Upload a file
+curl -X POST http://localhost:5000/api/mm/fs/images/fi/products/shoe.jpg \
+  --data-binary @shoe.jpg
+
+# Download a file
+curl http://localhost:5000/api/mm/fs/images/fi/products/shoe.jpg -o shoe.jpg
+
+# Get file metadata
+curl http://localhost:5000/api/mm/fs/images/metadata/products/shoe.jpg
+
+# Transform an image (resize to 400px width, convert to WebP)
+curl http://localhost:5000/api/mm/fs/images/transform/w_400,f_webp/products/shoe.jpg -o shoe_thumb.webp
+
+# List files in a folder
+curl http://localhost:5000/api/mm/fs/images/fo/products
 ```
 
 ## Next Steps
 
-- [Learn about Architecture](architecture.md) - Understand MediaMatic's design
 - [Image Processing Guide](image-processing.md) - Deep dive into image optimization
 - [Video Processing Guide](video-processing.md) - Video processing features
 - [Storage Providers](storage-providers.md) - Configure different storage backends
@@ -241,26 +260,27 @@ app.MapGet("/images/{*path}", async (
 
 ```csharp
 // Upload product image with responsive variants
-var result = await storage.UploadImageAsync(stream, $"products/{sku}/main.jpg", opt =>
+var result = await vfs.UploadImageAsync(stream, $"products/{sku}/main.jpg", new ImageUploadOptions
 {
-    opt.GenerateThumbnails(new[] { 100, 300, 600, 1200 }); // Thumbnail, grid, detail, zoom
-    opt.GenerateFormats(ImageFormat.WebP, ImageFormat.Avif);
-    opt.OptimizeQuality(90); // Higher quality for products
-    opt.PreserveExif(false); // Remove camera data
+    ThumbnailSizes = [100, 300, 600, 1200], // Thumbnail, grid, detail, zoom
+    Formats = [ImageFormat.WebP, ImageFormat.Avif],
+    JpegQuality = 90, // Higher quality for products
+    PreserveExif = false, // Remove camera data
 });
 ```
 
 ### User Avatar Upload
 
 ```csharp
-// Upload avatar with square crop
-var result = await storage.UploadImageAsync(stream, $"avatars/{userId}.jpg", opt =>
+// Upload avatar
+var result = await vfs.UploadImageAsync(stream, $"avatars/{userId}.jpg", new ImageUploadOptions
 {
-    opt.Crop(CropMode.Square); // Force square aspect ratio
-    opt.GenerateThumbnails(new[] { 32, 64, 128, 256 });
-    opt.GenerateFormats(ImageFormat.WebP);
-    opt.OptimizeQuality(80);
-    opt.PreserveExif(false);
+    ThumbnailSizes = [32, 64, 128, 256],
+    Formats = [ImageFormat.WebP],
+    JpegQuality = 80,
+    PreserveExif = false,
+    MaxWidth = 512, // Limit size
+    MaxHeight = 512,
 });
 ```
 
@@ -268,12 +288,11 @@ var result = await storage.UploadImageAsync(stream, $"avatars/{userId}.jpg", opt
 
 ```csharp
 // Upload tutorial video with thumbnails
-var result = await storage.ProcessVideoAsync(stream, $"tutorials/{id}/video.mp4", opt =>
+var result = await vfs.UploadVideoAsync(stream, $"tutorials/{id}/video.mp4", new VideoUploadOptions
 {
-    opt.GenerateThumbnail(TimeSpan.FromSeconds(5));
-    opt.GeneratePosterImage(TimeSpan.FromSeconds(15));
-    opt.TranscodeTo(VideoFormat.Mp4, resolution: 720); // Standardize to 720p
-    opt.ExtractMetadata();
+    GenerateThumbnails = true,
+    ThumbnailCount = 5,
+    ExtractMetadata = true,
 });
 ```
 
@@ -294,7 +313,7 @@ For very large files, use streaming:
 ```csharp
 // Don't load entire file into memory
 using var stream = File.OpenRead(largePath);
-await storage.UploadImageAsync(stream, path, opt => { ... });
+await vfs.UploadImageAsync(stream, path, options);
 ```
 
 ### Slow Processing

@@ -5,6 +5,7 @@ MediaMatic follows a phased development approach, building functionality increme
 ## Current Status
 
 **Version:** 0.1.x (Foundation)
+**Tests:** 303 passing (51 ASP.NET Core + 252 Core)
 
 ## Development Phases
 
@@ -18,10 +19,15 @@ MediaMatic follows a phased development approach, building functionality increme
 ### Phase 2: Storage Providers ✅
 
 - [x] FluentStorage integration
+- [x] Virtual File System (VFS) abstraction
 - [x] Local file system provider
 - [x] In-memory provider (testing)
 - [x] AWS S3 provider
+- [x] MinIO provider
 - [x] Google Cloud Storage provider
+- [x] Backblaze B2 provider
+- [x] SFTP provider
+- [x] Zip file provider
 
 ### Phase 3: Image Processing ✅
 
@@ -32,8 +38,9 @@ MediaMatic follows a phased development approach, building functionality increme
   - [x] Pad mode
   - [x] Stretch mode
 - [x] Focal point cropping
-- [x] Format conversion (JPEG, PNG, WebP)
+- [x] Format conversion (JPEG, PNG, WebP, AVIF)
 - [x] Quality optimization
+- [x] Thumbnail generation
 
 ### Phase 4: Video Processing ✅
 
@@ -41,109 +48,95 @@ MediaMatic follows a phased development approach, building functionality increme
 - [x] Thumbnail generation
   - [x] Multiple resize modes
   - [x] Focal point support
-- [x] Video transcoding
+- [x] Video metadata extraction
 - [x] Format conversion
 
-### Phase 5: Metadata Extraction 🚧
+### Phase 5: Metadata Extraction ✅
 
-- [x] MimeDetective integration
-- [x] Basic metadata extraction
-- [ ] MetadataExtractor integration (EXIF)
-- [ ] TagLibSharp integration (audio/video tags)
+- [x] MimeDetective integration (content-based MIME detection)
+- [x] MetadataExtractor integration (image EXIF)
+- [x] Basic metadata extraction for all file types
+- [x] Image dimensions, format, quality
+- [x] Video duration, dimensions, codec info
 
-### Phase 6: ASP.NET Core Integration 📋
+### Phase 6: ASP.NET Core Integration ✅
 
-- [ ] Dependency injection extensions
-- [ ] DeviceDetector.NET integration
-- [ ] Format negotiation middleware
-- [ ] Minimal API endpoints
-- [ ] Browser-aware image serving
+- [x] Dependency injection extensions
+- [x] Filesource repository pattern
+- [x] REST API endpoints
+  - [x] Filesource CRUD (`/api/mm/fs`)
+  - [x] File operations (`/api/mm/fs/{id}/fi/{path}`)
+  - [x] Folder operations (`/api/mm/fs/{id}/fo/{path}`)
+  - [x] Image transformations (`/api/mm/fs/{id}/transform/{params}/{path}`)
+  - [x] Metadata extraction (`/api/mm/fs/{id}/metadata/{path}`)
+- [x] Bucket support for multi-tenant storage
+- [x] Caching headers (ETag, Cache-Control)
 
-### Phase 7: Documentation 🚧
+### Phase 7: Testing ✅
+
+- [x] Unit tests for processors (252 tests)
+- [x] Integration tests with Testcontainers
+- [x] ASP.NET Core endpoint tests (51 tests)
+- [x] LocalStack for S3 testing
+- [x] MinIO container for S3-compatible testing
+- [x] Test isolation with unique memory storage names
+
+### Phase 8: Documentation ✅
 
 - [x] VitePress site structure
 - [x] Getting started guide
-- [x] Core guides
+- [x] Storage providers guide
+- [x] ASP.NET Core integration guide
+- [x] API reference auto-generation
+- [x] Code examples in guides
+
+## Remaining Work
+
+### High Priority
+
+- [ ] Recursive file listing support
+- [ ] Archive creation (zip folders)
+- [ ] Archive job tracking (background processing)
+
+### Medium Priority
+
+- [ ] Folder statistics (file count, total size)
+- [ ] Filesource statistics
+- [ ] Browser-aware format serving (DeviceDetector.NET)
+
+### Lower Priority
+
 - [ ] API reference auto-generation
-- [ ] Code examples
-
-### Phase 8: Testing & Polish 📋
-
-- [x] Unit tests for processors
-- [x] Integration tests with Testcontainers
-- [ ] Increase test coverage to 90%+
 - [ ] Performance benchmarks
-- [ ] API stabilization
+- [ ] Additional code examples
 
 ## Version 1.0 Goals
 
-- Complete ASP.NET Core integration
+- Complete archive functionality
+- Folder/filesource statistics
 - Comprehensive documentation
-- 90%+ test coverage
 - Stable public API
 - Performance benchmarks published
 
 ## Future Considerations
 
-### Batch Processing Utility (Planned)
+### Batch Processing
 
-A comprehensive batch processing system for performing operations on multiple files:
+A batch processing system for performing operations on multiple files:
 
-**Thumbnail Generation**
-- Automatically generate thumbnails for all images in a folder
-- Generate video thumbnails for all videos
-- Support for recursive folder processing
-- Configurable output paths and naming conventions
-
-**Transformation Application**
-- Apply transformations to all images in a folder
-- Example: Bulk resize, format conversion, quality optimization
-- Support for filtering by file extension or MIME type
-- Parallel processing for improved performance
-
-**Format Conversion**
-- Bulk convert images between formats (JPEG → WebP, PNG → AVIF)
-- Batch video transcoding
-- PDF conversion and thumbnail generation
-- Preserve or strip metadata options
-
-**Implementation Details**
-```
-POST /fs/{filesourceId}/batch/thumbnails/{*folderPath}
-POST /fs/{filesourceId}/batch/transform/{*folderPath}
-POST /fs/{filesourceId}/batch/convert/{*folderPath}
-GET  /fs/{filesourceId}/jobs/{jobId}
-```
-
-**Request Example**:
-```json
-{
-  "transformation": "w_800,h_600,c_fill,q_80,f_webp",
-  "filter": {
-    "extensions": [".jpg", ".png"],
-    "recursive": true
-  },
-  "outputPath": "optimized/",
-  "parallel": 4
-}
-```
-
-**Features**:
-- Background job processing with status tracking
-- Progress reporting (files processed / total files)
-- Error handling and retry logic
-- Configurable parallelism
-- Filtering by file type, size, or date
+- Bulk thumbnail generation
+- Batch format conversion
+- Parallel processing with progress tracking
+- Background job support
 
 ### Potential Features
 
-- AVIF format support
-- HEIC format support (Apple)
 - AI-powered focal point detection
 - Face detection for smart cropping
 - CDN integration helpers
 - Watermarking
 - PDF thumbnail generation
+- HEIC format support (Apple)
 
 ### Community Requests
 
@@ -155,4 +148,4 @@ See the [GitHub repository](https://github.com/mjczone/mediamatic) for contribut
 
 ## Related
 
-- [PROJECT_ROADMAP.md](https://github.com/mjczone/mediamatic/blob/main/PROJECT_ROADMAP.md) - Detailed technical roadmap
+- [TODO.md](https://github.com/mjczone/mediamatic/blob/main/TODO.md) - Detailed session notes and task tracking

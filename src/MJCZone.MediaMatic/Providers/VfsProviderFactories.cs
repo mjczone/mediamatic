@@ -11,7 +11,10 @@ namespace MJCZone.MediaMatic.Providers;
 /// <summary>
 /// Manages virtual file system connection factories.
 /// </summary>
-public static class VfsProviderFactories
+/// <remarks>
+/// Internal implementation. Use <see cref="MJCZone.MediaMatic.VfsConnection"/> for public API.
+/// </remarks>
+internal static class VfsProviderFactories
 {
     private static readonly ConcurrentDictionary<VfsProviderType, IVfsConnectionFactory> NativeFactories = new()
     {

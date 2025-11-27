@@ -2,7 +2,7 @@
 
 **Intelligent Media Storage & Optimization Library for .NET**
 
-MediaMatic is a comprehensive file storage and media processing library that combines the power of multiple best-in-class .NET libraries to provide intelligent image optimization, video processing, and browser-aware format serving.
+MediaMatic is a  file storage and media processing library that combines the power of multiple best-in-class .NET libraries to provide intelligent image optimization, video processing, and browser-aware format serving.
 
 [![NuGet](https://img.shields.io/nuget/v/MJCZone.MediaMatic.svg)](https://www.nuget.org/packages/MJCZone.MediaMatic/)
 [![License](https://img.shields.io/badge/license-LGPL--3.0--or--later-blue.svg)](LICENSE)
@@ -31,7 +31,7 @@ MediaMatic integrates these battle-tested libraries (all with permissive license
 
 | Library | Purpose | License | Downloads | Why We Chose It |
 |---------|---------|---------|-----------|-----------------|
-| **[FluentStorage](https://github.com/robinrodricks/FluentStorage)** | Storage abstraction (14 providers) | MIT | 1.1M | Microsoft-sponsored, comprehensive provider support |
+| **[FluentStorage](https://github.com/robinrodricks/FluentStorage)** | Storage abstraction (14 providers) | MIT | 1.1M | Microsoft-sponsored,  provider support |
 | **[SkiaSharp](https://github.com/mono/SkiaSharp)** | Image processing | MIT | 205M | Fast, no licensing fees (vs ImageSharp), WebP support |
 | **[FFMpegCore](https://github.com/rosenbjerg/FFMpegCore)** | Video processing | MIT | 4M | Free commercial use (vs Xabe.FFmpeg), modern fluent API |
 | **[MimeDetective](https://github.com/Muraad/MimeDetective)** | MIME type detection | MIT | 11.5M | Content-based detection (not just file extensions) |
@@ -290,15 +290,15 @@ Both libraries follow the same design philosophy:
 
 ## Documentation
 
-📖 **[Full Documentation](https://mjczone.github.io/mediamatic/)** - Comprehensive guides, API reference, examples
+📖 **[Full Documentation](https://mediamatic.mjczone.com/)** - Comprehensive guides, API reference, examples
 
 Key documentation sections:
-- [Getting Started](https://mjczone.github.io/mediamatic/guide/getting-started.html)
-- [Architecture Deep Dive](https://mjczone.github.io/mediamatic/guide/architecture.html)
-- [Image Processing Guide](https://mjczone.github.io/mediamatic/guide/image-processing.html)
-- [Video Processing Guide](https://mjczone.github.io/mediamatic/guide/video-processing.html)
-- [ASP.NET Core Integration](https://mjczone.github.io/mediamatic/guide/aspnetcore.html)
-- [API Reference](https://mjczone.github.io/mediamatic/api/)
+- [Getting Started](https://mediamatic.mjczone.com/guide/getting-started.html)
+- [Architecture Deep Dive](https://mediamatic.mjczone.com/guide/architecture.html)
+- [Image Processing Guide](https://mediamatic.mjczone.com/guide/image-processing.html)
+- [Video Processing Guide](https://mediamatic.mjczone.com/guide/video-processing.html)
+- [ASP.NET Core Integration](https://mediamatic.mjczone.com/guide/aspnetcore.html)
+- [API Reference](https://mediamatic.mjczone.com/api/)
 
 ---
 
@@ -399,7 +399,7 @@ Licensed under the [GNU Lesser General Public License v3.0 or later (LGPL-3.0-or
 
 - 🐛 **Bug Reports** - [GitHub Issues](https://github.com/mjczone/mediamatic/issues)
 - 💬 **Discussions** - [GitHub Discussions](https://github.com/mjczone/mediamatic/discussions)
-- 📖 **Documentation** - [https://mjczone.github.io/mediamatic/](https://mjczone.github.io/mediamatic/)
+- 📖 **Documentation** - [https://mediamatic.mjczone.com/](https://mediamatic.mjczone.com/)
 
 ---
 
