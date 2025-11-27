@@ -71,6 +71,7 @@ MediaMatic follows a phased development approach, building functionality increme
   - [x] Metadata extraction (`/api/mm/fs/{id}/metadata/{path}`)
 - [x] Bucket support for multi-tenant storage
 - [x] Caching headers (ETag, Cache-Control)
+- [x] Browser-aware format serving (`f_auto` with DeviceDetector.NET)
 
 ### Phase 7: Testing ✅
 
@@ -102,11 +103,9 @@ MediaMatic follows a phased development approach, building functionality increme
 
 - [ ] Folder statistics (file count, total size)
 - [ ] Filesource statistics
-- [ ] Browser-aware format serving (DeviceDetector.NET)
 
 ### Lower Priority
 
-- [ ] API reference auto-generation
 - [ ] Performance benchmarks
 - [ ] Additional code examples
 
