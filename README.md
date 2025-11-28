@@ -74,6 +74,24 @@ dotnet add package MJCZone.MediaMatic.AspNetCore
 MediaMatic supports multiple storage providers via FluentStorage:
 
 ```csharp
+// In-Memory (for testing)
+using var memory = VfsConnection.Create(
+    VfsProviderType.Memory,
+    "memory://name=test"
+);
+
+// Local File System
+using var local = VfsConnection.Create(
+    VfsProviderType.Local,
+    "/var/media"
+);
+
+// SFTP
+using var sftp = VfsConnection.Create(
+    VfsProviderType.SFTP,
+    "sftp://host=sftp.example.com;username=user;password=pass;root=/uploads"
+);
+
 // AWS S3
 using var s3 = VfsConnection.Create(
     VfsProviderType.S3,
@@ -86,34 +104,16 @@ using var minio = VfsConnection.Create(
     "minio://endpoint=localhost:9000;accessKey=...;secretKey=...;bucket=my-bucket"
 );
 
-// Google Cloud Storage
-using var gcp = VfsConnection.Create(
-    VfsProviderType.GCP,
-    "gcp://project=my-project;bucket=my-bucket;jsonKeyPath=/path/to/key.json"
-);
-
 // Backblaze B2
 using var b2 = VfsConnection.Create(
     VfsProviderType.B2,
     "b2://keyId=...;applicationKey=...;bucket=my-bucket"
 );
 
-// SFTP
-using var sftp = VfsConnection.Create(
-    VfsProviderType.SFTP,
-    "sftp://host=sftp.example.com;username=user;password=pass;root=/uploads"
-);
-
-// Local File System
-using var local = VfsConnection.Create(
-    VfsProviderType.Local,
-    "/var/media"
-);
-
-// In-Memory (for testing)
-using var memory = VfsConnection.Create(
-    VfsProviderType.Memory,
-    "memory://name=test"
+// Google Cloud Storage
+using var gcp = VfsConnection.Create(
+    VfsProviderType.GCP,
+    "gcp://project=my-project;bucket=my-bucket;jsonKeyPath=/path/to/key.json"
 );
 ```
 
