@@ -61,6 +61,11 @@ public class MediaMaticAuditEvent
     public long? FileSizeInBytes { get; set; }
 
     /// <summary>
+    /// Gets or sets the MIME type of the file (e.g., "image/jpeg", "application/pdf"), if applicable.
+    /// </summary>
+    public string? MimeType { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the operation was successful.
     /// </summary>
     public bool Success { get; set; }
@@ -84,6 +89,12 @@ public class MediaMaticAuditEvent
     /// Gets or sets the IP address of the client.
     /// </summary>
     public string? IpAddress { get; set; }
+
+    /// <summary>
+    /// Gets or sets the User-Agent header from the client request.
+    /// Useful for tracking browser/device information.
+    /// </summary>
+    public string? UserAgent { get; set; }
 
     /// <summary>
     /// Gets or sets additional properties for custom audit information.

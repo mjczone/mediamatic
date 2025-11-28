@@ -17,14 +17,14 @@ export default {
     "version": "v1"
   },
   "paths": {
-    "/api/mm/fs/{filesourceId}/fi": {
+    "/api/mm/fs/{filesourceId}/browse": {
       "get": {
         "tags": [
-          "MediaMatic Files"
+          "MediaMatic Browse"
         ],
-        "summary": "List files at root",
-        "description": "Returns a list of all files in the root directory.",
-        "operationId": "ListFiles",
+        "summary": "Browse root directory",
+        "description": "Lists files and folders in the root directory. Use 'type' to filter by files/folders/all, 'filter' for wildcard patterns (e.g., '*.pdf'), 'recursive' to include subdirectories, and 'fields' to select which properties to return.",
+        "operationId": "BrowseRoot",
         "parameters": [
           {
             "name": "filesourceId",
@@ -35,7 +35,14 @@ export default {
             }
           },
           {
-            "name": "path",
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
             "in": "query",
             "schema": {
               "type": "string"
@@ -48,6 +55,13 @@ export default {
               "type": "boolean",
               "default": false
             }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -56,7 +70,7 @@ export default {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FileListResponse"
+                  "$ref": "#/components/schemas/BrowseResponseDto"
                 }
               }
             }
@@ -70,13 +84,246 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/fi/{filePath}": {
+    "/api/mm/fs/{filesourceId}/browse/{folderPath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Browse"
+        ],
+        "summary": "Browse a directory",
+        "description": "Lists files and folders in the specified directory. Use 'type' to filter by files/folders/all, 'filter' for wildcard patterns (e.g., '*.pdf'), 'recursive' to include subdirectories, and 'fields' to select which properties to return.",
+        "operationId": "BrowsePath",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/browse": {
+      "get": {
+        "tags": [
+          "MediaMatic Browse"
+        ],
+        "summary": "Browse root directory in a bucket",
+        "description": "Lists files and folders in the root directory in a bucket. Use 'type' to filter by files/folders/all, 'filter' for wildcard patterns (e.g., '*.pdf'), 'recursive' to include subdirectories, and 'fields' to select which properties to return.",
+        "operationId": "BucketBrowseRoot",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/browse/{folderPath}": {
+      "get": {
+        "tags": [
+          "MediaMatic Browse"
+        ],
+        "summary": "Browse a directory in a bucket",
+        "description": "Lists files and folders in the specified directory in a bucket. Use 'type' to filter by files/folders/all, 'filter' for wildcard patterns (e.g., '*.pdf'), 'recursive' to include subdirectories, and 'fields' to select which properties to return.",
+        "operationId": "BucketBrowsePath",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "folderPath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "recursive",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrowseResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/files/{filePath}": {
       "get": {
         "tags": [
           "MediaMatic Files"
         ],
-        "summary": "Download a file",
-        "description": "Downloads the specified file and returns it as a stream.",
+        "summary": "Get a file",
+        "description": "Gets the specified file and returns it with the appropriate content type. Use 'download=true' query parameter to force download instead of inline display.",
         "operationId": "DownloadFile",
         "parameters": [
           {
@@ -93,6 +340,14 @@ export default {
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
             }
           }
         ],
@@ -297,74 +552,13 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/fi": {
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/files/{filePath}": {
       "get": {
         "tags": [
           "MediaMatic Files"
         ],
-        "summary": "List files at root in a bucket",
-        "description": "Returns a list of all files in the root directory in a bucket.",
-        "operationId": "ListBucketFiles",
-        "parameters": [
-          {
-            "name": "filesourceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "bucketName",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "path",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "recursive",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FileListResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/fi/{filePath}": {
-      "get": {
-        "tags": [
-          "MediaMatic Files"
-        ],
-        "summary": "Download a file in a bucket",
-        "description": "Downloads the specified file in a bucket and returns it as a stream.",
+        "summary": "Get a file in a bucket",
+        "description": "Gets the specified file in a bucket and returns it with the appropriate content type. Use 'download=true' query parameter to force download instead of inline display.",
         "operationId": "DownloadBucketFile",
         "parameters": [
           {
@@ -389,6 +583,14 @@ export default {
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
             }
           }
         ],
@@ -1026,59 +1228,14 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/fo": {
-      "get": {
+    "/api/mm/fs/{filesourceId}/folders/{folderPath}": {
+      "post": {
         "tags": [
           "MediaMatic Folders"
         ],
-        "summary": "List folders at root",
-        "description": "Returns a list of all folders in the root directory.",
-        "operationId": "ListFolders",
-        "parameters": [
-          {
-            "name": "filesourceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "path",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FolderListResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/mm/fs/{filesourceId}/fo/{folderPath}": {
-      "get": {
-        "tags": [
-          "MediaMatic Folders"
-        ],
-        "summary": "List contents in a folder",
-        "description": "Returns a list of files or folders in the specified folder.",
-        "operationId": "ListFolderContents",
+        "summary": "Create a folder",
+        "description": "Creates the specified folder. Parent folders are created automatically if they don't exist.",
+        "operationId": "CreateFolder",
         "parameters": [
           {
             "name": "filesourceId",
@@ -1095,43 +1252,17 @@ export default {
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "description": "Content type to list. Valid values: 'files' (default), 'folders'",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "recursive",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FolderListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request"
+          "201": {
+            "description": "Created"
           },
           "403": {
             "description": "Forbidden"
           },
-          "404": {
-            "description": "Not Found"
+          "409": {
+            "description": "Conflict"
           }
         }
       },
@@ -1173,67 +1304,14 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/fo": {
-      "get": {
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/folders/{folderPath}": {
+      "post": {
         "tags": [
           "MediaMatic Folders"
         ],
-        "summary": "List folders at root in a bucket",
-        "description": "Returns a list of all folders in the root directory in a bucket.",
-        "operationId": "ListBucketFolders",
-        "parameters": [
-          {
-            "name": "filesourceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "bucketName",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "path",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FolderListResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/fo/{folderPath}": {
-      "get": {
-        "tags": [
-          "MediaMatic Folders"
-        ],
-        "summary": "List contents in a folder in a bucket",
-        "description": "Returns a list of files or folders in the specified folder in a bucket.",
-        "operationId": "ListBucketFolderContents",
+        "summary": "Create a folder in a bucket",
+        "description": "Creates the specified folder in a bucket. Parent folders are created automatically if they don't exist.",
+        "operationId": "CreateBucketFolder",
         "parameters": [
           {
             "name": "filesourceId",
@@ -1258,43 +1336,17 @@ export default {
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "name": "type",
-            "in": "query",
-            "description": "Content type to list. Valid values: 'files' (default), 'folders'",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "recursive",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
           }
         ],
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FolderListResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request"
+          "201": {
+            "description": "Created"
           },
           "403": {
             "description": "Forbidden"
           },
-          "404": {
-            "description": "Not Found"
+          "409": {
+            "description": "Conflict"
           }
         }
       },
@@ -1350,7 +1402,7 @@ export default {
           "MediaMatic Transformations"
         ],
         "summary": "Transform an image using URL parameters",
-        "description": "Apply transformations to an image (resize, crop, format conversion, quality optimization) using URL parameters. Supports parameters like w_400 (width), h_300 (height), c_fill (crop mode), q_80 (quality), f_auto (format), and more. Results are cached for performance.",
+        "description": "Apply transformations to an image (resize, crop, format conversion, quality optimization) using URL parameters. Supports parameters like w_400 (width), h_300 (height), c_fill (crop mode), q_80 (quality), f_auto (format), and more. Use 'download=true' to force download instead of inline display. Use 'saveTo' to cache the transformed result to disk for future requests.",
         "operationId": "TransformImage",
         "parameters": [
           {
@@ -1373,6 +1425,21 @@ export default {
             "name": "transformations",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "saveTo",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -1410,7 +1477,7 @@ export default {
           "MediaMatic Transformations"
         ],
         "summary": "Transform an image from a bucket using URL parameters",
-        "description": "Apply transformations to an image in a storage bucket (S3, Azure, etc.). Same transformation parameters as the root endpoint.",
+        "description": "Apply transformations to an image in a storage bucket (S3, Azure, etc.). Same transformation parameters as the root endpoint. Use 'download=true' to force download instead of inline display. Use 'saveTo' to cache the transformed result to disk for future requests.",
         "operationId": "TransformImageFromBucket",
         "parameters": [
           {
@@ -1441,6 +1508,21 @@ export default {
             "name": "transformations",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "download",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "saveTo",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -2094,7 +2176,7 @@ export default {
           "MediaMatic Utilities"
         ],
         "summary": "Get filesource statistics",
-        "description": "Returns statistics for the entire filesource including total size, file count, top folders by size, and breakdown by MIME type.",
+        "description": "Returns  statistics for the entire filesource including total size, file count, top folders by size, and breakdown by MIME type.",
         "operationId": "GetFilesourceStats",
         "parameters": [
           {
@@ -2387,14 +2469,53 @@ export default {
         },
         "additionalProperties": false
       },
-      "FileListResponse": {
+      "BrowseResponseDto": {
         "type": "object",
         "properties": {
+          "folders": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FolderInfoDto"
+            },
+            "nullable": true
+          },
           "files": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/FileInfoDto"
             },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FileInfoDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true
+          },
+          "lastModified": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "extension": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -2597,14 +2718,15 @@ export default {
         },
         "additionalProperties": false
       },
-      "FolderListResponse": {
+      "FolderInfoDto": {
         "type": "object",
         "properties": {
-          "folders": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
             "nullable": true
           }
         },

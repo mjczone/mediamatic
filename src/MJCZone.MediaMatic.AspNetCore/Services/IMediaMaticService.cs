@@ -180,6 +180,26 @@ public interface IMediaMaticService
     );
 
     /// <summary>
+    /// Lists files and folders in a directory with rich metadata.
+    /// </summary>
+    /// <param name="context">The operation context.</param>
+    /// <param name="filesourceId">The filesource identifier.</param>
+    /// <param name="bucketName">Optional bucket name (for S3/Azure).</param>
+    /// <param name="path">The directory path (null for root).</param>
+    /// <param name="options">Browse options for filtering and field selection.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Browse response containing files and folders with metadata.</returns>
+    /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
+    Task<BrowseResponseDto> ListAsync(
+        IOperationContext context,
+        string filesourceId,
+        string? bucketName,
+        string? path,
+        BrowseOptions options,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Downloads a file.
     /// </summary>
     /// <param name="context">The operation context.</param>
@@ -277,6 +297,24 @@ public interface IMediaMaticService
         string filesourceId,
         string? bucketName,
         string? path,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Creates a folder.
+    /// </summary>
+    /// <param name="context">The operation context.</param>
+    /// <param name="filesourceId">The filesource identifier.</param>
+    /// <param name="bucketName">Optional bucket name (for S3/Azure).</param>
+    /// <param name="folderPath">The folder path to create.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if the folder was created, false if it already exists.</returns>
+    /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
+    Task<bool> CreateFolderAsync(
+        IOperationContext context,
+        string filesourceId,
+        string? bucketName,
+        string folderPath,
         CancellationToken cancellationToken = default
     );
 

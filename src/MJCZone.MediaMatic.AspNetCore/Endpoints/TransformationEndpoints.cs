@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using MJCZone.MediaMatic.AspNetCore.Extensions;
+using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
 using MJCZone.MediaMatic.AspNetCore.Security;
 using MJCZone.MediaMatic.AspNetCore.Services;
 using MJCZone.MediaMatic.AspNetCore.Transformations;
@@ -48,7 +49,8 @@ public static class TransformationEndpoints
             .WithDescription(
                 "Apply transformations to an image (resize, crop, format conversion, quality optimization) using URL parameters. "
                     + "Supports parameters like w_400 (width), h_300 (height), c_fill (crop mode), q_80 (quality), f_auto (format), and more. "
-                    + "Results are cached for performance."
+                    + "Use 'download=true' to force download instead of inline display. "
+                    + "Use 'saveTo' to cache the transformed result to disk for future requests."
             )
             .Produces((int)HttpStatusCode.OK, contentType: "image/jpeg")
             .Produces((int)HttpStatusCode.OK, contentType: "image/png")
@@ -57,6 +59,19 @@ public static class TransformationEndpoints
             .Produces((int)HttpStatusCode.OK, contentType: "image/gif")
             .Produces((int)HttpStatusCode.OK, contentType: "image/bmp")
             .Produces((int)HttpStatusCode.NotModified)
+            .Produces((int)HttpStatusCode.NotFound)
+            .Produces((int)HttpStatusCode.BadRequest)
+            .Produces((int)HttpStatusCode.Forbidden);
+
+        fileGroup
+            .MapPost("/{transformations}/{*filePath}", GenerateTransformAsync)
+            .WithName("GenerateTransform")
+            .WithSummary("Generate and save a transformed image")
+            .WithDescription(
+                "Transform an image and save it to a specified path. Returns metadata about the transformed image instead of the image itself. "
+                    + "Ideal for CMS pre-generation workflows where thumbnails are generated ahead of time."
+            )
+            .Produces<TransformResultDto>((int)HttpStatusCode.Created)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -74,7 +89,9 @@ public static class TransformationEndpoints
             .WithSummary("Transform an image from a bucket using URL parameters")
             .WithDescription(
                 "Apply transformations to an image in a storage bucket (S3, Azure, etc.). "
-                    + "Same transformation parameters as the root endpoint."
+                    + "Same transformation parameters as the root endpoint. "
+                    + "Use 'download=true' to force download instead of inline display. "
+                    + "Use 'saveTo' to cache the transformed result to disk for future requests."
             )
             .Produces((int)HttpStatusCode.OK, contentType: "image/jpeg")
             .Produces((int)HttpStatusCode.OK, contentType: "image/png")
@@ -83,6 +100,60 @@ public static class TransformationEndpoints
             .Produces((int)HttpStatusCode.OK, contentType: "image/gif")
             .Produces((int)HttpStatusCode.OK, contentType: "image/bmp")
             .Produces((int)HttpStatusCode.NotModified)
+            .Produces((int)HttpStatusCode.NotFound)
+            .Produces((int)HttpStatusCode.BadRequest)
+            .Produces((int)HttpStatusCode.Forbidden);
+
+        bucketFileGroup
+            .MapPost("/{transformations}/{*filePath}", GenerateTransformFromBucketAsync)
+            .WithName("GenerateTransformFromBucket")
+            .WithSummary("Generate and save a transformed image from a bucket")
+            .WithDescription(
+                "Transform an image from a bucket and save it to a specified path. Returns metadata about the transformed image. "
+                    + "Ideal for CMS pre-generation workflows."
+            )
+            .Produces<TransformResultDto>((int)HttpStatusCode.Created)
+            .Produces((int)HttpStatusCode.NotFound)
+            .Produces((int)HttpStatusCode.BadRequest)
+            .Produces((int)HttpStatusCode.Forbidden);
+
+        // Register batch transformation endpoint
+        var batchGroup = app.MapMediaMaticEndpointGroup(
+            basePath,
+            "/fs/{filesourceId}/transform-batch",
+            OperationTags.FilesourceTransformations
+        );
+
+        batchGroup
+            .MapPost("/", GenerateBatchTransformAsync)
+            .WithName("GenerateBatchTransform")
+            .WithSummary("Generate multiple transformed images in one request")
+            .WithDescription(
+                "Transform a single source image into multiple variants (e.g., different sizes, formats). "
+                    + "Each variant is saved to its specified path. Returns metadata for all generated images. "
+                    + "Ideal for generating all thumbnail sizes at once."
+            )
+            .Produces<TransformBatchResponseDto>((int)HttpStatusCode.Created)
+            .Produces((int)HttpStatusCode.NotFound)
+            .Produces((int)HttpStatusCode.BadRequest)
+            .Produces((int)HttpStatusCode.Forbidden);
+
+        // Register batch transformation endpoint for bucket
+        var bucketBatchGroup = app.MapMediaMaticEndpointGroup(
+            basePath,
+            "/fs/{filesourceId}/bu/{bucketName}/transform-batch",
+            OperationTags.FilesourceTransformations
+        );
+
+        bucketBatchGroup
+            .MapPost("/", GenerateBatchTransformFromBucketAsync)
+            .WithName("GenerateBatchTransformFromBucket")
+            .WithSummary("Generate multiple transformed images from a bucket in one request")
+            .WithDescription(
+                "Transform a single source image from a bucket into multiple variants. "
+                    + "Each variant is saved to its specified path within the bucket. Returns metadata for all generated images."
+            )
+            .Produces<TransformBatchResponseDto>((int)HttpStatusCode.Created)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -97,6 +168,8 @@ public static class TransformationEndpoints
         [FromRoute] string filesourceId,
         [FromRoute] string filePath,
         [FromRoute] string transformations,
+        [FromQuery] bool download = false,
+        [FromQuery] string? saveTo = null,
         CancellationToken cancellationToken = default
     ) =>
         TransformImageInternalAsync(
@@ -107,6 +180,8 @@ public static class TransformationEndpoints
             null,
             filePath,
             transformations,
+            download,
+            saveTo,
             cancellationToken
         );
 
@@ -118,6 +193,8 @@ public static class TransformationEndpoints
         [FromRoute] string bucketName,
         [FromRoute] string filePath,
         [FromRoute] string transformations,
+        [FromQuery] bool download = false,
+        [FromQuery] string? saveTo = null,
         CancellationToken cancellationToken = default
     ) =>
         TransformImageInternalAsync(
@@ -128,8 +205,261 @@ public static class TransformationEndpoints
             bucketName,
             filePath,
             transformations,
+            download,
+            saveTo,
             cancellationToken
         );
+
+    private static Task<IResult> GenerateTransformAsync(
+        IOperationContext operationContext,
+        IMediaMaticService service,
+        [FromRoute] string filesourceId,
+        [FromRoute] string filePath,
+        [FromRoute] string transformations,
+        [FromBody] TransformRequestDto request,
+        CancellationToken cancellationToken = default
+    ) =>
+        GenerateTransformInternalAsync(
+            operationContext,
+            service,
+            filesourceId,
+            null,
+            filePath,
+            transformations,
+            request.SaveTo,
+            cancellationToken
+        );
+
+    private static Task<IResult> GenerateTransformFromBucketAsync(
+        IOperationContext operationContext,
+        IMediaMaticService service,
+        [FromRoute] string filesourceId,
+        [FromRoute] string bucketName,
+        [FromRoute] string filePath,
+        [FromRoute] string transformations,
+        [FromBody] TransformRequestDto request,
+        CancellationToken cancellationToken = default
+    ) =>
+        GenerateTransformInternalAsync(
+            operationContext,
+            service,
+            filesourceId,
+            bucketName,
+            filePath,
+            transformations,
+            request.SaveTo,
+            cancellationToken
+        );
+
+    private static Task<IResult> GenerateBatchTransformAsync(
+        IOperationContext operationContext,
+        IMediaMaticService service,
+        [FromRoute] string filesourceId,
+        [FromBody] TransformBatchRequestDto request,
+        CancellationToken cancellationToken = default
+    ) =>
+        GenerateBatchTransformInternalAsync(
+            operationContext,
+            service,
+            filesourceId,
+            null,
+            request,
+            cancellationToken
+        );
+
+    private static Task<IResult> GenerateBatchTransformFromBucketAsync(
+        IOperationContext operationContext,
+        IMediaMaticService service,
+        [FromRoute] string filesourceId,
+        [FromRoute] string bucketName,
+        [FromBody] TransformBatchRequestDto request,
+        CancellationToken cancellationToken = default
+    ) =>
+        GenerateBatchTransformInternalAsync(
+            operationContext,
+            service,
+            filesourceId,
+            bucketName,
+            request,
+            cancellationToken
+        );
+
+    private static async Task<IResult> GenerateTransformInternalAsync(
+        IOperationContext operationContext,
+        IMediaMaticService service,
+        string filesourceId,
+        string? bucketName,
+        string filePath,
+        string transformations,
+        string saveTo,
+        CancellationToken cancellationToken
+    )
+    {
+        if (string.IsNullOrWhiteSpace(saveTo))
+        {
+            return Results.BadRequest(new { error = "saveTo is required for POST transform" });
+        }
+
+        // Parse transformation parameters
+        TransformationOptions options;
+        try
+        {
+            options = TransformationParser.Parse(transformations);
+        }
+        catch (ArgumentException ex)
+        {
+            return Results.BadRequest(new { error = "Invalid transformation parameters", details = ex.Message });
+        }
+
+        // Resolve format from options (f_auto defaults to WebP for POST since no browser context)
+        var resolvedFormat = options.Format == ImageFormatOption.Auto
+            ? ImageFormat.WebP
+            : ToImageFormat(options.Format);
+
+        // Apply transformations
+        var processingOptions = options.ToImageProcessingOptions(resolvedFormat);
+
+        var transformedStream = await service
+            .TransformImageAsync(
+                operationContext,
+                filesourceId,
+                bucketName,
+                filePath,
+                processingOptions,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        // Copy stream to memory to get size and save
+        using var memoryStream = new MemoryStream();
+        await transformedStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+        memoryStream.Position = 0;
+
+        // Save to the specified path
+        await service
+            .UploadFileAsync(operationContext, filesourceId, bucketName, saveTo, memoryStream, overwrite: true, cancellationToken)
+            .ConfigureAwait(false);
+
+        // Get the dimensions from processing options (if specified) or return 0
+        var result = new TransformResultDto
+        {
+            Path = saveTo,
+            Size = memoryStream.Length,
+            Width = processingOptions.Width ?? 0,
+            Height = processingOptions.Height ?? 0,
+            Format = GetFormatName(resolvedFormat),
+            Success = true,
+        };
+
+        return Results.Created($"/{saveTo}", result);
+    }
+
+    private static async Task<IResult> GenerateBatchTransformInternalAsync(
+        IOperationContext operationContext,
+        IMediaMaticService service,
+        string filesourceId,
+        string? bucketName,
+        TransformBatchRequestDto request,
+        CancellationToken cancellationToken
+    )
+    {
+        if (string.IsNullOrWhiteSpace(request.Source))
+        {
+            return Results.BadRequest(new { error = "source is required" });
+        }
+
+        if (request.Variants == null || request.Variants.Count == 0)
+        {
+            return Results.BadRequest(new { error = "At least one variant is required" });
+        }
+
+        var results = new List<TransformResultDto>();
+
+        foreach (var variant in request.Variants)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(variant.SaveTo))
+                {
+                    results.Add(new TransformResultDto
+                    {
+                        Path = variant.SaveTo ?? string.Empty,
+                        Success = false,
+                        ErrorMessage = "saveTo is required for each variant",
+                    });
+                    continue;
+                }
+
+                // Parse transformation parameters
+                TransformationOptions options;
+                try
+                {
+                    options = TransformationParser.Parse(variant.Transformations);
+                }
+                catch (ArgumentException ex)
+                {
+                    results.Add(new TransformResultDto
+                    {
+                        Path = variant.SaveTo,
+                        Success = false,
+                        ErrorMessage = $"Invalid transformation parameters: {ex.Message}",
+                    });
+                    continue;
+                }
+
+                // Resolve format (f_auto defaults to WebP for batch)
+                var resolvedFormat = options.Format == ImageFormatOption.Auto
+                    ? ImageFormat.WebP
+                    : ToImageFormat(options.Format);
+
+                // Apply transformations
+                var processingOptions = options.ToImageProcessingOptions(resolvedFormat);
+
+                var transformedStream = await service
+                    .TransformImageAsync(
+                        operationContext,
+                        filesourceId,
+                        bucketName,
+                        request.Source,
+                        processingOptions,
+                        cancellationToken
+                    )
+                    .ConfigureAwait(false);
+
+                // Copy stream to memory to get size and save
+                using var memoryStream = new MemoryStream();
+                await transformedStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+                memoryStream.Position = 0;
+
+                // Save to the specified path
+                await service
+                    .UploadFileAsync(operationContext, filesourceId, bucketName, variant.SaveTo, memoryStream, overwrite: true, cancellationToken)
+                    .ConfigureAwait(false);
+
+                results.Add(new TransformResultDto
+                {
+                    Path = variant.SaveTo,
+                    Size = memoryStream.Length,
+                    Width = processingOptions.Width ?? 0,
+                    Height = processingOptions.Height ?? 0,
+                    Format = GetFormatName(resolvedFormat),
+                    Success = true,
+                });
+            }
+            catch (Exception ex)
+            {
+                results.Add(new TransformResultDto
+                {
+                    Path = variant.SaveTo ?? string.Empty,
+                    Success = false,
+                    ErrorMessage = ex.Message,
+                });
+            }
+        }
+
+        var response = new TransformBatchResponseDto { Results = results };
+        return Results.Created(string.Empty, response);
+    }
 
     private static async Task<IResult> TransformImageInternalAsync(
         IOperationContext operationContext,
@@ -139,6 +469,8 @@ public static class TransformationEndpoints
         string? bucketName,
         string filePath,
         string transformations,
+        bool download,
+        string? saveTo,
         CancellationToken cancellationToken
     )
     {
@@ -217,6 +549,24 @@ public static class TransformationEndpoints
             )
             .ConfigureAwait(false);
 
+        // Save to cache if saveTo is specified
+        if (!string.IsNullOrEmpty(saveTo))
+        {
+            // Copy stream to memory so we can both save and return it
+            using var memoryStream = new MemoryStream();
+            await transformedStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+            memoryStream.Position = 0;
+
+            // Save to the specified path
+            await service
+                .UploadFileAsync(operationContext, filesourceId, bucketName, saveTo, memoryStream, overwrite: true, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Reset stream for response
+            memoryStream.Position = 0;
+            transformedStream = new MemoryStream(memoryStream.ToArray());
+        }
+
         // Set cache headers
         httpContext.Response.Headers.ETag = etag;
         httpContext.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
@@ -228,6 +578,15 @@ public static class TransformationEndpoints
 
         // Set content type based on resolved format
         var contentType = GetContentType(resolvedFormat.Value);
+
+        // Set Content-Disposition for download
+        if (download)
+        {
+            var downloadFileName = !string.IsNullOrEmpty(saveTo)
+                ? Path.GetFileName(saveTo)
+                : $"{Path.GetFileNameWithoutExtension(filePath)}{GetFileExtension(resolvedFormat.Value)}";
+            httpContext.Response.Headers.ContentDisposition = $"attachment; filename=\"{downloadFileName}\"";
+        }
 
         // Return transformed image
         return Results.Stream(transformedStream, contentType: contentType);
@@ -292,6 +651,36 @@ public static class TransformationEndpoints
             ImageFormat.Gif => "image/gif",
             ImageFormat.Tiff => "image/tiff",
             _ => "image/jpeg",
+        };
+    }
+
+    private static string GetFileExtension(ImageFormat format)
+    {
+        return format switch
+        {
+            ImageFormat.Jpeg => ".jpg",
+            ImageFormat.Png => ".png",
+            ImageFormat.WebP => ".webp",
+            ImageFormat.Avif => ".avif",
+            ImageFormat.Bmp => ".bmp",
+            ImageFormat.Gif => ".gif",
+            ImageFormat.Tiff => ".tiff",
+            _ => ".jpg",
+        };
+    }
+
+    private static string GetFormatName(ImageFormat format)
+    {
+        return format switch
+        {
+            ImageFormat.Jpeg => "jpeg",
+            ImageFormat.Png => "png",
+            ImageFormat.WebP => "webp",
+            ImageFormat.Avif => "avif",
+            ImageFormat.Bmp => "bmp",
+            ImageFormat.Gif => "gif",
+            ImageFormat.Tiff => "tiff",
+            _ => "jpeg",
         };
     }
 }

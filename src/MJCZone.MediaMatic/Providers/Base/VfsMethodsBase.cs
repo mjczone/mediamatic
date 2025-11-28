@@ -296,12 +296,42 @@ public abstract partial class VfsMethodsBase : IVfsMethods
             await blobStorage.DeleteAsync(filePaths, cancellationToken).ConfigureAwait(false);
         }
 
-        // Delete all folders
-        var folderPaths = blobs.Where(b => b.IsFolder).Select(b => b.FullPath).ToList();
+        // Delete all subfolders (deepest first to avoid issues)
+        var folderPaths = blobs.Where(b => b.IsFolder).Select(b => b.FullPath).OrderByDescending(p => p.Length).ToList();
         if (folderPaths.Count != 0)
         {
             await blobStorage.DeleteAsync(folderPaths, cancellationToken).ConfigureAwait(false);
         }
+
+        // Delete the folder itself (with and without trailing slash)
+        var folderPath = path.TrimEnd('/');
+        var pathsToDelete = new List<string> { folderPath, folderPath + "/" };
+
+        // Also delete any .folder marker file that may exist
+        pathsToDelete.Add(folderPath + "/.folder");
+
+        await blobStorage.DeleteAsync(pathsToDelete, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public virtual async Task CreateFolderAsync(
+        IVfsConnection vfs,
+        string path,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Most blob storage systems don't have true folders - they use path prefixes.
+        // Creating a folder typically means creating a placeholder file or marker.
+        // FluentStorage doesn't have a direct CreateFolder method, so we create
+        // an empty marker file to ensure the "folder" exists.
+        var blobStorage = GetBlobStorage(vfs);
+
+        // Ensure path ends with / to indicate it's a folder
+        var folderPath = path.EndsWith('/') ? path : path + "/";
+        var markerPath = folderPath + ".folder";
+
+        // Write an empty marker file
+        await blobStorage.WriteAsync(markerPath, new MemoryStream(), false, cancellationToken).ConfigureAwait(false);
     }
 
     #endregion

@@ -93,7 +93,7 @@ public class MetadataEndpointsTests
         // Upload a test JPEG image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/fi/photo.jpg", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/files/photo.jpg", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Get metadata
@@ -118,7 +118,7 @@ public class MetadataEndpointsTests
         // Upload a test PNG image
         var imageData = CreateTestPng(640, 480);
         var content = new ByteArrayContent(imageData);
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/fi/image.png", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/files/image.png", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Get metadata
@@ -143,7 +143,7 @@ public class MetadataEndpointsTests
         // Upload a test image to a nested path
         var imageData = CreateTestJpeg(1024, 768);
         var content = new ByteArrayContent(imageData);
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/fi/photos/vacation/beach.jpg", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/files/photos/vacation/beach.jpg", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Get metadata from nested path
@@ -166,7 +166,7 @@ public class MetadataEndpointsTests
         // Upload a test image to a bucket
         var imageData = CreateTestJpeg(1920, 1080);
         var content = new ByteArrayContent(imageData);
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/bu/images-bucket/fi/banner.jpg", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/bu/images-bucket/files/banner.jpg", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Get metadata from bucket
@@ -219,7 +219,7 @@ public class MetadataEndpointsTests
         // Upload a text file
         var textContent = "Hello, this is a test file!";
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes(textContent));
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/fi/readme.txt", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/files/readme.txt", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Get metadata for non-media file
@@ -250,7 +250,7 @@ public class MetadataEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(400, 300);
         var content = new ByteArrayContent(imageData);
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/fi/test.jpg", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/files/test.jpg", content);
         var uploadBody = await uploadResponse.Content.ReadAsStringAsync();
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created, $"Upload failed with body: {uploadBody}");
 

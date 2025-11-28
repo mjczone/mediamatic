@@ -186,6 +186,26 @@ public static class VfsConnectionExtensions
 
     #endregion
 
+    #region Folder operations
+
+    /// <summary>
+    /// Creates a folder.
+    /// </summary>
+    /// <param name="connection">The VFS connection.</param>
+    /// <param name="path">The folder path to create.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static Task CreateFolderAsync(
+        this IVfsConnection connection,
+        string path,
+        CancellationToken cancellationToken = default
+    )
+    {
+        return connection.Vfs().CreateFolderAsync(connection, path, cancellationToken);
+    }
+
+    #endregion
+
     #region Transform operations
 
     /// <summary>

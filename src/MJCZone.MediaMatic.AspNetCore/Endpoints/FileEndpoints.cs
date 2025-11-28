@@ -32,7 +32,7 @@ public static class FileEndpoints
         // FILES - root filesource
         var fileGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/fi",
+            "/fs/{filesourceId}/files",
             OperationTags.FilesourceFiles
         );
 
@@ -41,7 +41,7 @@ public static class FileEndpoints
         // FILES - with bucket support (S3/Azure)
         var bucketFileGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/bu/{bucketName}/fi",
+            "/fs/{filesourceId}/bu/{bucketName}/files",
             OperationTags.FilesourceFiles
         );
 
@@ -54,22 +54,15 @@ public static class FileEndpoints
     {
         var bucketText = useBucket ? " in a bucket" : string.Empty;
 
-        // List files at root
-        group
-            .MapGet("/", useBucket ? ListBucketFilesAsync : ListFilesAsync)
-            .WithName($"List{namePrefix}s")
-            .WithSummary($"List files at root{bucketText}")
-            .WithDescription($"Returns a list of all files in the root directory{bucketText}.")
-            .Produces<FileListResponse>((int)HttpStatusCode.OK)
-            .Produces((int)HttpStatusCode.NotFound)
-            .Produces((int)HttpStatusCode.Forbidden);
-
-        // Download file
+        // Download/view file
         group
             .MapGet("/{*filePath}", useBucket ? DownloadBucketFileAsync : DownloadFileAsync)
             .WithName($"Download{namePrefix}")
-            .WithSummary($"Download a file{bucketText}")
-            .WithDescription($"Downloads the specified file{bucketText} and returns it as a stream.")
+            .WithSummary($"Get a file{bucketText}")
+            .WithDescription(
+                $"Gets the specified file{bucketText} and returns it with the appropriate content type. "
+                    + "Use 'download=true' query parameter to force download instead of inline display."
+            )
             .Produces((int)HttpStatusCode.OK, contentType: "application/octet-stream")
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -119,22 +112,14 @@ public static class FileEndpoints
     }
 
     // Root filesource implementations
-    private static Task<IResult> ListFilesAsync(
-        IOperationContext operationContext,
-        IMediaMaticService service,
-        [FromRoute] string filesourceId,
-        [FromQuery] string? path = null,
-        [FromQuery] bool recursive = false,
-        CancellationToken cancellationToken = default
-    ) => ListFilesInternalAsync(operationContext, service, filesourceId, null, path, recursive, cancellationToken);
-
     private static Task<IResult> DownloadFileAsync(
         IOperationContext operationContext,
         IMediaMaticService service,
         [FromRoute] string filesourceId,
         [FromRoute] string filePath,
+        [FromQuery] bool download = false,
         CancellationToken cancellationToken = default
-    ) => DownloadFileInternalAsync(operationContext, service, filesourceId, null, filePath, cancellationToken);
+    ) => DownloadFileInternalAsync(operationContext, service, filesourceId, null, filePath, download, cancellationToken);
 
     private static Task<IResult> UploadFileAsync(
         IOperationContext operationContext,
@@ -191,25 +176,15 @@ public static class FileEndpoints
     ) => FileExistsInternalAsync(operationContext, service, filesourceId, null, filePath, cancellationToken);
 
     // Bucket implementations
-    private static Task<IResult> ListBucketFilesAsync(
-        IOperationContext operationContext,
-        IMediaMaticService service,
-        [FromRoute] string filesourceId,
-        [FromRoute] string bucketName,
-        [FromQuery] string? path = null,
-        [FromQuery] bool recursive = false,
-        CancellationToken cancellationToken = default
-    ) =>
-        ListFilesInternalAsync(operationContext, service, filesourceId, bucketName, path, recursive, cancellationToken);
-
     private static Task<IResult> DownloadBucketFileAsync(
         IOperationContext operationContext,
         IMediaMaticService service,
         [FromRoute] string filesourceId,
         [FromRoute] string bucketName,
         [FromRoute] string filePath,
+        [FromQuery] bool download = false,
         CancellationToken cancellationToken = default
-    ) => DownloadFileInternalAsync(operationContext, service, filesourceId, bucketName, filePath, cancellationToken);
+    ) => DownloadFileInternalAsync(operationContext, service, filesourceId, bucketName, filePath, download, cancellationToken);
 
     private static Task<IResult> UploadBucketFileAsync(
         IOperationContext operationContext,
@@ -270,29 +245,13 @@ public static class FileEndpoints
     ) => FileExistsInternalAsync(operationContext, service, filesourceId, bucketName, filePath, cancellationToken);
 
     // Internal implementations
-    private static async Task<IResult> ListFilesInternalAsync(
-        IOperationContext operationContext,
-        IMediaMaticService service,
-        string filesourceId,
-        string? bucketName,
-        string? path,
-        bool recursive,
-        CancellationToken cancellationToken
-    )
-    {
-        var files = await service
-            .ListFilesAsync(operationContext, filesourceId, bucketName, path, recursive, cancellationToken)
-            .ConfigureAwait(false);
-
-        return Results.Ok(new FileListResponse(files));
-    }
-
     private static async Task<IResult> DownloadFileInternalAsync(
         IOperationContext operationContext,
         IMediaMaticService service,
         string filesourceId,
         string? bucketName,
         string filePath,
+        bool download,
         CancellationToken cancellationToken
     )
     {
@@ -307,7 +266,8 @@ public static class FileEndpoints
         var contentType = metadata.MimeType ?? "application/octet-stream";
         var fileName = Path.GetFileName(filePath);
 
-        return Results.Stream(fileStream, contentType: contentType, fileDownloadName: fileName);
+        // Use fileDownloadName only when download=true to force Content-Disposition: attachment
+        return Results.Stream(fileStream, contentType: contentType, fileDownloadName: download ? fileName : null);
     }
 
     private static async Task<IResult> UploadFileInternalAsync(
@@ -397,34 +357,6 @@ public static class FileEndpoints
 
         return exists ? Results.Ok() : Results.NotFound();
     }
-}
-
-/// <summary>
-/// Response containing a list of file paths.
-/// </summary>
-public class FileListResponse
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FileListResponse"/> class.
-    /// </summary>
-    public FileListResponse()
-    {
-        Files = [];
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FileListResponse"/> class.
-    /// </summary>
-    /// <param name="files">The list of file paths.</param>
-    public FileListResponse(IEnumerable<string> files)
-    {
-        Files = files;
-    }
-
-    /// <summary>
-    /// Gets or sets the list of file paths.
-    /// </summary>
-    public IEnumerable<string> Files { get; set; }
 }
 
 /// <summary>

@@ -65,6 +65,11 @@ public interface IOperationContext
     long? FileSizeInBytes { get; set; }
 
     /// <summary>
+    /// Gets or sets the MIME type of the file being accessed, if applicable.
+    /// </summary>
+    string? MimeType { get; set; }
+
+    /// <summary>
     /// Gets or sets the HTTP method (GET, POST, etc.).
     /// </summary>
     string? HttpMethod { get; set; }

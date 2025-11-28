@@ -43,7 +43,7 @@ public class FileEndpointsTests
         // Upload a file
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Hello, MediaMatic!"));
 
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/fi/test.txt", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/files/test.txt", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var uploadResult = await uploadResponse.ReadAsJsonAsync<FileUploadResponse>();
@@ -51,7 +51,7 @@ public class FileEndpointsTests
         uploadResult!.Path.Should().Be("test.txt");
 
         // Download the file
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/fi/test.txt");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/test.txt");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var downloadedContent = await downloadResponse.Content.ReadAsStringAsync();
@@ -67,7 +67,7 @@ public class FileEndpointsTests
 
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Nested file content"));
 
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/fi/docs/nested/file.txt", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/files/docs/nested/file.txt", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var uploadResult = await uploadResponse.ReadAsJsonAsync<FileUploadResponse>();
@@ -75,7 +75,7 @@ public class FileEndpointsTests
         uploadResult!.Path.Should().Be("docs/nested/file.txt");
 
         // Verify download
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/fi/docs/nested/file.txt");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/docs/nested/file.txt");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         var downloadedContent = await downloadResponse.Content.ReadAsStringAsync();
         downloadedContent.Should().Be("Nested file content");
@@ -90,18 +90,38 @@ public class FileEndpointsTests
 
         // Upload initial file
         var initialContent = new ByteArrayContent(Encoding.UTF8.GetBytes("Initial content"));
-        await client.PostAsync("/api/mm/fs/test-memory/fi/overwrite.txt", initialContent);
+        await client.PostAsync("/api/mm/fs/test-memory/files/overwrite.txt", initialContent);
 
         // Overwrite with PUT
         var newContent = new ByteArrayContent(Encoding.UTF8.GetBytes("Updated content"));
 
-        var overwriteResponse = await client.PutAsync("/api/mm/fs/test-memory/fi/overwrite.txt", newContent);
+        var overwriteResponse = await client.PutAsync("/api/mm/fs/test-memory/files/overwrite.txt", newContent);
         overwriteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Verify new content
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/fi/overwrite.txt");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/overwrite.txt");
         var downloadedContent = await downloadResponse.Content.ReadAsStringAsync();
         downloadedContent.Should().Be("Updated content");
+    }
+
+    [Fact]
+    public async Task Should_download_file_with_download_query_param_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // Upload a file
+        var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Download me!"));
+        await client.PostAsync("/api/mm/fs/test-memory/files/download-test.txt", content);
+
+        // Download with ?download=true
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/download-test.txt?download=true");
+        downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Check Content-Disposition header
+        downloadResponse.Content.Headers.ContentDisposition.Should().NotBeNull();
+        downloadResponse.Content.Headers.ContentDisposition!.DispositionType.Should().Be("attachment");
     }
 
     #endregion
@@ -117,14 +137,14 @@ public class FileEndpointsTests
 
         // Upload a file
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("To be deleted"));
-        await client.PostAsync("/api/mm/fs/test-memory/fi/delete-me.txt", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/delete-me.txt", content);
 
         // Delete the file
-        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/fi/delete-me.txt");
+        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/files/delete-me.txt");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         // Verify file is gone
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/fi/delete-me.txt");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/delete-me.txt");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -135,7 +155,7 @@ public class FileEndpointsTests
         using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
         using var client = factory.CreateClient();
 
-        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/fi/does-not-exist.txt");
+        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/files/does-not-exist.txt");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -152,46 +172,17 @@ public class FileEndpointsTests
 
         // Upload a file
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Exists test"));
-        await client.PostAsync("/api/mm/fs/test-memory/fi/exists.txt", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/exists.txt", content);
 
         // Check if file exists
-        var headRequest = new HttpRequestMessage(HttpMethod.Head, "/api/mm/fs/test-memory/fi/exists.txt");
+        var headRequest = new HttpRequestMessage(HttpMethod.Head, "/api/mm/fs/test-memory/files/exists.txt");
         var headResponse = await client.SendAsync(headRequest);
         headResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Check for non-existent file
-        var headRequest2 = new HttpRequestMessage(HttpMethod.Head, "/api/mm/fs/test-memory/fi/not-exists.txt");
+        var headRequest2 = new HttpRequestMessage(HttpMethod.Head, "/api/mm/fs/test-memory/files/not-exists.txt");
         var headResponse2 = await client.SendAsync(headRequest2);
         headResponse2.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    #endregion
-
-    #region List Files Tests
-
-    [Fact]
-    public async Task Should_list_files_at_root_Async()
-    {
-        var filesource = CreateMemoryFilesource();
-        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
-        using var client = factory.CreateClient();
-
-        // Upload multiple files
-        var files = new[] { "file1.txt", "file2.txt", "file3.txt" };
-        foreach (var fileName in files)
-        {
-            var content = new ByteArrayContent(Encoding.UTF8.GetBytes($"Content of {fileName}"));
-            await client.PostAsync($"/api/mm/fs/test-memory/fi/{fileName}", content);
-        }
-
-        // List files
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/fi/");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var listResult = await listResponse.ReadAsJsonAsync<FileListResponse>();
-        listResult.Should().NotBeNull();
-        listResult!.Files.Should().NotBeNull();
-        listResult.Files.Should().HaveCountGreaterThanOrEqualTo(3);
     }
 
     #endregion
@@ -204,7 +195,7 @@ public class FileEndpointsTests
         using var factory = new WafWithInMemoryFilesourceRepository([]);
         using var client = factory.CreateClient();
 
-        var downloadResponse = await client.GetAsync("/api/mm/fs/non-existent/fi/test.txt");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/non-existent/files/test.txt");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -215,7 +206,7 @@ public class FileEndpointsTests
         using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
         using var client = factory.CreateClient();
 
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/fi/does-not-exist.txt");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/does-not-exist.txt");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -233,11 +224,11 @@ public class FileEndpointsTests
         // Upload a file to a bucket
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Bucket file content"));
 
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/fi/bucket-file.txt", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/files/bucket-file.txt", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Download the file from the bucket
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/fi/bucket-file.txt");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/files/bucket-file.txt");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var downloadedContent = await downloadResponse.Content.ReadAsStringAsync();
@@ -253,14 +244,14 @@ public class FileEndpointsTests
 
         // Upload a file to a bucket
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Delete from bucket"));
-        await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/fi/delete-bucket.txt", content);
+        await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/files/delete-bucket.txt", content);
 
         // Delete the file
-        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/bu/my-bucket/fi/delete-bucket.txt");
+        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/bu/my-bucket/files/delete-bucket.txt");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         // Verify file is gone
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/fi/delete-bucket.txt");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/files/delete-bucket.txt");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

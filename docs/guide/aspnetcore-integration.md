@@ -449,6 +449,197 @@ app.UseExceptionHandler(error =>
 });
 ```
 
+## Authorization
+
+MediaMatic provides an authorization hook for controlling access to filesources and operations:
+
+```csharp
+builder.Services.AddMediaMatic(options =>
+{
+    options.Authorization = async (context) =>
+    {
+        // Check if user has access to this filesource
+        if (context.FilesourceId == "admin-files" &&
+            !context.User?.IsInRole("Admin") == true)
+        {
+            return false;
+        }
+
+        // Check if user can perform this operation
+        if (context.Operation?.StartsWith("files/delete") == true &&
+            !context.User?.IsInRole("Editor") == true)
+        {
+            return false;
+        }
+
+        return true;
+    };
+});
+```
+
+### Operation Context
+
+The `IOperationContext` provides access to all request details for authorization decisions:
+
+| Property | Description |
+|----------|-------------|
+| `User` | ClaimsPrincipal for the current request |
+| `Operation` | Operation name (e.g., "files/get", "files/post") |
+| `FilesourceId` | ID of the filesource being accessed |
+| `BucketName` | Bucket name if applicable |
+| `FolderPath` | Folder path being accessed |
+| `FilePath` | File path being accessed |
+| `FileName` | File name being accessed |
+| `FileSizeInBytes` | File size for uploads |
+| `MimeType` | MIME type of the file |
+| `HttpMethod` | HTTP method (GET, POST, etc.) |
+| `IpAddress` | Client IP address |
+| `HeaderValues` | Request headers (including User-Agent) |
+| `RequestId` | Correlation ID for logging |
+| `Properties` | Custom properties for additional data |
+
+## Audit Logging
+
+MediaMatic provides an audit logging system for tracking all file operations. This is useful for compliance, debugging, and integrating with CMS or asset management systems.
+
+### Basic Audit Logger
+
+```csharp
+public class ConsoleAuditLogger : IMediaMaticAuditLogger
+{
+    public Task LogAsync(MediaMaticAuditEvent auditEvent)
+    {
+        Console.WriteLine($"[{auditEvent.Timestamp:s}] " +
+            $"{auditEvent.UserIdentifier} " +
+            $"{auditEvent.Operation} " +
+            $"{auditEvent.FilePath ?? auditEvent.FolderPath} " +
+            $"({(auditEvent.Success ? "OK" : "FAILED")})");
+        return Task.CompletedTask;
+    }
+}
+
+builder.Services.AddSingleton<IMediaMaticAuditLogger, ConsoleAuditLogger>();
+```
+
+### Database Audit Logger (CMS Integration)
+
+For CMS or asset management integration, store audit events in your database:
+
+```csharp
+public class DatabaseAuditLogger : IMediaMaticAuditLogger
+{
+    private readonly IDbConnection _db;
+
+    public DatabaseAuditLogger(IDbConnection db)
+    {
+        _db = db;
+    }
+
+    public async Task LogAsync(MediaMaticAuditEvent e)
+    {
+        await _db.ExecuteAsync(@"
+            INSERT INTO MediaAuditLog
+                (UserIdentifier, Operation, FilesourceId, BucketName,
+                 FolderPath, FilePath, FileName, FileSizeInBytes, MimeType,
+                 Success, Message, IpAddress, UserAgent, RequestId, Timestamp)
+            VALUES
+                (@UserIdentifier, @Operation, @FilesourceId, @BucketName,
+                 @FolderPath, @FilePath, @FileName, @FileSizeInBytes, @MimeType,
+                 @Success, @Message, @IpAddress, @UserAgent, @RequestId, @Timestamp)",
+            e);
+    }
+}
+```
+
+### Audit Event Properties
+
+The `MediaMaticAuditEvent` includes:
+
+| Property | Description |
+|----------|-------------|
+| `UserIdentifier` | User name or ID from claims |
+| `Operation` | Operation performed (e.g., "files/post", "transform/get") |
+| `FilesourceId` | ID of the filesource |
+| `BucketName` | Bucket name if applicable |
+| `FolderName` | Folder name |
+| `FolderPath` | Full folder path |
+| `OriginalFileName` | Original upload filename |
+| `FileName` | Stored filename |
+| `FilePath` | Full file path |
+| `FileSizeInBytes` | File size |
+| `MimeType` | MIME type (e.g., "image/jpeg") |
+| `Success` | Whether the operation succeeded |
+| `Message` | Success/error message |
+| `Timestamp` | When the operation occurred |
+| `RequestId` | Correlation ID |
+| `IpAddress` | Client IP address |
+| `UserAgent` | Client User-Agent header |
+| `Properties` | Custom properties dictionary |
+
+### CMS Integration Pattern
+
+Use audit logging to maintain file metadata in your CMS database without creating a hard dependency:
+
+```csharp
+public class CmsFileTracker : IMediaMaticAuditLogger
+{
+    private readonly ICmsDatabase _cms;
+
+    public CmsFileTracker(ICmsDatabase cms)
+    {
+        _cms = cms;
+    }
+
+    public async Task LogAsync(MediaMaticAuditEvent e)
+    {
+        if (!e.Success) return;
+
+        switch (e.Operation)
+        {
+            case "files/post":
+                // Track new file upload
+                await _cms.Files.InsertAsync(new CmsFile
+                {
+                    Path = e.FilePath,
+                    FileName = e.FileName,
+                    OriginalName = e.OriginalFileName,
+                    MimeType = e.MimeType,
+                    SizeInBytes = e.FileSizeInBytes ?? 0,
+                    UploadedBy = e.UserIdentifier,
+                    UploadedAt = e.Timestamp,
+                    FilesourceId = e.FilesourceId,
+                });
+                break;
+
+            case "files/delete":
+                // Remove file from tracking
+                await _cms.Files.DeleteAsync(e.FilePath);
+                break;
+
+            case "files/get":
+            case "transform/get":
+                // Track download/view
+                await _cms.FileViews.InsertAsync(new CmsFileView
+                {
+                    FilePath = e.FilePath,
+                    ViewedBy = e.UserIdentifier,
+                    ViewedAt = e.Timestamp,
+                    IpAddress = e.IpAddress,
+                    UserAgent = e.UserAgent,
+                });
+                break;
+        }
+    }
+}
+```
+
+This pattern allows:
+- **File tracking** without coupling MediaMatic to your database schema
+- **View analytics** for tracking downloads and transformations
+- **User activity** logging for compliance
+- **Browser/device tracking** via User-Agent
+- **Flexible integration** with any CMS or DAM system
+
 ## Next Steps
 
 - [Browser Detection](browser-detection.md) - Format negotiation details

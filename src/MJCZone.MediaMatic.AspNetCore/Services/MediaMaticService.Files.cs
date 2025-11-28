@@ -3,9 +3,13 @@
 // Licensed under the GNU Lesser General Public License v3.0 or later.
 // See LICENSE in the project root for license information.
 
+using System.Text.RegularExpressions;
+using FluentStorage.Blobs;
+using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
 using MJCZone.MediaMatic.AspNetCore.Security;
 using MJCZone.MediaMatic.AspNetCore.Validation;
 using MJCZone.MediaMatic.Models;
+using MJCZone.MediaMatic.Providers.Base;
 
 namespace MJCZone.MediaMatic.AspNetCore.Services;
 
@@ -137,6 +141,91 @@ public partial class MediaMaticService
         await LogAuditEventAsync(context, true, $"Listed files in path '{path ?? "root"}'").ConfigureAwait(false);
 
         return files;
+    }
+
+    /// <inheritdoc />
+    public async Task<BrowseResponseDto> ListAsync(
+        IOperationContext context,
+        string filesourceId,
+        string? bucketName,
+        string? path,
+        BrowseOptions options,
+        CancellationToken cancellationToken = default
+    )
+    {
+        await AssertPermissionsAsync(context).ConfigureAwait(false);
+
+        ValidationFactory
+            .Arguments()
+            .NotNull(context, nameof(context))
+            .NotNullOrWhiteSpace(filesourceId, nameof(filesourceId))
+            .NotNull(options, nameof(options))
+            .Assert();
+
+        var connection = await GetVfsConnectionAsync(filesourceId).ConfigureAwait(false);
+        var fullPath = CombineBucketAndPath(bucketName, path);
+
+        // Get the underlying blob storage to access rich metadata
+        if (connection is not VfsConnectionBase connectionBase)
+        {
+            throw new InvalidOperationException("Invalid VFS connection type");
+        }
+
+        var blobStorage = connectionBase.BlobStorage;
+
+        // List blobs with FluentStorage
+        var blobs = await blobStorage
+            .ListAsync(
+                new ListOptions { FolderPath = fullPath, Recurse = options.Recursive, FilePrefix = null },
+                cancellationToken
+            )
+            .ConfigureAwait(false);
+
+        // Apply wildcard filter if specified
+        if (!string.IsNullOrEmpty(options.Filter))
+        {
+            var filterRegex = WildcardToRegex(options.Filter);
+            blobs = blobs.Where(b => filterRegex.IsMatch(Path.GetFileName(b.FullPath))).ToList();
+        }
+
+        // Build response based on requested type
+        var folders = new List<FolderInfoDto>();
+        var files = new List<FileInfoDto>();
+
+        foreach (var blob in blobs)
+        {
+            if (blob.IsFolder)
+            {
+                if (options.Type == BrowseType.All || options.Type == BrowseType.Folders)
+                {
+                    folders.Add(
+                        new FolderInfoDto { Path = blob.FullPath, Name = Path.GetFileName(blob.FullPath.TrimEnd('/')) }
+                    );
+                }
+            }
+            else
+            {
+                if (options.Type == BrowseType.All || options.Type == BrowseType.Files)
+                {
+                    var extension = Path.GetExtension(blob.FullPath);
+                    files.Add(
+                        new FileInfoDto
+                        {
+                            Path = blob.FullPath,
+                            Name = Path.GetFileName(blob.FullPath),
+                            Size = options.IncludeField("size") ? blob.Size : null,
+                            LastModified = options.IncludeField("lastModified") ? blob.LastModificationTime : null,
+                            Extension = options.IncludeField("extension") ? extension : null,
+                            Category = options.IncludeField("category") ? FileCategoryMapper.GetCategory(extension) : null,
+                        }
+                    );
+                }
+            }
+        }
+
+        await LogAuditEventAsync(context, true, $"Browsed path '{path ?? "root"}'").ConfigureAwait(false);
+
+        return new BrowseResponseDto(folders, files);
     }
 
     /// <inheritdoc />
@@ -277,4 +366,21 @@ public partial class MediaMaticService
     }
 
     #endregion // File Methods
+
+    #region File Methods - Private Helpers
+
+    /// <summary>
+    /// Converts a wildcard pattern to a regex.
+    /// </summary>
+    private static Regex WildcardToRegex(string pattern)
+    {
+        // Escape regex special characters, then convert wildcards
+        var escaped = Regex.Escape(pattern);
+        var regexPattern = escaped
+            .Replace("\\*", ".*", StringComparison.Ordinal)
+            .Replace("\\?", ".", StringComparison.Ordinal);
+        return new Regex($"^{regexPattern}$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    }
+
+    #endregion // File Methods - Private Helpers
 }

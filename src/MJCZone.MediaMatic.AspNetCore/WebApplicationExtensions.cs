@@ -48,6 +48,7 @@ public static class WebApplicationExtensions
     {
         var options = app.ServiceProvider.GetService<IOptions<MediaMaticOptions>>()?.Value ?? new MediaMaticOptions();
         app.MapMediaMaticFilesourceEndpoints(options.BasePath);
+        app.MapMediaMaticBrowseEndpoints(options.BasePath);
         app.MapMediaMaticFolderEndpoints(options.BasePath);
         app.MapMediaMaticFileEndpoints(options.BasePath);
         app.MapMediaMaticTransformationEndpoints(options.BasePath);

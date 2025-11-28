@@ -6,7 +6,6 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
-using MJCZone.MediaMatic.AspNetCore.Endpoints;
 using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
 using MJCZone.MediaMatic.AspNetCore.Tests.Factories;
 using MJCZone.MediaMatic.AspNetCore.Tests.Infrastructure;
@@ -31,105 +30,50 @@ public class FolderEndpointsTests
             IsEnabled = true,
         };
 
-    #region List Folders Tests
+    #region Create Folder Tests
 
     [Fact]
-    public async Task Should_list_folders_at_root_Async()
+    public async Task Should_create_folder_Async()
     {
         var filesource = CreateMemoryFilesource();
         using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
         using var client = factory.CreateClient();
 
-        // Create some files in different folders to ensure folders exist
-        var folders = new[] { "folder1", "folder2", "folder3" };
-        foreach (var folder in folders)
-        {
-            var content = new ByteArrayContent(Encoding.UTF8.GetBytes($"Content in {folder}"));
-            await client.PostAsync($"/api/mm/fs/test-memory/fi/{folder}/test.txt", content);
-        }
+        // Create a folder
+        var createResponse = await client.PostAsync("/api/mm/fs/test-memory/folders/new-folder", null);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        // List folders at root
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/fo/");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var listResult = await listResponse.ReadAsJsonAsync<FolderListResponse>();
-        listResult.Should().NotBeNull();
-        listResult!.Folders.Should().NotBeNull();
-        listResult.Folders.Should().HaveCountGreaterThanOrEqualTo(3);
+        // Verify folder exists by browsing
+        var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/new-folder");
+        browseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     [Fact]
-    public async Task Should_list_folders_in_nested_path_Async()
+    public async Task Should_create_nested_folder_Async()
     {
         var filesource = CreateMemoryFilesource();
         using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
         using var client = factory.CreateClient();
 
-        // Create nested folder structure
-        var paths = new[] { "parent/child1", "parent/child2", "parent/child3" };
-        foreach (var path in paths)
-        {
-            var content = new ByteArrayContent(Encoding.UTF8.GetBytes($"Content in {path}"));
-            await client.PostAsync($"/api/mm/fs/test-memory/fi/{path}/test.txt", content);
-        }
-
-        // List folders in parent
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/fo/parent?type=folders");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var listResult = await listResponse.ReadAsJsonAsync<FolderListResponse>();
-        listResult.Should().NotBeNull();
-        listResult!.Folders.Should().NotBeNull();
-        listResult.Folders.Should().HaveCountGreaterThanOrEqualTo(3);
-    }
-
-    #endregion
-
-    #region List Files in Folder Tests
-
-    [Fact]
-    public async Task Should_list_files_in_folder_Async()
-    {
-        var filesource = CreateMemoryFilesource();
-        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
-        using var client = factory.CreateClient();
-
-        // Create files in a folder
-        var files = new[] { "file1.txt", "file2.txt", "file3.txt" };
-        foreach (var file in files)
-        {
-            var content = new ByteArrayContent(Encoding.UTF8.GetBytes($"Content of {file}"));
-            await client.PostAsync($"/api/mm/fs/test-memory/fi/documents/{file}", content);
-        }
-
-        // List files in folder
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/fo/documents?type=files");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var listResult = await listResponse.ReadAsJsonAsync<FileListResponse>();
-        listResult.Should().NotBeNull();
-        listResult!.Files.Should().NotBeNull();
-        listResult.Files.Should().HaveCountGreaterThanOrEqualTo(3);
+        // Create a nested folder
+        var createResponse = await client.PostAsync("/api/mm/fs/test-memory/folders/parent/child/grandchild", null);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Fact]
-    public async Task Should_list_files_in_folder_without_type_parameter_Async()
+    public async Task Should_return_conflict_when_creating_existing_folder_Async()
     {
         var filesource = CreateMemoryFilesource();
         using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
         using var client = factory.CreateClient();
 
-        // Create files in a folder
-        var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Default type test"));
-        await client.PostAsync("/api/mm/fs/test-memory/fi/myfiles/test.txt", content);
+        // Create folder with a file to ensure it exists
+        var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Content"));
+        await client.PostAsync("/api/mm/fs/test-memory/files/existing-folder/file.txt", content);
 
-        // List contents without type parameter (should default to files)
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/fo/myfiles");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var listResult = await listResponse.ReadAsJsonAsync<FileListResponse>();
-        listResult.Should().NotBeNull();
-        listResult!.Files.Should().NotBeNull();
+        // Try to create the same folder - should conflict
+        var createResponse = await client.PostAsync("/api/mm/fs/test-memory/folders/existing-folder", null);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Conflict);
     }
 
     #endregion
@@ -145,15 +89,18 @@ public class FolderEndpointsTests
 
         // Create a folder with files
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("File in folder to delete"));
-        await client.PostAsync("/api/mm/fs/test-memory/fi/to-delete/file.txt", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/to-delete/file.txt", content);
 
         // Delete the folder
-        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/fo/to-delete");
+        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/folders/to-delete");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        // Verify folder is gone by trying to list it
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/fo/to-delete");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        // Verify folder is gone by browsing
+        var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/to-delete?type=all");
+        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
+        browseResult.Should().NotBeNull();
+        browseResult!.Folders.Should().BeEmpty();
+        browseResult.Files.Should().BeEmpty();
     }
 
     [Fact]
@@ -165,15 +112,17 @@ public class FolderEndpointsTests
 
         // Create nested folder structure
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Nested file"));
-        await client.PostAsync("/api/mm/fs/test-memory/fi/parent/child/file.txt", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/parent/child/file.txt", content);
 
         // Delete child folder
-        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/fo/parent/child");
+        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/folders/parent/child");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        // Verify child folder is gone
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/fo/parent/child");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        // Verify child folder is gone (browse the parent)
+        var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/parent?type=folders");
+        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
+        browseResult.Should().NotBeNull();
+        browseResult!.Folders.Should().NotContain(f => f.Name == "child");
     }
 
     #endregion
@@ -186,19 +135,8 @@ public class FolderEndpointsTests
         using var factory = new WafWithInMemoryFilesourceRepository([]);
         using var client = factory.CreateClient();
 
-        var listResponse = await client.GetAsync("/api/mm/fs/non-existent/fo/");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Should_return_not_found_when_listing_non_existent_folder_Async()
-    {
-        var filesource = CreateMemoryFilesource();
-        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
-        using var client = factory.CreateClient();
-
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/fo/does-not-exist");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var deleteResponse = await client.DeleteAsync("/api/mm/fs/non-existent/folders/test");
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -208,7 +146,7 @@ public class FolderEndpointsTests
         using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
         using var client = factory.CreateClient();
 
-        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/fo/does-not-exist");
+        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/folders/does-not-exist");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -217,28 +155,15 @@ public class FolderEndpointsTests
     #region Bucket Tests
 
     [Fact]
-    public async Task Should_list_folders_in_bucket_Async()
+    public async Task Should_create_folder_in_bucket_Async()
     {
         var filesource = CreateMemoryFilesource();
         using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
         using var client = factory.CreateClient();
 
-        // Create folders in bucket
-        var folders = new[] { "bucket-folder1", "bucket-folder2" };
-        foreach (var folder in folders)
-        {
-            var content = new ByteArrayContent(Encoding.UTF8.GetBytes($"Content in bucket {folder}"));
-            await client.PostAsync($"/api/mm/fs/test-memory/bu/my-bucket/fi/{folder}/test.txt", content);
-        }
-
-        // List folders in bucket
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/fo/");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var listResult = await listResponse.ReadAsJsonAsync<FolderListResponse>();
-        listResult.Should().NotBeNull();
-        listResult!.Folders.Should().NotBeNull();
-        listResult.Folders.Should().HaveCountGreaterThanOrEqualTo(2);
+        // Create folder in bucket
+        var createResponse = await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/folders/bucket-folder", null);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Fact]
@@ -250,15 +175,18 @@ public class FolderEndpointsTests
 
         // Create folder in bucket
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Bucket folder to delete"));
-        await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/fi/delete-folder/file.txt", content);
+        await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/files/delete-folder/file.txt", content);
 
         // Delete the folder
-        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/bu/my-bucket/fo/delete-folder");
+        var deleteResponse = await client.DeleteAsync("/api/mm/fs/test-memory/bu/my-bucket/folders/delete-folder");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         // Verify folder is gone
-        var listResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/fo/delete-folder");
-        listResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/browse/delete-folder?type=all");
+        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
+        browseResult.Should().NotBeNull();
+        browseResult!.Folders.Should().BeEmpty();
+        browseResult.Files.Should().BeEmpty();
     }
 
     #endregion

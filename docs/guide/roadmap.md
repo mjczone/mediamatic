@@ -99,11 +99,6 @@ MediaMatic follows a phased development approach, building functionality increme
 - [ ] Archive creation (zip folders)
 - [ ] Archive job tracking (background processing)
 
-### Medium Priority
-
-- [ ] Folder statistics (file count, total size)
-- [ ] Filesource statistics
-
 ### Lower Priority
 
 - [ ] Performance benchmarks
@@ -112,7 +107,7 @@ MediaMatic follows a phased development approach, building functionality increme
 ## Version 1.0 Goals
 
 - Complete archive functionality
-- Folder/filesource statistics
+- Recursive file listing
 - Comprehensive documentation
 - Stable public API
 - Performance benchmarks published

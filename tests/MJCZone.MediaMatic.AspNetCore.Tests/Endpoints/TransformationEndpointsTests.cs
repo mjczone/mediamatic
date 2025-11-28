@@ -4,6 +4,8 @@
 // See LICENSE in the project root for license information.
 
 using System.Net;
+using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
 using MJCZone.MediaMatic.AspNetCore.Tests.Factories;
@@ -71,11 +73,11 @@ public class TransformationEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created, "Upload should succeed");
 
         // Verify the file exists via download
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/fi/test-image.jpg");
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/test-image.jpg");
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK, "Download should succeed to verify file exists");
 
         // Transform with width only
@@ -103,7 +105,7 @@ public class TransformationEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Transform with height only
         var transformResponse = await client.GetAsync("/api/mm/fs/test-memory/transform/h_300/test-image.jpg");
@@ -126,7 +128,7 @@ public class TransformationEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Transform with both width and height (fit mode by default)
         var transformResponse = await client.GetAsync("/api/mm/fs/test-memory/transform/w_400,h_400/test-image.jpg");
@@ -155,7 +157,7 @@ public class TransformationEndpointsTests
         // Upload a test JPEG image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Convert to WebP format
         var transformResponse = await client.GetAsync("/api/mm/fs/test-memory/transform/f_webp/test-image.jpg");
@@ -176,7 +178,7 @@ public class TransformationEndpointsTests
         // Upload a test JPEG image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Convert to PNG format
         var transformResponse = await client.GetAsync("/api/mm/fs/test-memory/transform/f_png/test-image.jpg");
@@ -201,7 +203,7 @@ public class TransformationEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Transform with cover/fill mode (crops to fill exact dimensions)
         var transformResponse = await client.GetAsync(
@@ -226,7 +228,7 @@ public class TransformationEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Transform with pad mode
         var transformResponse = await client.GetAsync(
@@ -255,7 +257,7 @@ public class TransformationEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Apply multiple transformations: resize + quality + format
         var transformResponse = await client.GetAsync(
@@ -310,7 +312,7 @@ public class TransformationEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Transform and check for ETag
         var transformResponse = await client.GetAsync("/api/mm/fs/test-memory/transform/w_400/test-image.jpg");
@@ -328,7 +330,7 @@ public class TransformationEndpointsTests
         // Upload a test image
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/test-image.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
 
         // Transform and check for Cache-Control
         var transformResponse = await client.GetAsync("/api/mm/fs/test-memory/transform/w_400/test-image.jpg");
@@ -351,7 +353,7 @@ public class TransformationEndpointsTests
         // Upload a test image to a nested path
         var imageData = CreateTestJpeg(800, 600);
         var content = new ByteArrayContent(imageData);
-        await client.PostAsync("/api/mm/fs/test-memory/fi/images/gallery/photo.jpg", content);
+        await client.PostAsync("/api/mm/fs/test-memory/files/images/gallery/photo.jpg", content);
 
         // Transform the nested image
         var transformResponse = await client.GetAsync(
@@ -363,6 +365,339 @@ public class TransformationEndpointsTests
         using var resultImage = SKBitmap.Decode(resultBytes);
         resultImage.Should().NotBeNull();
         resultImage.Width.Should().Be(200);
+    }
+
+    #endregion
+
+    #region POST Transform Tests (Single)
+
+    [Fact]
+    public async Task Should_generate_and_save_transform_with_POST_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // Upload a test image
+        var imageData = CreateTestJpeg(800, 600);
+        var content = new ByteArrayContent(imageData);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
+
+        // POST transform to generate and save
+        var request = new TransformRequestDto { SaveTo = "thumbs/test-image_400.webp" };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/transform/w_400,f_webp/test-image.jpg",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var result = await transformResponse.ReadAsJsonAsync<TransformResultDto>();
+        result.Should().NotBeNull();
+        result!.Path.Should().Be("thumbs/test-image_400.webp");
+        result.Success.Should().BeTrue();
+        result.Width.Should().Be(400);
+        result.Format.Should().Be("webp");
+        result.Size.Should().BeGreaterThan(0);
+
+        // Verify the saved file exists
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/thumbs/test-image_400.webp");
+        downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Should_return_bad_request_when_saveTo_missing_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // Upload a test image
+        var imageData = CreateTestJpeg(800, 600);
+        var content = new ByteArrayContent(imageData);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
+
+        // POST transform without saveTo
+        var request = new TransformRequestDto { SaveTo = "" };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/transform/w_400/test-image.jpg",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Should_generate_transform_with_quality_option_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // Upload a test image
+        var imageData = CreateTestJpeg(800, 600);
+        var content = new ByteArrayContent(imageData);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
+
+        // POST transform with quality option
+        var request = new TransformRequestDto { SaveTo = "thumbs/test-image_q50.jpg" };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/transform/w_400,q_50,f_jpeg/test-image.jpg",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var result = await transformResponse.ReadAsJsonAsync<TransformResultDto>();
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.Format.Should().Be("jpeg");
+    }
+
+    #endregion
+
+    #region POST Batch Transform Tests
+
+    [Fact]
+    public async Task Should_generate_batch_transforms_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // Upload a test image
+        var imageData = CreateTestJpeg(800, 600);
+        var content = new ByteArrayContent(imageData);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
+
+        // POST batch transform
+        var request = new TransformBatchRequestDto
+        {
+            Source = "test-image.jpg",
+            Variants =
+            [
+                new TransformVariantDto { Transformations = "w_400,f_webp", SaveTo = "thumbs/test-image_400.webp" },
+                new TransformVariantDto { Transformations = "w_800,f_webp", SaveTo = "thumbs/test-image_800.webp" },
+                new TransformVariantDto { Transformations = "w_200,h_200,c_fill,f_webp", SaveTo = "thumbs/test-image_200x200.webp" },
+            ],
+        };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/transform-batch/",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponseDto>();
+        result.Should().NotBeNull();
+        result!.Results.Should().HaveCount(3);
+        result.Results.Should().OnlyContain(r => r.Success);
+
+        // Verify all files exist
+        var download1 = await client.GetAsync("/api/mm/fs/test-memory/files/thumbs/test-image_400.webp");
+        download1.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var download2 = await client.GetAsync("/api/mm/fs/test-memory/files/thumbs/test-image_800.webp");
+        download2.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var download3 = await client.GetAsync("/api/mm/fs/test-memory/files/thumbs/test-image_200x200.webp");
+        download3.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Should_return_bad_request_when_source_missing_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // POST batch transform without source
+        var request = new TransformBatchRequestDto
+        {
+            Source = "",
+            Variants =
+            [
+                new TransformVariantDto { Transformations = "w_400,f_webp", SaveTo = "thumbs/thumb.webp" },
+            ],
+        };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/transform-batch/",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Should_return_bad_request_when_variants_empty_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // POST batch transform without variants
+        var request = new TransformBatchRequestDto
+        {
+            Source = "test-image.jpg",
+            Variants = [],
+        };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/transform-batch/",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task Should_handle_partial_failure_in_batch_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // Upload a test image
+        var imageData = CreateTestJpeg(800, 600);
+        var content = new ByteArrayContent(imageData);
+        await client.PostAsync("/api/mm/fs/test-memory/files/test-image.jpg", content);
+
+        // POST batch transform with one invalid variant (missing saveTo)
+        var request = new TransformBatchRequestDto
+        {
+            Source = "test-image.jpg",
+            Variants =
+            [
+                new TransformVariantDto { Transformations = "w_400,f_webp", SaveTo = "thumbs/valid.webp" },
+                new TransformVariantDto { Transformations = "w_800,f_webp", SaveTo = "" }, // Invalid - no saveTo
+            ],
+        };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/transform-batch/",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponseDto>();
+        result.Should().NotBeNull();
+        result!.Results.Should().HaveCount(2);
+        result.Results[0].Success.Should().BeTrue();
+        result.Results[1].Success.Should().BeFalse();
+        result.Results[1].ErrorMessage.Should().NotBeNullOrEmpty();
+    }
+
+    #endregion
+
+    #region POST Transform in Bucket Tests
+
+    [Fact]
+    public async Task Should_generate_transform_in_bucket_with_POST_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // Upload a test image to bucket
+        var imageData = CreateTestJpeg(800, 600);
+        var content = new ByteArrayContent(imageData);
+        await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/files/test-image.jpg", content);
+
+        // POST transform in bucket
+        var request = new TransformRequestDto { SaveTo = "thumbs/test-image_400.webp" };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/bu/my-bucket/transform/w_400,f_webp/test-image.jpg",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var result = await transformResponse.ReadAsJsonAsync<TransformResultDto>();
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+
+        // Verify the saved file exists in bucket
+        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/files/thumbs/test-image_400.webp");
+        downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Should_generate_batch_transforms_in_bucket_Async()
+    {
+        var filesource = CreateMemoryFilesource();
+        using var factory = new WafWithInMemoryFilesourceRepository([filesource]);
+        using var client = factory.CreateClient();
+
+        // Upload a test image to bucket
+        var imageData = CreateTestJpeg(800, 600);
+        var content = new ByteArrayContent(imageData);
+        await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/files/test-image.jpg", content);
+
+        // POST batch transform in bucket
+        var request = new TransformBatchRequestDto
+        {
+            Source = "test-image.jpg",
+            Variants =
+            [
+                new TransformVariantDto { Transformations = "w_400,f_webp", SaveTo = "thumbs/thumb_400.webp" },
+                new TransformVariantDto { Transformations = "w_800,f_webp", SaveTo = "thumbs/thumb_800.webp" },
+            ],
+        };
+        var requestContent = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json"
+        );
+
+        var transformResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/bu/my-bucket/transform-batch/",
+            requestContent
+        );
+        transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponseDto>();
+        result.Should().NotBeNull();
+        result!.Results.Should().HaveCount(2);
+        result.Results.Should().OnlyContain(r => r.Success);
     }
 
     #endregion

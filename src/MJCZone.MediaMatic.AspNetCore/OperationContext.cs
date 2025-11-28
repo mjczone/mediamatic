@@ -66,6 +66,11 @@ public class OperationContext : IOperationContext
     public long? FileSizeInBytes { get; set; }
 
     /// <summary>
+    /// Gets or sets the MIME type of the file being accessed, if applicable.
+    /// </summary>
+    public string? MimeType { get; set; }
+
+    /// <summary>
     /// Gets or sets the HTTP method (GET, POST, etc.).
     /// </summary>
     public string? HttpMethod { get; set; }
@@ -150,6 +155,13 @@ public static class OperationContextExtensions
         string? message = null
     )
     {
+        // Extract User-Agent from headers if available
+        string? userAgent = null;
+        if (context.HeaderValues != null)
+        {
+            context.HeaderValues.TryGetValue("User-Agent", out userAgent);
+        }
+
         return new MediaMaticAuditEvent
         {
             UserIdentifier =
@@ -166,9 +178,11 @@ public static class OperationContextExtensions
             FileName = context.FileName,
             FilePath = context.FilePath,
             FileSizeInBytes = context.FileSizeInBytes,
+            MimeType = context.MimeType,
             Success = success,
             Message = message,
             IpAddress = context.IpAddress,
+            UserAgent = userAgent,
             RequestId = context.RequestId,
             Timestamp = DateTimeOffset.UtcNow,
         };

@@ -26,6 +26,11 @@ public static class OperationTags
     public const string FilesourceFiles = "MediaMatic Files";
 
     /// <summary>
+    /// Tag for all MediaMatic Browse-related operations.
+    /// </summary>
+    public const string FilesourceBrowse = "MediaMatic Browse";
+
+    /// <summary>
     /// Tag for all MediaMatic Utility-related operations.
     /// </summary>
     public const string FilesourceUtilities = "MediaMatic Utilities";

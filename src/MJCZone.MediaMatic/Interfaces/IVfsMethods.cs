@@ -154,6 +154,17 @@ public interface IVfsMethods
     /// <returns>A task representing the asynchronous operation.</returns>
     Task DeleteFolderAsync(IVfsConnection vfs, string path, CancellationToken cancellationToken = default);
 
+    // Folder operations
+
+    /// <summary>
+    /// Creates a folder.
+    /// </summary>
+    /// <param name="vfs">The VFS connection.</param>
+    /// <param name="path">The folder path to create.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task CreateFolderAsync(IVfsConnection vfs, string path, CancellationToken cancellationToken = default);
+
     // Transform operations
 
     /// <summary>
