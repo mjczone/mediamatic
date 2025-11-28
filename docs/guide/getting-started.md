@@ -231,11 +231,11 @@ curl -X POST http://localhost:5000/api/mm/fs \
 
 ```bash
 # Upload a file
-curl -X POST http://localhost:5000/api/mm/fs/images/fi/products/shoe.jpg \
+curl -X POST http://localhost:5000/api/mm/fs/images/files/products/shoe.jpg \
   --data-binary @shoe.jpg
 
 # Download a file
-curl http://localhost:5000/api/mm/fs/images/fi/products/shoe.jpg -o shoe.jpg
+curl http://localhost:5000/api/mm/fs/images/files/products/shoe.jpg -o shoe.jpg
 
 # Get file metadata
 curl http://localhost:5000/api/mm/fs/images/metadata/products/shoe.jpg
@@ -243,8 +243,8 @@ curl http://localhost:5000/api/mm/fs/images/metadata/products/shoe.jpg
 # Transform an image (resize to 400px width, convert to WebP)
 curl http://localhost:5000/api/mm/fs/images/transform/w_400,f_webp/products/shoe.jpg -o shoe_thumb.webp
 
-# List files in a folder
-curl http://localhost:5000/api/mm/fs/images/fo/products
+# Browse files in a folder
+curl http://localhost:5000/api/mm/fs/images/browse/products
 ```
 
 ## Next Steps

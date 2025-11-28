@@ -5,6 +5,9 @@ hero:
   name: "MediaMatic"
   text: "Intelligent Media Storage & Optimization"
   tagline: C# library and REST API for media storage, optimization, and processing across multiple storage providers
+  announcement:
+    title: "⚠️ Under Development"
+    content: "This library is in active development (v0.x.x). Breaking changes may occur. Not recommended for production use until v1.0.0."
   actions:
     - theme: brand
       text: Get Started
