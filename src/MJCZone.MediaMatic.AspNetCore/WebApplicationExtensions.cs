@@ -54,7 +54,6 @@ public static class WebApplicationExtensions
         app.MapMediaMaticTransformationEndpoints(options.BasePath);
         app.MapMediaMaticMetadataEndpoints(options.BasePath);
         app.MapMediaMaticArchiveEndpoints(options.BasePath);
-        app.MapMediaMaticStatsEndpoints(options.BasePath);
         return app;
     }
 }

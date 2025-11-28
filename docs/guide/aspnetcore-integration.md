@@ -164,12 +164,13 @@ var app = builder.Build();
 app.MapMediaMaticEndpoints();
 
 // Or map individual endpoint groups
-app.MapMediaMaticFileEndpoints();      // /files/ operations
-app.MapMediaMaticFolderEndpoints();    // /folders/ operations
-app.MapMediaMaticBrowseEndpoints();    // /browse/ operations
-app.MapMediaMaticTransformEndpoints(); // /transform/ operations
-app.MapMediaMaticStatsEndpoints();     // /stats/ operations
-app.MapMediaMaticArchiveEndpoints();   // /archive/ operations
+app.MapMediaMaticFilesourceEndpoints(); // /fs/ filesource CRUD operations
+app.MapMediaMaticFileEndpoints();       // /files/ operations
+app.MapMediaMaticFolderEndpoints();     // /folders/ operations
+app.MapMediaMaticBrowseEndpoints();     // /browse/ operations
+app.MapMediaMaticTransformEndpoints();  // /transform/ operations
+app.MapMediaMaticMetadataEndpoints();   // /metadata/ operations
+app.MapMediaMaticArchiveEndpoints();    // /archive/ operations
 ```
 
 ### File Operations (`/files/`)
@@ -299,6 +300,139 @@ Request body:
     { "transformations": "w_800,f_webp", "saveTo": "thumbs/photo_800.webp" },
     { "transformations": "w_200,h_200,c_cover,f_webp", "saveTo": "thumbs/photo_square.webp" }
   ]
+}
+```
+
+### Archive Endpoints (`/archive/`)
+
+Create, list, download, and delete archives of files and folders.
+
+**Create Folder Archive:**
+```
+POST /api/mm/fs/{filesourceId}/archive/folders/{*folderPath}
+POST /api/mm/fs/{filesourceId}/bu/{bucketName}/archive/folders/{*folderPath}
+```
+
+Request body (optional):
+```json
+{
+  "name": "my-archive",
+  "compression": "zip"
+}
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `name` | string | timestamp | Archive filename (without extension) |
+| `compression` | string | `zip` | Format: `zip`, `tar`, or `tar.gz` |
+
+Response:
+```json
+{
+  "archiveId": "my-archive.zip",
+  "archivePath": "__archives/my-archive.zip",
+  "fileCount": 15
+}
+```
+
+**Create File List Archive:**
+```
+POST /api/mm/fs/{filesourceId}/archive/files/
+POST /api/mm/fs/{filesourceId}/bu/{bucketName}/archive/files/
+```
+
+Request body:
+```json
+{
+  "name": "selected-files",
+  "compression": "tar.gz",
+  "paths": [
+    "images/photo1.jpg",
+    "images/photo2.jpg",
+    "documents/"
+  ]
+}
+```
+
+Note: Paths ending with `/` are treated as folders and all their contents are included recursively.
+
+**List Archives:**
+```
+GET /api/mm/fs/{filesourceId}/archives/folders/{*folderPath}
+GET /api/mm/fs/{filesourceId}/bu/{bucketName}/archives/folders/{*folderPath}
+```
+
+Response:
+```json
+{
+  "archives": [
+    {
+      "archiveId": "my-archive.zip",
+      "fileName": "my-archive.zip",
+      "path": "__archives/my-archive.zip",
+      "size": 0,
+      "createdAt": "2025-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
+**Download Archive:**
+```
+GET /api/mm/fs/{filesourceId}/archives/{archiveId}
+GET /api/mm/fs/{filesourceId}/bu/{bucketName}/archives/{archiveId}
+```
+
+Returns the archive file with appropriate content type (`application/zip`, `application/x-tar`, or `application/gzip`).
+
+**Delete Archive:**
+```
+DELETE /api/mm/fs/{filesourceId}/archives/{archiveId}
+DELETE /api/mm/fs/{filesourceId}/bu/{bucketName}/archives/{archiveId}
+```
+
+Returns `204 No Content` on success.
+
+### Metadata Endpoints (`/metadata/`)
+
+Extract metadata from files without downloading them.
+
+```
+GET /api/mm/fs/{filesourceId}/metadata/{*filePath}
+GET /api/mm/fs/{filesourceId}/bu/{bucketName}/metadata/{*filePath}
+```
+
+Response varies by file type:
+
+**Image metadata:**
+```json
+{
+  "mimeType": "image/jpeg",
+  "width": 1920,
+  "height": 1080,
+  "format": "jpeg",
+  "colorSpace": "sRGB",
+  "hasAlpha": false
+}
+```
+
+**Video metadata (requires FFmpeg):**
+```json
+{
+  "mimeType": "video/mp4",
+  "width": 1920,
+  "height": 1080,
+  "duration": 120.5,
+  "codec": "h264",
+  "frameRate": 30
+}
+```
+
+**Non-media files:**
+```json
+{
+  "mimeType": "application/pdf",
+  "size": 102400
 }
 ```
 

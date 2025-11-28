@@ -27,16 +27,4 @@ public class ArchiveRequest
     /// Valid values: "zip" (default), "tar", "tar.gz".
     /// </summary>
     public string Compression { get; set; } = "zip";
-
-    /// <summary>
-    /// Gets or sets a value indicating whether to include files recursively from folders.
-    /// </summary>
-    public bool Recursive { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the duration after which the archive should be automatically deleted.
-    /// Format: "7d" (7 days), "24h" (24 hours), "30m" (30 minutes).
-    /// If null, archive is never automatically deleted.
-    /// </summary>
-    public string? DeleteAfter { get; set; }
 }

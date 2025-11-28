@@ -43,9 +43,9 @@ public static class ArchiveEndpoints
             .WithName("CreateFolderArchive")
             .WithSummary("Create an archive of a folder")
             .WithDescription(
-                "Creates a compressed archive (zip, tar, tar.gz) of the specified folder. Returns job ID for tracking progress."
+                "Creates a compressed zip archive of the specified folder and stores it in the __archives folder."
             )
-            .Produces<ArchiveResponse>((int)HttpStatusCode.Accepted)
+            .Produces<ArchiveResponse>((int)HttpStatusCode.OK)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -62,9 +62,9 @@ public static class ArchiveEndpoints
             .WithName("CreateFileListArchive")
             .WithSummary("Create an archive from a list of files")
             .WithDescription(
-                "Creates a compressed archive from a list of specified files and folders. Returns job ID for tracking progress."
+                "Creates a compressed zip archive from a list of specified files and folders."
             )
-            .Produces<ArchiveResponse>((int)HttpStatusCode.Accepted)
+            .Produces<ArchiveResponse>((int)HttpStatusCode.OK)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -111,22 +111,6 @@ public static class ArchiveEndpoints
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.Forbidden);
 
-        // Job status endpoint
-        var jobStatusGroup = app.MapMediaMaticEndpointGroup(
-            basePath,
-            "/fs/{filesourceId}/jobs",
-            OperationTags.FilesourceUtilities
-        );
-
-        jobStatusGroup
-            .MapGet("/{jobId}", GetArchiveJobStatusAsync)
-            .WithName("GetArchiveJobStatus")
-            .WithSummary("Get archive job status")
-            .WithDescription("Returns the current status of an archive creation job.")
-            .Produces<ArchiveJobStatus>((int)HttpStatusCode.OK)
-            .Produces((int)HttpStatusCode.NotFound)
-            .Produces((int)HttpStatusCode.Forbidden);
-
         // Bucket variants
         RegisterBucketArchiveEndpoints(app, basePath);
 
@@ -147,7 +131,7 @@ public static class ArchiveEndpoints
             .WithName("CreateBucketFolderArchive")
             .WithSummary("Create an archive of a folder in a bucket")
             .WithDescription("Creates a compressed archive of the specified folder in a storage bucket.")
-            .Produces<ArchiveResponse>((int)HttpStatusCode.Accepted)
+            .Produces<ArchiveResponse>((int)HttpStatusCode.OK)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -164,7 +148,7 @@ public static class ArchiveEndpoints
             .WithName("CreateBucketFileListArchive")
             .WithSummary("Create an archive from a list of files in a bucket")
             .WithDescription("Creates a compressed archive from files and folders in a storage bucket.")
-            .Produces<ArchiveResponse>((int)HttpStatusCode.Accepted)
+            .Produces<ArchiveResponse>((int)HttpStatusCode.OK)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -263,14 +247,6 @@ public static class ArchiveEndpoints
         CancellationToken cancellationToken = default
     ) => DeleteArchiveInternalAsync(operationContext, service, filesourceId, null, archiveId, cancellationToken);
 
-    private static Task<IResult> GetArchiveJobStatusAsync(
-        IOperationContext operationContext,
-        IMediaMaticService service,
-        [FromRoute] string filesourceId,
-        [FromRoute] string jobId,
-        CancellationToken cancellationToken = default
-    ) => GetArchiveJobStatusInternalAsync(operationContext, service, filesourceId, null, jobId, cancellationToken);
-
     // Bucket implementations
     private static Task<IResult> CreateFolderArchiveFromBucketAsync(
         IOperationContext operationContext,
@@ -360,7 +336,7 @@ public static class ArchiveEndpoints
             )
             .ConfigureAwait(false);
 
-        return Results.Accepted($"/api/mm/fs/{filesourceId}/jobs/{response.JobId}", response);
+        return Results.Ok(response);
     }
 
     private static async Task<IResult> CreateFileListArchiveInternalAsync(
@@ -381,7 +357,7 @@ public static class ArchiveEndpoints
             .CreateFileListArchiveAsync(operationContext, filesourceId, bucketName, request, cancellationToken)
             .ConfigureAwait(false);
 
-        return Results.Accepted($"/api/mm/fs/{filesourceId}/jobs/{response.JobId}", response);
+        return Results.Ok(response);
     }
 
     private static async Task<IResult> ListArchivesInternalAsync(
@@ -435,21 +411,5 @@ public static class ArchiveEndpoints
             .ConfigureAwait(false);
 
         return Results.NoContent();
-    }
-
-    private static async Task<IResult> GetArchiveJobStatusInternalAsync(
-        IOperationContext operationContext,
-        IMediaMaticService service,
-        string filesourceId,
-        string? bucketName,
-        string jobId,
-        CancellationToken cancellationToken
-    )
-    {
-        var status = await service
-            .GetArchiveJobStatusAsync(operationContext, filesourceId, bucketName, jobId, cancellationToken)
-            .ConfigureAwait(false);
-
-        return Results.Ok(status);
     }
 }

@@ -135,7 +135,9 @@ public partial class MediaMaticService
         var connection = await GetVfsConnectionAsync(filesourceId).ConfigureAwait(false);
         var fullPath = CombineBucketAndPath(bucketName, path);
 
-        // TODO: Implement recursive listing (current extension doesn't support it)
+        // Note: recursive parameter is not yet used - VfsMethodsBase.ListFilesAsync doesn't support it.
+        // For recursive browsing, use the ListAsync method instead (BrowseEndpoints use this).
+        _ = recursive; // Suppress unused parameter warning for now
         var files = await connection.ListFilesAsync(fullPath, cancellationToken).ConfigureAwait(false);
 
         await LogAuditEventAsync(context, true, $"Listed files in path '{path ?? "root"}'").ConfigureAwait(false);

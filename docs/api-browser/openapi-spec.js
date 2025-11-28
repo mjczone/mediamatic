@@ -1802,13 +1802,13 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/archive/fo/{folderPath}": {
+    "/api/mm/fs/{filesourceId}/archive/folders/{folderPath}": {
       "post": {
         "tags": [
           "MediaMatic Utilities"
         ],
         "summary": "Create an archive of a folder",
-        "description": "Creates a compressed archive (zip, tar, tar.gz) of the specified folder. Returns job ID for tracking progress.",
+        "description": "Creates a compressed zip archive of the specified folder and stores it in the __archives folder.",
         "operationId": "CreateFolderArchive",
         "parameters": [
           {
@@ -1838,8 +1838,8 @@ export default {
           }
         },
         "responses": {
-          "202": {
-            "description": "Accepted",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -1860,13 +1860,13 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/archive/fi": {
+    "/api/mm/fs/{filesourceId}/archive/files": {
       "post": {
         "tags": [
           "MediaMatic Utilities"
         ],
         "summary": "Create an archive from a list of files",
-        "description": "Creates a compressed archive from a list of specified files and folders. Returns job ID for tracking progress.",
+        "description": "Creates a compressed zip archive from a list of specified files and folders.",
         "operationId": "CreateFileListArchive",
         "parameters": [
           {
@@ -1889,8 +1889,8 @@ export default {
           "required": true
         },
         "responses": {
-          "202": {
-            "description": "Accepted",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -1911,7 +1911,7 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/archives/fo/{folderPath}": {
+    "/api/mm/fs/{filesourceId}/archives/folders/{folderPath}": {
       "get": {
         "tags": [
           "MediaMatic Utilities"
@@ -2040,53 +2040,7 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/jobs/{jobId}": {
-      "get": {
-        "tags": [
-          "MediaMatic Utilities"
-        ],
-        "summary": "Get archive job status",
-        "description": "Returns the current status of an archive creation job.",
-        "operationId": "GetArchiveJobStatus",
-        "parameters": [
-          {
-            "name": "filesourceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "jobId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArchiveJobStatus"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archive/fo/{folderPath}": {
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archive/folders/{folderPath}": {
       "post": {
         "tags": [
           "MediaMatic Utilities"
@@ -2130,8 +2084,8 @@ export default {
           }
         },
         "responses": {
-          "202": {
-            "description": "Accepted",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -2152,7 +2106,7 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archive/fi": {
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archive/files": {
       "post": {
         "tags": [
           "MediaMatic Utilities"
@@ -2189,8 +2143,8 @@ export default {
           "required": true
         },
         "responses": {
-          "202": {
-            "description": "Accepted",
+          "200": {
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -2211,7 +2165,7 @@ export default {
         }
       }
     },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archives/fo/{folderPath}": {
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/archives/folders/{folderPath}": {
       "get": {
         "tags": [
           "MediaMatic Utilities"
@@ -2363,206 +2317,6 @@ export default {
           }
         }
       }
-    },
-    "/api/mm/fs/{filesourceId}/stats/fo/{folderPath}": {
-      "get": {
-        "tags": [
-          "MediaMatic Utilities"
-        ],
-        "summary": "Get folder statistics",
-        "description": "Returns statistics for a folder including total size, file count, folder count, and breakdown by MIME type. Use ?recursive=true to include subdirectories.",
-        "operationId": "GetFolderStats",
-        "parameters": [
-          {
-            "name": "filesourceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "folderPath",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "recursive",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FolderStatsResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/mm/fs/{filesourceId}/stats": {
-      "get": {
-        "tags": [
-          "MediaMatic Utilities"
-        ],
-        "summary": "Get filesource statistics",
-        "description": "Returns  statistics for the entire filesource including total size, file count, top folders by size, and breakdown by MIME type.",
-        "operationId": "GetFilesourceStats",
-        "parameters": [
-          {
-            "name": "filesourceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FilesourceStatsResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/stats/fo/{folderPath}": {
-      "get": {
-        "tags": [
-          "MediaMatic Utilities"
-        ],
-        "summary": "Get folder statistics from a bucket",
-        "description": "Returns statistics for a folder in a storage bucket including total size, file count, and breakdown by MIME type.",
-        "operationId": "GetBucketFolderStats",
-        "parameters": [
-          {
-            "name": "filesourceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "bucketName",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "folderPath",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "recursive",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": false
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FolderStatsResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/mm/fs/{filesourceId}/bu/{bucketName}/stats": {
-      "get": {
-        "tags": [
-          "MediaMatic Utilities"
-        ],
-        "summary": "Get bucket statistics",
-        "description": "Returns  statistics for an entire storage bucket including total size, file count, top folders by size, and breakdown by MIME type.",
-        "operationId": "GetBucketStats",
-        "parameters": [
-          {
-            "name": "filesourceId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "bucketName",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FilesourceStatsResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
     }
   },
   "components": {
@@ -2598,58 +2352,6 @@ export default {
         },
         "additionalProperties": false
       },
-      "ArchiveJobStatus": {
-        "type": "object",
-        "properties": {
-          "jobId": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "progress": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "filesProcessed": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "totalFiles": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "errorMessage": {
-            "type": "string",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "completedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "archivePath": {
-            "type": "string",
-            "nullable": true
-          },
-          "archiveSize": {
-            "type": "integer",
-            "format": "int64",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "ArchiveListResponse": {
         "type": "object",
         "properties": {
@@ -2680,13 +2382,6 @@ export default {
           "compression": {
             "type": "string",
             "nullable": true
-          },
-          "recursive": {
-            "type": "boolean"
-          },
-          "deleteAfter": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2694,10 +2389,6 @@ export default {
       "ArchiveResponse": {
         "type": "object",
         "properties": {
-          "jobId": {
-            "type": "string",
-            "nullable": true
-          },
           "archiveId": {
             "type": "string",
             "nullable": true
@@ -2706,13 +2397,9 @@ export default {
             "type": "string",
             "nullable": true
           },
-          "downloadUrl": {
-            "type": "string",
-            "format": "uri",
-            "nullable": true
-          },
-          "status": {
-            "$ref": "#/components/schemas/ArchiveJobStatus"
+          "fileCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -2896,67 +2583,6 @@ export default {
         },
         "additionalProperties": false
       },
-      "FilesourceStatsResponse": {
-        "type": "object",
-        "properties": {
-          "filesourceId": {
-            "type": "string",
-            "nullable": true
-          },
-          "bucketName": {
-            "type": "string",
-            "nullable": true
-          },
-          "totalSize": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "totalSizeFormatted": {
-            "type": "string",
-            "nullable": true
-          },
-          "fileCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "folderCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "oldestFile": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "newestFile": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "byType": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/TypeStats"
-            },
-            "nullable": true
-          },
-          "topFolders": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FolderSizeInfo"
-            },
-            "nullable": true
-          },
-          "calculatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "cached": {
-            "type": "boolean"
-          }
-        },
-        "additionalProperties": false
-      },
       "FilesourceTestResponse": {
         "type": "object",
         "properties": {
@@ -2976,81 +2602,6 @@ export default {
           "name": {
             "type": "string",
             "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "FolderSizeInfo": {
-        "type": "object",
-        "properties": {
-          "path": {
-            "type": "string",
-            "nullable": true
-          },
-          "size": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "sizeFormatted": {
-            "type": "string",
-            "nullable": true
-          },
-          "fileCount": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "FolderStatsResponse": {
-        "type": "object",
-        "properties": {
-          "path": {
-            "type": "string",
-            "nullable": true
-          },
-          "totalSize": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "totalSizeFormatted": {
-            "type": "string",
-            "nullable": true
-          },
-          "fileCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "folderCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "oldestFile": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "newestFile": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "byType": {
-            "type": "object",
-            "additionalProperties": {
-              "$ref": "#/components/schemas/TypeStats"
-            },
-            "nullable": true
-          },
-          "calculatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "cached": {
-            "type": "boolean"
-          },
-          "recursive": {
-            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -3381,24 +2932,6 @@ export default {
             "nullable": true
           },
           "saveTo": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "TypeStats": {
-        "type": "object",
-        "properties": {
-          "count": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "size": {
-            "type": "integer",
-            "format": "int64"
-          },
-          "sizeFormatted": {
             "type": "string",
             "nullable": true
           }

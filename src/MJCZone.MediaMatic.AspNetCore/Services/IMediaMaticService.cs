@@ -436,66 +436,6 @@ public interface IMediaMaticService
         CancellationToken cancellationToken = default
     );
 
-    /// <summary>
-    /// Gets the status of an archive creation job.
-    /// </summary>
-    /// <param name="context">The operation context.</param>
-    /// <param name="filesourceId">The filesource identifier.</param>
-    /// <param name="bucketName">Optional bucket name (for S3/Azure).</param>
-    /// <param name="jobId">The job identifier.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Archive job status.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the job is not found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
-    Task<ArchiveJobStatus> GetArchiveJobStatusAsync(
-        IOperationContext context,
-        string filesourceId,
-        string? bucketName,
-        string jobId,
-        CancellationToken cancellationToken = default
-    );
-
     #endregion // Archive Methods
 
-    #region Statistics Methods
-
-    /// <summary>
-    /// Gets statistics for a folder.
-    /// </summary>
-    /// <param name="context">The operation context.</param>
-    /// <param name="filesourceId">The filesource identifier.</param>
-    /// <param name="bucketName">Optional bucket name (for S3/Azure).</param>
-    /// <param name="folderPath">The folder path.</param>
-    /// <param name="recursive">Whether to include subdirectories recursively.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Folder statistics.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the folder is not found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
-    Task<FolderStatsResponse> GetFolderStatsAsync(
-        IOperationContext context,
-        string filesourceId,
-        string? bucketName,
-        string folderPath,
-        bool recursive,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Gets statistics for an entire filesource or bucket.
-    /// </summary>
-    /// <param name="context">The operation context.</param>
-    /// <param name="filesourceId">The filesource identifier.</param>
-    /// <param name="bucketName">Optional bucket name (for S3/Azure).</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Filesource/bucket statistics.</returns>
-    /// <exception cref="KeyNotFoundException">Thrown when the filesource is not found.</exception>
-    /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
-    Task<FilesourceStatsResponse> GetFilesourceStatsAsync(
-        IOperationContext context,
-        string filesourceId,
-        string? bucketName,
-        CancellationToken cancellationToken = default
-    );
-
-    #endregion // Statistics Methods
 }

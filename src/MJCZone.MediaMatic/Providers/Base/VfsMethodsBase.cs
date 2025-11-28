@@ -297,20 +297,40 @@ public abstract partial class VfsMethodsBase : IVfsMethods
         }
 
         // Delete all subfolders (deepest first to avoid issues)
+        // Some providers (SFTP) may auto-delete empty parent folders when children are removed,
+        // so we catch and ignore "not found" errors during folder deletion.
         var folderPaths = blobs.Where(b => b.IsFolder).Select(b => b.FullPath).OrderByDescending(p => p.Length).ToList();
-        if (folderPaths.Count != 0)
+        foreach (var folder in folderPaths)
         {
-            await blobStorage.DeleteAsync(folderPaths, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await blobStorage.DeleteAsync(folder, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex.Message.Contains("No such file", StringComparison.OrdinalIgnoreCase)
+                || ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)
+                || ex.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
+            {
+                // Folder was already deleted (auto-removed when empty), ignore
+            }
         }
 
         // Delete the folder itself (with and without trailing slash)
         var folderPath = path.TrimEnd('/');
-        var pathsToDelete = new List<string> { folderPath, folderPath + "/" };
+        var pathsToDelete = new List<string> { folderPath, folderPath + "/", folderPath + "/.folder" };
 
-        // Also delete any .folder marker file that may exist
-        pathsToDelete.Add(folderPath + "/.folder");
-
-        await blobStorage.DeleteAsync(pathsToDelete, cancellationToken).ConfigureAwait(false);
+        foreach (var pathToDelete in pathsToDelete)
+        {
+            try
+            {
+                await blobStorage.DeleteAsync(pathToDelete, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex.Message.Contains("No such file", StringComparison.OrdinalIgnoreCase)
+                || ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)
+                || ex.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
+            {
+                // Already deleted, ignore
+            }
+        }
     }
 
     /// <inheritdoc/>

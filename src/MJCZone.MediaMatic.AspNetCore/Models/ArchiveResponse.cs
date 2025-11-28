@@ -15,7 +15,6 @@ public class ArchiveResponse
     /// </summary>
     public ArchiveResponse()
     {
-        JobId = string.Empty;
         ArchiveId = string.Empty;
         ArchivePath = string.Empty;
     }
@@ -23,23 +22,18 @@ public class ArchiveResponse
     /// <summary>
     /// Initializes a new instance of the <see cref="ArchiveResponse"/> class.
     /// </summary>
-    /// <param name="jobId">The background job ID.</param>
     /// <param name="archiveId">The archive ID.</param>
     /// <param name="archivePath">The path to the archive file.</param>
-    public ArchiveResponse(string jobId, string archiveId, string archivePath)
+    /// <param name="fileCount">The number of files in the archive.</param>
+    public ArchiveResponse(string archiveId, string archivePath, int fileCount)
     {
-        JobId = jobId;
         ArchiveId = archiveId;
         ArchivePath = archivePath;
+        FileCount = fileCount;
     }
 
     /// <summary>
-    /// Gets or sets the background job ID for tracking archive creation progress.
-    /// </summary>
-    public string JobId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the unique archive ID.
+    /// Gets or sets the unique archive ID (filename).
     /// </summary>
     public string ArchiveId { get; set; }
 
@@ -49,12 +43,7 @@ public class ArchiveResponse
     public string ArchivePath { get; set; }
 
     /// <summary>
-    /// Gets or sets the download URL for the archive (if available).
+    /// Gets or sets the number of files included in the archive.
     /// </summary>
-    public Uri? DownloadUrl { get; set; }
-
-    /// <summary>
-    /// Gets or sets the status of the archive creation.
-    /// </summary>
-    public ArchiveJobStatus? Status { get; set; }
+    public int FileCount { get; set; }
 }

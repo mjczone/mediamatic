@@ -5,7 +5,7 @@ MediaMatic follows a phased development approach, building functionality increme
 ## Current Status
 
 **Version:** 0.1.x (Foundation)
-**Tests:** 303 passing (51 ASP.NET Core + 252 Core)
+**Tests:** 318 passing (66 ASP.NET Core + 252 Core)
 
 ## Development Phases
 
@@ -38,7 +38,7 @@ MediaMatic follows a phased development approach, building functionality increme
   - [x] Pad mode
   - [x] Stretch mode
 - [x] Focal point cropping
-- [x] Format conversion (JPEG, PNG, WebP, AVIF)
+- [x] Format conversion (JPEG, PNG, WebP)
 - [x] Quality optimization
 - [x] Thumbnail generation
 
@@ -65,24 +65,36 @@ MediaMatic follows a phased development approach, building functionality increme
 - [x] Filesource repository pattern
 - [x] REST API endpoints
   - [x] Filesource CRUD (`/api/mm/fs`)
-  - [x] File operations (`/api/mm/fs/{id}/fi/{path}`)
-  - [x] Folder operations (`/api/mm/fs/{id}/fo/{path}`)
+  - [x] File operations (`/api/mm/fs/{id}/files/{path}`)
+  - [x] Folder operations (`/api/mm/fs/{id}/folders/{path}`)
+  - [x] Browse operations (`/api/mm/fs/{id}/browse/{path}`)
   - [x] Image transformations (`/api/mm/fs/{id}/transform/{params}/{path}`)
   - [x] Metadata extraction (`/api/mm/fs/{id}/metadata/{path}`)
+  - [x] Archive operations (`/api/mm/fs/{id}/archive/...`)
 - [x] Bucket support for multi-tenant storage
 - [x] Caching headers (ETag, Cache-Control)
 - [x] Browser-aware format serving (`f_auto` with DeviceDetector.NET)
 
-### Phase 7: Testing ✅
+### Phase 7: Archive Operations ✅
+
+- [x] Create folder archives (recursive - all nested files included)
+- [x] Create file list archives
+- [x] Multiple compression formats: zip (default), tar, tar.gz
+- [x] List archives
+- [x] Download archives
+- [x] Delete archives
+
+### Phase 8: Testing ✅
 
 - [x] Unit tests for processors (252 tests)
 - [x] Integration tests with Testcontainers
-- [x] ASP.NET Core endpoint tests (51 tests)
+- [x] ASP.NET Core endpoint tests (66 tests)
 - [x] LocalStack for S3 testing
 - [x] MinIO container for S3-compatible testing
+- [x] SFTP container for SFTP testing
 - [x] Test isolation with unique memory storage names
 
-### Phase 8: Documentation ✅
+### Phase 9: Documentation ✅
 
 - [x] VitePress site structure
 - [x] Getting started guide
@@ -91,26 +103,39 @@ MediaMatic follows a phased development approach, building functionality increme
 - [x] API reference auto-generation
 - [x] Code examples in guides
 
-## Remaining Work
+## v0.1.0 Release Ready ✅
 
-### High Priority
+The library is ready for v0.1.0 release with:
 
-- [ ] Recursive file listing support
-- [ ] Archive creation (zip folders)
-- [ ] Archive job tracking (background processing)
+- All core VFS operations working
+- Image transformation endpoints
+- Metadata extraction endpoints
+- Archive creation/management (zip, tar, tar.gz)
+- Comprehensive test coverage (318 tests)
+- Complete documentation
 
-### Lower Priority
+## Remaining Work (Post v0.1.0)
+
+### v0.2.0 - Background Jobs & Statistics
+
+- [ ] Background job system (Hangfire or similar) for async archive creation
+- [ ] Add `background=true` parameter to archive endpoints for async creation
+- [ ] Statistics endpoints (folder stats, filesource stats)
+- [ ] Archive auto-deletion (DeleteAfter support)
+
+### v0.3.0 - Enhanced Media Processing
+
+- [ ] Video transcoding via FFMpegCore
+- [ ] Thumbnail generation for videos
+- [ ] AVIF image format support
+- [ ] Responsive image set generation
+
+### v1.0.0 - Production Ready
 
 - [ ] Performance benchmarks
+- [ ] Security audit
+- [ ] API stabilization
 - [ ] Additional code examples
-
-## Version 1.0 Goals
-
-- Complete archive functionality
-- Recursive file listing
-- Comprehensive documentation
-- Stable public API
-- Performance benchmarks published
 
 ## Future Considerations
 
