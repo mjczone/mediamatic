@@ -1469,6 +1469,71 @@ export default {
             "description": "Not Found"
           }
         }
+      },
+      "post": {
+        "tags": [
+          "MediaMatic Transformations"
+        ],
+        "summary": "Generate and save a transformed image",
+        "description": "Transform an image and save it to a specified path. Returns metadata about the transformed image instead of the image itself. Ideal for CMS pre-generation workflows where thumbnails are generated ahead of time.",
+        "operationId": "GenerateTransform",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transformations",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
       }
     },
     "/api/mm/fs/{filesourceId}/bu/{bucketName}/transform/{transformations}/{filePath}": {
@@ -1541,6 +1606,189 @@ export default {
           },
           "304": {
             "description": "Not Modified"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "MediaMatic Transformations"
+        ],
+        "summary": "Generate and save a transformed image from a bucket",
+        "description": "Transform an image from a bucket and save it to a specified path. Returns metadata about the transformed image. Ideal for CMS pre-generation workflows.",
+        "operationId": "GenerateTransformFromBucket",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "filePath",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transformations",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/transform-batch": {
+      "post": {
+        "tags": [
+          "MediaMatic Transformations"
+        ],
+        "summary": "Generate multiple transformed images in one request",
+        "description": "Transform a single source image into multiple variants (e.g., different sizes, formats). Each variant is saved to its specified path. Returns metadata for all generated images. Ideal for generating all thumbnail sizes at once.",
+        "operationId": "GenerateBatchTransform",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformBatchRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformBatchResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/mm/fs/{filesourceId}/bu/{bucketName}/transform-batch": {
+      "post": {
+        "tags": [
+          "MediaMatic Transformations"
+        ],
+        "summary": "Generate multiple transformed images from a bucket in one request",
+        "description": "Transform a single source image from a bucket into multiple variants. Each variant is saved to its specified path within the bucket. Returns metadata for all generated images.",
+        "operationId": "GenerateBatchTransformFromBucket",
+        "parameters": [
+          {
+            "name": "filesourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "bucketName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformBatchRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformBatchResponseDto"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
@@ -3046,6 +3294,93 @@ export default {
             "nullable": true
           },
           "description": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransformBatchRequestDto": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "nullable": true
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransformVariantDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransformBatchResponseDto": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransformResultDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransformRequestDto": {
+        "type": "object",
+        "properties": {
+          "saveTo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransformResultDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "nullable": true
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "width": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "format": {
+            "type": "string",
+            "nullable": true
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TransformVariantDto": {
+        "type": "object",
+        "properties": {
+          "transformations": {
+            "type": "string",
+            "nullable": true
+          },
+          "saveTo": {
             "type": "string",
             "nullable": true
           }

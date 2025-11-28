@@ -213,6 +213,16 @@ var files = await vfs.ListFilesAsync("images/");
 var folders = await vfs.ListFoldersAsync("images/");
 ```
 
+### Create Folders
+
+```csharp
+// Create a folder
+await vfs.CreateFolderAsync("images/gallery/");
+
+// Create nested folders (creates parent folders if needed)
+await vfs.CreateFolderAsync("uploads/2025/01/photos/");
+```
+
 ### Delete Files and Folders
 
 ```csharp

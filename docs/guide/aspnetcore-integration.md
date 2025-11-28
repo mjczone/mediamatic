@@ -153,6 +153,157 @@ public class ImageController : ControllerBase
 | `IImageMetadataExtractor` | Image metadata extraction |
 | `IVideoMetadataExtractor` | Video metadata extraction |
 
+## REST API Endpoints
+
+MediaMatic provides a comprehensive REST API for file and media management. Map the endpoints in your startup:
+
+```csharp
+var app = builder.Build();
+
+// Map all MediaMatic endpoints
+app.MapMediaMaticEndpoints();
+
+// Or map individual endpoint groups
+app.MapMediaMaticFileEndpoints();      // /files/ operations
+app.MapMediaMaticFolderEndpoints();    // /folders/ operations
+app.MapMediaMaticBrowseEndpoints();    // /browse/ operations
+app.MapMediaMaticTransformEndpoints(); // /transform/ operations
+app.MapMediaMaticStatsEndpoints();     // /stats/ operations
+app.MapMediaMaticArchiveEndpoints();   // /archive/ operations
+```
+
+### File Operations (`/files/`)
+
+File operations use the `/files/{*filePath}` route pattern:
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/mm/fs/{filesourceId}/files/{*filePath}` | Download a file (inline display) |
+| `GET` | `/api/mm/fs/{filesourceId}/files/{*filePath}?download=true` | Force download |
+| `POST` | `/api/mm/fs/{filesourceId}/files/{*filePath}` | Upload a new file |
+| `PUT` | `/api/mm/fs/{filesourceId}/files/{*filePath}` | Overwrite an existing file |
+| `DELETE` | `/api/mm/fs/{filesourceId}/files/{*filePath}` | Delete a file |
+
+**Bucket variants** include `/bu/{bucketName}/` in the path:
+```
+GET /api/mm/fs/{filesourceId}/bu/{bucketName}/files/{*filePath}
+```
+
+### Folder Operations (`/folders/`)
+
+Folder operations use the `/folders/{*folderPath}` route pattern:
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `POST` | `/api/mm/fs/{filesourceId}/folders/{*folderPath}` | Create a folder |
+| `DELETE` | `/api/mm/fs/{filesourceId}/folders/{*folderPath}` | Delete a folder recursively |
+
+### Browse Endpoint (`/browse/`)
+
+The unified browse endpoint lists files and/or folders with rich metadata:
+
+```
+GET /api/mm/fs/{filesourceId}/browse/{*folderPath?}
+GET /api/mm/fs/{filesourceId}/bu/{bucketName}/browse/{*folderPath?}
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `type` | string | `all` | `files`, `folders`, or `all` |
+| `filter` | string | null | Wildcard filter: `*.pdf`, `*report*.xlsx` |
+| `recursive` | bool | false | Include subdirectories |
+| `fields` | string | `all` | Comma-separated: `path,size,lastModified,extension,category` |
+
+**Response (default - all fields):**
+```json
+{
+  "folders": [
+    { "path": "images/", "name": "images" }
+  ],
+  "files": [
+    {
+      "path": "images/photo.jpg",
+      "name": "photo.jpg",
+      "size": 102400,
+      "lastModified": "2025-01-15T10:30:00Z",
+      "extension": ".jpg",
+      "category": "image"
+    }
+  ]
+}
+```
+
+**Minimal response (`?fields=path`):**
+```json
+{
+  "folders": ["images/"],
+  "files": ["images/photo.jpg"]
+}
+```
+
+**File Categories** (based on extension):
+- `image`: jpg, jpeg, png, gif, webp, avif, bmp, tiff, svg
+- `video`: mp4, webm, mov, avi, mkv
+- `audio`: mp3, wav, ogg, flac, aac
+- `document`: pdf, doc, docx, xls, xlsx, ppt, pptx
+- `archive`: zip, tar, gz, rar, 7z
+- `code`: js, ts, cs, py, java, html, css, json, xml
+- `other`: everything else
+
+### Transform Endpoints (`/transform/`)
+
+Transform images on-the-fly with URL parameters. See [Transformation URL API](./transformation-url-api.md) for full documentation.
+
+**GET Transform (returns image):**
+```
+GET /api/mm/fs/{filesourceId}/transform/{transformations}/{*filePath}
+GET /api/mm/fs/{filesourceId}/transform/{transformations}/{*filePath}?download=true
+GET /api/mm/fs/{filesourceId}/transform/{transformations}/{*filePath}?saveTo=path/to/save.webp
+```
+
+**POST Transform (returns metadata, for CMS pre-generation):**
+```
+POST /api/mm/fs/{filesourceId}/transform/{transformations}/{*filePath}
+```
+
+Request body:
+```json
+{ "saveTo": "thumbs/photo_400.webp" }
+```
+
+Response:
+```json
+{
+  "path": "thumbs/photo_400.webp",
+  "size": 12345,
+  "width": 400,
+  "height": 300,
+  "format": "webp",
+  "success": true
+}
+```
+
+**Batch Transform (generate multiple variants):**
+```
+POST /api/mm/fs/{filesourceId}/transform-batch/
+```
+
+Request body:
+```json
+{
+  "source": "images/photo.jpg",
+  "variants": [
+    { "transformations": "w_400,f_webp", "saveTo": "thumbs/photo_400.webp" },
+    { "transformations": "w_800,f_webp", "saveTo": "thumbs/photo_800.webp" },
+    { "transformations": "w_200,h_200,c_cover,f_webp", "saveTo": "thumbs/photo_square.webp" }
+  ]
+}
+```
+
+---
+
 ## Minimal API Endpoints
 
 ### Image Upload

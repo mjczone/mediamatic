@@ -34,7 +34,7 @@ public static class ArchiveEndpoints
         // Archive folder endpoint - root filesource
         var folderArchiveGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/archive/fo",
+            "/fs/{filesourceId}/archive/folders",
             OperationTags.FilesourceUtilities
         );
 
@@ -53,7 +53,7 @@ public static class ArchiveEndpoints
         // Archive file list endpoint - root filesource
         var fileArchiveGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/archive/fi",
+            "/fs/{filesourceId}/archive/files",
             OperationTags.FilesourceUtilities
         );
 
@@ -72,7 +72,7 @@ public static class ArchiveEndpoints
         // List archives endpoint - root filesource
         var listArchiveGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/archives/fo",
+            "/fs/{filesourceId}/archives/folders",
             OperationTags.FilesourceUtilities
         );
 
@@ -138,7 +138,7 @@ public static class ArchiveEndpoints
         // Archive folder endpoint - bucket
         var bucketFolderArchiveGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/bu/{bucketName}/archive/fo",
+            "/fs/{filesourceId}/bu/{bucketName}/archive/folders",
             OperationTags.FilesourceUtilities
         );
 
@@ -155,7 +155,7 @@ public static class ArchiveEndpoints
         // Archive file list endpoint - bucket
         var bucketFileArchiveGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/bu/{bucketName}/archive/fi",
+            "/fs/{filesourceId}/bu/{bucketName}/archive/files",
             OperationTags.FilesourceUtilities
         );
 
@@ -172,7 +172,7 @@ public static class ArchiveEndpoints
         // List archives endpoint - bucket
         var bucketListArchiveGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/bu/{bucketName}/archives/fo",
+            "/fs/{filesourceId}/bu/{bucketName}/archives/folders",
             OperationTags.FilesourceUtilities
         );
 

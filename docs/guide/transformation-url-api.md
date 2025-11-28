@@ -24,7 +24,7 @@ Transform an image using the `/transform` endpoint:
 
 ```
 Original:
-GET /api/mm/fs/default/fi/products/shoe.jpg
+GET /api/mm/fs/default/files/products/shoe.jpg
 
 Transformed (400x300, WebP format):
 GET /api/mm/fs/default/transform/w_400,h_300,f_webp/products/shoe.jpg
@@ -422,6 +422,138 @@ GET /transform/w_400,f_png,v_2/logo.png
 
 ---
 
+## Query Parameters
+
+### Force Download (`download`)
+
+Force the browser to download the transformed image instead of displaying it inline:
+
+```bash
+# Display image inline (default)
+GET /transform/w_800,f_webp/photo.jpg
+
+# Force download
+GET /transform/w_800,f_webp/photo.jpg?download=true
+```
+
+### Save Transformed Result (`saveTo`)
+
+Save the transformed image to a specific path for caching/pre-generation:
+
+```bash
+# Transform and save to thumbs folder
+GET /transform/w_400,f_webp/images/photo.jpg?saveTo=thumbs/photo_400.webp
+```
+
+**Behavior:**
+- Transforms the image
+- Saves to the specified path (overwrites if exists)
+- Returns the transformed image
+
+---
+
+## POST Transform Endpoints (CMS Pre-Generation)
+
+For CMS workflows where you want to pre-generate thumbnails without streaming the image back, use the POST endpoints. These return metadata instead of the image, making them more efficient for batch operations.
+
+### Single Transform
+
+```
+POST /api/mm/fs/{filesourceId}/transform/{transformations}/{*filePath}
+```
+
+**Request Body:**
+```json
+{
+  "saveTo": "thumbs/photo_400.webp"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "path": "thumbs/photo_400.webp",
+  "size": 12345,
+  "width": 400,
+  "height": 300,
+  "format": "webp",
+  "success": true
+}
+```
+
+**Example:**
+```bash
+curl -X POST "https://example.com/api/mm/fs/default/transform/w_400,h_300,f_webp/images/photo.jpg" \
+  -H "Content-Type: application/json" \
+  -d '{"saveTo": "thumbs/photo_400x300.webp"}'
+```
+
+### Batch Transform
+
+Generate multiple variants of a source image in one request:
+
+```
+POST /api/mm/fs/{filesourceId}/transform-batch/
+```
+
+**Request Body:**
+```json
+{
+  "source": "images/photo.jpg",
+  "variants": [
+    { "transformations": "w_400,f_webp", "saveTo": "thumbs/photo_400.webp" },
+    { "transformations": "w_800,f_webp", "saveTo": "thumbs/photo_800.webp" },
+    { "transformations": "w_1200,f_webp", "saveTo": "thumbs/photo_1200.webp" },
+    { "transformations": "w_200,h_200,c_cover,f_webp", "saveTo": "thumbs/photo_square.webp" }
+  ]
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "results": [
+    { "path": "thumbs/photo_400.webp", "size": 12345, "width": 400, "height": 300, "format": "webp", "success": true },
+    { "path": "thumbs/photo_800.webp", "size": 34567, "width": 800, "height": 600, "format": "webp", "success": true },
+    { "path": "thumbs/photo_1200.webp", "size": 56789, "width": 1200, "height": 900, "format": "webp", "success": true },
+    { "path": "thumbs/photo_square.webp", "size": 8901, "width": 200, "height": 200, "format": "webp", "success": true }
+  ]
+}
+```
+
+### CMS Pre-Generation Workflow
+
+A typical CMS workflow for handling image uploads:
+
+```
+1. User uploads original image
+   POST /api/mm/fs/default/files/images/photo.jpg
+
+2. CMS generates all required variants
+   POST /api/mm/fs/default/transform-batch/
+   Body: {
+     "source": "images/photo.jpg",
+     "variants": [
+       { "transformations": "w_400,f_webp", "saveTo": "thumbs/photo_400.webp" },
+       { "transformations": "w_800,f_webp", "saveTo": "thumbs/photo_800.webp" },
+       { "transformations": "w_200,h_200,c_cover,f_webp", "saveTo": "thumbs/photo_square.webp" }
+     ]
+   }
+
+3. Website serves pre-generated files directly (no runtime processing)
+   GET /api/mm/fs/default/files/thumbs/photo_400.webp
+
+4. When source image changes, CMS re-runs batch transform with same paths
+```
+
+**Benefits:**
+- No runtime processing overhead for end users
+- Consistent thumbnail generation across deployments
+- Easy to regenerate all variants when source changes
+- Metadata response allows CMS to track file sizes and dimensions
+
+---
+
 ## Complete Examples
 
 ### Responsive Image Set
@@ -716,12 +848,12 @@ Provide multiple sizes for different screen sizes:
 
 ```html
 <img
-  src="/fi/hero.jpg/t/w_800,c_fit,q_auto,f_auto"
+  src="/transform/w_800,c_fit,q_auto,f_auto"
   srcset="
-    /fi/hero.jpg/t/w_400,c_fit,q_auto,f_auto 400w,
-    /fi/hero.jpg/t/w_800,c_fit,q_auto,f_auto 800w,
-    /fi/hero.jpg/t/w_1200,c_fit,q_auto,f_auto 1200w,
-    /fi/hero.jpg/t/w_1600,c_fit,q_auto,f_auto 1600w
+    /transform/w_400,c_fit,q_auto,f_auto 400w,
+    /transform/w_800,c_fit,q_auto,f_auto 800w,
+    /transform/w_1200,c_fit,q_auto,f_auto 1200w,
+    /transform/w_1600,c_fit,q_auto,f_auto 1600w
   "
   sizes="(max-width: 600px) 400px,
          (max-width: 1200px) 800px,
@@ -786,12 +918,12 @@ Load critical images first, lazy-load below-the-fold images:
 
 ```html
 <!-- Above the fold: Load immediately -->
-<img src="/fi/hero.jpg/t/w_1920,ar_16:9,c_fill,f_auto,q_auto"
+<img src="/transform/w_1920,ar_16:9,c_fill,f_auto,q_auto"
      alt="Hero"
      loading="eager">
 
 <!-- Below the fold: Lazy load -->
-<img src="/fi/product.jpg/t/w_400,c_fit,f_auto,q_auto"
+<img src="/transform/w_400,c_fit,f_auto,q_auto"
      alt="Product"
      loading="lazy">
 ```

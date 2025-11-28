@@ -34,7 +34,7 @@ public static class StatsEndpoints
         // Folder stats endpoint - root filesource
         var folderStatsGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/stats/fo",
+            "/fs/{filesourceId}/stats/folders",
             OperationTags.FilesourceUtilities
         );
 
@@ -80,7 +80,7 @@ public static class StatsEndpoints
         // Folder stats endpoint - bucket
         var bucketFolderStatsGroup = app.MapMediaMaticEndpointGroup(
             basePath,
-            "/fs/{filesourceId}/bu/{bucketName}/stats/fo",
+            "/fs/{filesourceId}/bu/{bucketName}/stats/folders",
             OperationTags.FilesourceUtilities
         );
 

@@ -52,7 +52,9 @@ All providers support the same operations via `IVfsMethods`:
 - ✅ `DownloadAsync` - Download files to stream
 - ✅ `DeleteAsync` - Delete single file
 - ✅ `DeleteFolderAsync` - Delete folder recursively
+- ✅ `CreateFolderAsync` - Create folder
 - ✅ `ExistsAsync` - Check if file exists
+- ✅ `ListAsync` - List files and folders with rich metadata
 - ✅ `ListFilesAsync` - List files in folder
 - ✅ `ListFoldersAsync` - List subfolders
 
@@ -63,6 +65,18 @@ All providers support the same operations via `IVfsMethods`:
 - ✅ `GenerateThumbnailsAsync` - Generate video thumbnails
 - ✅ `TranscodeVideoAsync` - Transcode videos
 - ✅ `GetMetadataAsync` - Extract metadata
+- ✅ `TransformImageAsync` - Transform image with URL-style parameters
+- ✅ `TransformBatchAsync` - Batch transform multiple image variants
+
+**REST API Endpoints (ASP.NET Core):**
+- ✅ `GET/POST/PUT/DELETE /files/{*path}` - File operations
+- ✅ `POST/DELETE /folders/{*path}` - Folder operations
+- ✅ `GET /browse/{*path}` - Unified browsing with filters
+- ✅ `GET /transform/{transformations}/{*path}` - On-the-fly image transformation
+- ✅ `POST /transform/{transformations}/{*path}` - Transform and save (CMS pre-generation)
+- ✅ `POST /transform-batch/` - Batch transform multiple variants
+- ✅ `GET /stats/folders/{*path}` - Folder statistics
+- ✅ `GET /archive/folders/{*path}` - Archive operations
 
 **Legend:** ✅ Implemented | 🔨 In Progress | ⏳ Planned
 
@@ -648,7 +662,7 @@ Additional future work:
 
 ---
 
-**Last Updated:** 2025-11-19
+**Last Updated:** 2025-11-27
 **Current Phase:** Phase 5 - Documentation
 **Next Milestone:** Complete API documentation and user guides
 **Recent Achievements:**
@@ -660,3 +674,12 @@ Additional future work:
 - ✅ Test infrastructure with FFmpeg skip attributes for graceful degradation
 - ✅ Provider-agnostic architecture validated (same code for all providers)
 - ✅ Platform compatibility issues resolved (AVIF, stream management)
+- ✅ **REST API Restructuring Complete:**
+  - Renamed `/fi/` to `/files/` for file operations
+  - Renamed `/fo/` to `/folders/` for folder operations
+  - Added unified `/browse/` endpoint with type/filter/recursive/fields params
+  - Added POST transform endpoints for CMS pre-generation workflows
+  - Added batch transform endpoint for generating multiple variants
+  - Added `?download=true` and `?saveTo=` query parameters for transforms
+  - Added `CreateFolderAsync` method to core VFS interface
+  - Added rich `ListAsync` method returning file/folder metadata with categories
