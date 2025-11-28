@@ -224,7 +224,10 @@ public class FileEndpointsTests
         // Upload a file to a bucket
         var content = new ByteArrayContent(Encoding.UTF8.GetBytes("Bucket file content"));
 
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/files/bucket-file.txt", content);
+        var uploadResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/bu/my-bucket/files/bucket-file.txt",
+            content
+        );
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Download the file from the bucket

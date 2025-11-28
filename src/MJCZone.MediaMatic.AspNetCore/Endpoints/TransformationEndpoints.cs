@@ -257,15 +257,7 @@ public static class TransformationEndpoints
         [FromRoute] string filesourceId,
         [FromBody] TransformBatchRequestDto request,
         CancellationToken cancellationToken = default
-    ) =>
-        GenerateBatchTransformInternalAsync(
-            operationContext,
-            service,
-            filesourceId,
-            null,
-            request,
-            cancellationToken
-        );
+    ) => GenerateBatchTransformInternalAsync(operationContext, service, filesourceId, null, request, cancellationToken);
 
     private static Task<IResult> GenerateBatchTransformFromBucketAsync(
         IOperationContext operationContext,
@@ -312,9 +304,8 @@ public static class TransformationEndpoints
         }
 
         // Resolve format from options (f_auto defaults to WebP for POST since no browser context)
-        var resolvedFormat = options.Format == ImageFormatOption.Auto
-            ? ImageFormat.WebP
-            : ToImageFormat(options.Format);
+        var resolvedFormat =
+            options.Format == ImageFormatOption.Auto ? ImageFormat.WebP : ToImageFormat(options.Format);
 
         // Apply transformations
         var processingOptions = options.ToImageProcessingOptions(resolvedFormat);
@@ -337,7 +328,15 @@ public static class TransformationEndpoints
 
         // Save to the specified path
         await service
-            .UploadFileAsync(operationContext, filesourceId, bucketName, saveTo, memoryStream, overwrite: true, cancellationToken)
+            .UploadFileAsync(
+                operationContext,
+                filesourceId,
+                bucketName,
+                saveTo,
+                memoryStream,
+                overwrite: true,
+                cancellationToken
+            )
             .ConfigureAwait(false);
 
         // Get the dimensions from processing options (if specified) or return 0
@@ -381,12 +380,14 @@ public static class TransformationEndpoints
             {
                 if (string.IsNullOrWhiteSpace(variant.SaveTo))
                 {
-                    results.Add(new TransformResultDto
-                    {
-                        Path = variant.SaveTo ?? string.Empty,
-                        Success = false,
-                        ErrorMessage = "saveTo is required for each variant",
-                    });
+                    results.Add(
+                        new TransformResultDto
+                        {
+                            Path = variant.SaveTo ?? string.Empty,
+                            Success = false,
+                            ErrorMessage = "saveTo is required for each variant",
+                        }
+                    );
                     continue;
                 }
 
@@ -398,19 +399,20 @@ public static class TransformationEndpoints
                 }
                 catch (ArgumentException ex)
                 {
-                    results.Add(new TransformResultDto
-                    {
-                        Path = variant.SaveTo,
-                        Success = false,
-                        ErrorMessage = $"Invalid transformation parameters: {ex.Message}",
-                    });
+                    results.Add(
+                        new TransformResultDto
+                        {
+                            Path = variant.SaveTo,
+                            Success = false,
+                            ErrorMessage = $"Invalid transformation parameters: {ex.Message}",
+                        }
+                    );
                     continue;
                 }
 
                 // Resolve format (f_auto defaults to WebP for batch)
-                var resolvedFormat = options.Format == ImageFormatOption.Auto
-                    ? ImageFormat.WebP
-                    : ToImageFormat(options.Format);
+                var resolvedFormat =
+                    options.Format == ImageFormatOption.Auto ? ImageFormat.WebP : ToImageFormat(options.Format);
 
                 // Apply transformations
                 var processingOptions = options.ToImageProcessingOptions(resolvedFormat);
@@ -433,27 +435,39 @@ public static class TransformationEndpoints
 
                 // Save to the specified path
                 await service
-                    .UploadFileAsync(operationContext, filesourceId, bucketName, variant.SaveTo, memoryStream, overwrite: true, cancellationToken)
+                    .UploadFileAsync(
+                        operationContext,
+                        filesourceId,
+                        bucketName,
+                        variant.SaveTo,
+                        memoryStream,
+                        overwrite: true,
+                        cancellationToken
+                    )
                     .ConfigureAwait(false);
 
-                results.Add(new TransformResultDto
-                {
-                    Path = variant.SaveTo,
-                    Size = memoryStream.Length,
-                    Width = processingOptions.Width ?? 0,
-                    Height = processingOptions.Height ?? 0,
-                    Format = GetFormatName(resolvedFormat),
-                    Success = true,
-                });
+                results.Add(
+                    new TransformResultDto
+                    {
+                        Path = variant.SaveTo,
+                        Size = memoryStream.Length,
+                        Width = processingOptions.Width ?? 0,
+                        Height = processingOptions.Height ?? 0,
+                        Format = GetFormatName(resolvedFormat),
+                        Success = true,
+                    }
+                );
             }
             catch (Exception ex)
             {
-                results.Add(new TransformResultDto
-                {
-                    Path = variant.SaveTo ?? string.Empty,
-                    Success = false,
-                    ErrorMessage = ex.Message,
-                });
+                results.Add(
+                    new TransformResultDto
+                    {
+                        Path = variant.SaveTo ?? string.Empty,
+                        Success = false,
+                        ErrorMessage = ex.Message,
+                    }
+                );
             }
         }
 
@@ -559,7 +573,15 @@ public static class TransformationEndpoints
 
             // Save to the specified path
             await service
-                .UploadFileAsync(operationContext, filesourceId, bucketName, saveTo, memoryStream, overwrite: true, cancellationToken)
+                .UploadFileAsync(
+                    operationContext,
+                    filesourceId,
+                    bucketName,
+                    saveTo,
+                    memoryStream,
+                    overwrite: true,
+                    cancellationToken
+                )
                 .ConfigureAwait(false);
 
             // Reset stream for response

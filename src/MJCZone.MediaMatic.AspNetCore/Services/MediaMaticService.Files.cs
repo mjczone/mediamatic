@@ -178,7 +178,12 @@ public partial class MediaMaticService
         // List blobs with FluentStorage
         var blobs = await blobStorage
             .ListAsync(
-                new ListOptions { FolderPath = fullPath, Recurse = options.Recursive, FilePrefix = null },
+                new ListOptions
+                {
+                    FolderPath = fullPath,
+                    Recurse = options.Recursive,
+                    FilePrefix = null,
+                },
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -218,7 +223,9 @@ public partial class MediaMaticService
                             Size = options.IncludeField("size") ? blob.Size : null,
                             LastModified = options.IncludeField("lastModified") ? blob.LastModificationTime : null,
                             Extension = options.IncludeField("extension") ? extension : null,
-                            Category = options.IncludeField("category") ? FileCategoryMapper.GetCategory(extension) : null,
+                            Category = options.IncludeField("category")
+                                ? FileCategoryMapper.GetCategory(extension)
+                                : null,
                         }
                     );
                 }

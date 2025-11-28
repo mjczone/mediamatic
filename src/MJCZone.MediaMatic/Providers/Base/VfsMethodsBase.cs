@@ -299,16 +299,22 @@ public abstract partial class VfsMethodsBase : IVfsMethods
         // Delete all subfolders (deepest first to avoid issues)
         // Some providers (SFTP) may auto-delete empty parent folders when children are removed,
         // so we catch and ignore "not found" errors during folder deletion.
-        var folderPaths = blobs.Where(b => b.IsFolder).Select(b => b.FullPath).OrderByDescending(p => p.Length).ToList();
+        var folderPaths = blobs
+            .Where(b => b.IsFolder)
+            .Select(b => b.FullPath)
+            .OrderByDescending(p => p.Length)
+            .ToList();
         foreach (var folder in folderPaths)
         {
             try
             {
                 await blobStorage.DeleteAsync(folder, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex.Message.Contains("No such file", StringComparison.OrdinalIgnoreCase)
-                || ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)
-                || ex.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
+                when (ex.Message.Contains("No such file", StringComparison.OrdinalIgnoreCase)
+                    || ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)
+                    || ex.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase)
+                )
             {
                 // Folder was already deleted (auto-removed when empty), ignore
             }
@@ -324,9 +330,11 @@ public abstract partial class VfsMethodsBase : IVfsMethods
             {
                 await blobStorage.DeleteAsync(pathToDelete, cancellationToken).ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex.Message.Contains("No such file", StringComparison.OrdinalIgnoreCase)
-                || ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)
-                || ex.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase))
+            catch (Exception ex)
+                when (ex.Message.Contains("No such file", StringComparison.OrdinalIgnoreCase)
+                    || ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)
+                    || ex.Message.Contains("does not exist", StringComparison.OrdinalIgnoreCase)
+                )
             {
                 // Already deleted, ignore
             }

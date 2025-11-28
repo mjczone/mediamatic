@@ -119,7 +119,8 @@ public static class FileEndpoints
         [FromRoute] string filePath,
         [FromQuery] bool download = false,
         CancellationToken cancellationToken = default
-    ) => DownloadFileInternalAsync(operationContext, service, filesourceId, null, filePath, download, cancellationToken);
+    ) =>
+        DownloadFileInternalAsync(operationContext, service, filesourceId, null, filePath, download, cancellationToken);
 
     private static Task<IResult> UploadFileAsync(
         IOperationContext operationContext,
@@ -184,7 +185,16 @@ public static class FileEndpoints
         [FromRoute] string filePath,
         [FromQuery] bool download = false,
         CancellationToken cancellationToken = default
-    ) => DownloadFileInternalAsync(operationContext, service, filesourceId, bucketName, filePath, download, cancellationToken);
+    ) =>
+        DownloadFileInternalAsync(
+            operationContext,
+            service,
+            filesourceId,
+            bucketName,
+            filePath,
+            download,
+            cancellationToken
+        );
 
     private static Task<IResult> UploadBucketFileAsync(
         IOperationContext operationContext,

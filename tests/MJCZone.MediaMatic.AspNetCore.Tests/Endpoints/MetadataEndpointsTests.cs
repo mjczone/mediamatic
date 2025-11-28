@@ -166,7 +166,10 @@ public class MetadataEndpointsTests
         // Upload a test image to a bucket
         var imageData = CreateTestJpeg(1920, 1080);
         var content = new ByteArrayContent(imageData);
-        var uploadResponse = await client.PostAsync("/api/mm/fs/test-memory/bu/images-bucket/files/banner.jpg", content);
+        var uploadResponse = await client.PostAsync(
+            "/api/mm/fs/test-memory/bu/images-bucket/files/banner.jpg",
+            content
+        );
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Get metadata from bucket

@@ -61,9 +61,7 @@ public static class ArchiveEndpoints
             .MapPost("/", CreateFileListArchiveAsync)
             .WithName("CreateFileListArchive")
             .WithSummary("Create an archive from a list of files")
-            .WithDescription(
-                "Creates a compressed zip archive from a list of specified files and folders."
-            )
+            .WithDescription("Creates a compressed zip archive from a list of specified files and folders.")
             .Produces<ArchiveResponse>((int)HttpStatusCode.OK)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.NotFound)

@@ -61,10 +61,7 @@ public class S3ProviderTests : VfsProviderTestsBase, IAsyncLifetime
 
     protected override Task<IVfsConnection> CreateConnectionAsync()
     {
-        var connection = VfsConnection.Create(
-            VfsProviderType.S3,
-            _localStackFixture.S3ConnectionString
-        );
+        var connection = VfsConnection.Create(VfsProviderType.S3, _localStackFixture.S3ConnectionString);
         return Task.FromResult(connection);
     }
 

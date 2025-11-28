@@ -437,5 +437,4 @@ public interface IMediaMaticService
     );
 
     #endregion // Archive Methods
-
 }

@@ -59,7 +59,9 @@ public static class FolderEndpoints
             .MapPost("/{*folderPath}", useBucket ? CreateBucketFolderAsync : CreateFolderAsync)
             .WithName($"Create{namePrefix}")
             .WithSummary($"Create a folder{bucketText}")
-            .WithDescription($"Creates the specified folder{bucketText}. Parent folders are created automatically if they don't exist.")
+            .WithDescription(
+                $"Creates the specified folder{bucketText}. Parent folders are created automatically if they don't exist."
+            )
             .Produces((int)HttpStatusCode.Created)
             .Produces((int)HttpStatusCode.Conflict)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -130,7 +132,10 @@ public static class FolderEndpoints
             return Results.Conflict(new { error = "Folder already exists", path = folderPath });
         }
 
-        return Results.Created($"{operationContext.EndpointPath?.TrimEnd('/')}/{folderPath}", new { path = folderPath });
+        return Results.Created(
+            $"{operationContext.EndpointPath?.TrimEnd('/')}/{folderPath}",
+            new { path = folderPath }
+        );
     }
 
     private static async Task<IResult> DeleteFolderInternalAsync(

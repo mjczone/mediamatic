@@ -64,7 +64,12 @@ public partial class MediaMaticService
         // Get all files in the folder recursively
         var blobs = await blobStorage
             .ListAsync(
-                new ListOptions { FolderPath = fullPath, Recurse = true, FilePrefix = null },
+                new ListOptions
+                {
+                    FolderPath = fullPath,
+                    Recurse = true,
+                    FilePrefix = null,
+                },
                 cancellationToken
             )
             .ConfigureAwait(false);
@@ -80,26 +85,26 @@ public partial class MediaMaticService
         var (extension, format) = GetArchiveFormat(request.Compression);
 
         // Generate archive name
-        var archiveName = request.Name ?? $"{folderPath.Replace("/", "_", StringComparison.Ordinal).TrimEnd('_')}_{DateTime.UtcNow:yyyyMMddHHmmss}";
+        var archiveName =
+            request.Name
+            ?? $"{folderPath.Replace("/", "_", StringComparison.Ordinal).TrimEnd('_')}_{DateTime.UtcNow:yyyyMMddHHmmss}";
         var archiveId = $"{archiveName}{extension}";
         var archivePath = CombineBucketAndPath(bucketName, $"{ArchivesFolder}/{archiveId}");
 
         // Create the archive
         using var archiveStream = new MemoryStream();
-        await CreateArchiveAsync(
-            archiveStream,
-            format,
-            fileList,
-            fullPath,
-            connection,
-            cancellationToken
-        ).ConfigureAwait(false);
+        await CreateArchiveAsync(archiveStream, format, fileList, fullPath, connection, cancellationToken)
+            .ConfigureAwait(false);
 
         // Upload the archive
         archiveStream.Position = 0;
         await connection.UploadFileAsync(archiveStream, archivePath, true, cancellationToken).ConfigureAwait(false);
 
-        await LogAuditEventAsync(context, true, $"Created archive '{archiveId}' from folder '{folderPath}' ({fileList.Count} files)")
+        await LogAuditEventAsync(
+                context,
+                true,
+                $"Created archive '{archiveId}' from folder '{folderPath}' ({fileList.Count} files)"
+            )
             .ConfigureAwait(false);
 
         return new ArchiveResponse(archiveId, archivePath, fileList.Count);
@@ -149,7 +154,12 @@ public partial class MediaMaticService
                 // It's a folder - get all files recursively
                 var blobs = await blobStorage
                     .ListAsync(
-                        new ListOptions { FolderPath = fullPath, Recurse = true, FilePrefix = null },
+                        new ListOptions
+                        {
+                            FolderPath = fullPath,
+                            Recurse = true,
+                            FilePrefix = null,
+                        },
                         cancellationToken
                     )
                     .ConfigureAwait(false);
@@ -179,13 +189,14 @@ public partial class MediaMaticService
         // Create the archive - use empty base path so filenames are used as entry names
         using var archiveStream = new MemoryStream();
         var filesAdded = await CreateArchiveAsync(
-            archiveStream,
-            format,
-            filePaths,
-            null, // No base path - use filenames only
-            connection,
-            cancellationToken
-        ).ConfigureAwait(false);
+                archiveStream,
+                format,
+                filePaths,
+                null, // No base path - use filenames only
+                connection,
+                cancellationToken
+            )
+            .ConfigureAwait(false);
 
         // Upload the archive
         archiveStream.Position = 0;
@@ -226,18 +237,22 @@ public partial class MediaMaticService
             foreach (var filePath in files)
             {
                 var fileName = Path.GetFileName(filePath);
-                if (fileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
-                    fileName.EndsWith(".tar", StringComparison.OrdinalIgnoreCase) ||
-                    fileName.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+                if (
+                    fileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)
+                    || fileName.EndsWith(".tar", StringComparison.OrdinalIgnoreCase)
+                    || fileName.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase)
+                )
                 {
-                    archives.Add(new ArchiveInfo
-                    {
-                        ArchiveId = fileName,
-                        FileName = fileName,
-                        Path = filePath,
-                        Size = 0, // Would need metadata call to get size
-                        CreatedAt = DateTime.UtcNow, // Would need metadata call to get actual date
-                    });
+                    archives.Add(
+                        new ArchiveInfo
+                        {
+                            ArchiveId = fileName,
+                            FileName = fileName,
+                            Path = filePath,
+                            Size = 0, // Would need metadata call to get size
+                            CreatedAt = DateTime.UtcNow, // Would need metadata call to get actual date
+                        }
+                    );
                 }
             }
         }
@@ -330,9 +345,32 @@ public partial class MediaMaticService
     {
         return format switch
         {
-            ArchiveFormat.Zip => await CreateZipArchiveAsync(outputStream, filePaths, basePath, connection, cancellationToken).ConfigureAwait(false),
-            ArchiveFormat.Tar => await CreateTarArchiveAsync(outputStream, filePaths, basePath, connection, gzip: false, cancellationToken).ConfigureAwait(false),
-            ArchiveFormat.TarGz => await CreateTarArchiveAsync(outputStream, filePaths, basePath, connection, gzip: true, cancellationToken).ConfigureAwait(false),
+            ArchiveFormat.Zip => await CreateZipArchiveAsync(
+                    outputStream,
+                    filePaths,
+                    basePath,
+                    connection,
+                    cancellationToken
+                )
+                .ConfigureAwait(false),
+            ArchiveFormat.Tar => await CreateTarArchiveAsync(
+                    outputStream,
+                    filePaths,
+                    basePath,
+                    connection,
+                    gzip: false,
+                    cancellationToken
+                )
+                .ConfigureAwait(false),
+            ArchiveFormat.TarGz => await CreateTarArchiveAsync(
+                    outputStream,
+                    filePaths,
+                    basePath,
+                    connection,
+                    gzip: true,
+                    cancellationToken
+                )
+                .ConfigureAwait(false),
             _ => throw new ArgumentOutOfRangeException(nameof(format)),
         };
     }
@@ -353,7 +391,9 @@ public partial class MediaMaticService
             {
                 try
                 {
-                    using var fileStream = await connection.DownloadAsync(filePath, cancellationToken).ConfigureAwait(false);
+                    using var fileStream = await connection
+                        .DownloadAsync(filePath, cancellationToken)
+                        .ConfigureAwait(false);
 
                     var entryName = GetEntryName(filePath, basePath);
                     var entry = archive.CreateEntry(entryName, CompressionLevel.Optimal);
@@ -396,7 +436,9 @@ public partial class MediaMaticService
                 {
                     try
                     {
-                        using var fileStream = await connection.DownloadAsync(filePath, cancellationToken).ConfigureAwait(false);
+                        using var fileStream = await connection
+                            .DownloadAsync(filePath, cancellationToken)
+                            .ConfigureAwait(false);
 
                         // Copy to memory stream to get the length (TarEntry needs it)
                         using var memoryStream = new MemoryStream();
@@ -404,10 +446,7 @@ public partial class MediaMaticService
                         memoryStream.Position = 0;
 
                         var entryName = GetEntryName(filePath, basePath);
-                        var entry = new PaxTarEntry(TarEntryType.RegularFile, entryName)
-                        {
-                            DataStream = memoryStream,
-                        };
+                        var entry = new PaxTarEntry(TarEntryType.RegularFile, entryName) { DataStream = memoryStream };
 
                         await tarWriter.WriteEntryAsync(entry, cancellationToken).ConfigureAwait(false);
                         filesAdded++;

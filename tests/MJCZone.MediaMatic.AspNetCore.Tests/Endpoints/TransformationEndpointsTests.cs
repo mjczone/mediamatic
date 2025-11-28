@@ -385,11 +385,7 @@ public class TransformationEndpointsTests
 
         // POST transform to generate and save
         var request = new TransformRequestDto { SaveTo = "thumbs/test-image_400.webp" };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         var transformResponse = await client.PostAsync(
             "/api/mm/fs/test-memory/transform/w_400,f_webp/test-image.jpg",
@@ -424,11 +420,7 @@ public class TransformationEndpointsTests
 
         // POST transform without saveTo
         var request = new TransformRequestDto { SaveTo = "" };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         var transformResponse = await client.PostAsync(
             "/api/mm/fs/test-memory/transform/w_400/test-image.jpg",
@@ -451,11 +443,7 @@ public class TransformationEndpointsTests
 
         // POST transform with quality option
         var request = new TransformRequestDto { SaveTo = "thumbs/test-image_q50.jpg" };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         var transformResponse = await client.PostAsync(
             "/api/mm/fs/test-memory/transform/w_400,q_50,f_jpeg/test-image.jpg",
@@ -493,19 +481,16 @@ public class TransformationEndpointsTests
             [
                 new TransformVariantDto { Transformations = "w_400,f_webp", SaveTo = "thumbs/test-image_400.webp" },
                 new TransformVariantDto { Transformations = "w_800,f_webp", SaveTo = "thumbs/test-image_800.webp" },
-                new TransformVariantDto { Transformations = "w_200,h_200,c_fill,f_webp", SaveTo = "thumbs/test-image_200x200.webp" },
+                new TransformVariantDto
+                {
+                    Transformations = "w_200,h_200,c_fill,f_webp",
+                    SaveTo = "thumbs/test-image_200x200.webp",
+                },
             ],
         };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        var transformResponse = await client.PostAsync(
-            "/api/mm/fs/test-memory/transform-batch/",
-            requestContent
-        );
+        var transformResponse = await client.PostAsync("/api/mm/fs/test-memory/transform-batch/", requestContent);
         transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponseDto>();
@@ -535,21 +520,11 @@ public class TransformationEndpointsTests
         var request = new TransformBatchRequestDto
         {
             Source = "",
-            Variants =
-            [
-                new TransformVariantDto { Transformations = "w_400,f_webp", SaveTo = "thumbs/thumb.webp" },
-            ],
+            Variants = [new TransformVariantDto { Transformations = "w_400,f_webp", SaveTo = "thumbs/thumb.webp" }],
         };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        var transformResponse = await client.PostAsync(
-            "/api/mm/fs/test-memory/transform-batch/",
-            requestContent
-        );
+        var transformResponse = await client.PostAsync("/api/mm/fs/test-memory/transform-batch/", requestContent);
         transformResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -561,21 +536,10 @@ public class TransformationEndpointsTests
         using var client = factory.CreateClient();
 
         // POST batch transform without variants
-        var request = new TransformBatchRequestDto
-        {
-            Source = "test-image.jpg",
-            Variants = [],
-        };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var request = new TransformBatchRequestDto { Source = "test-image.jpg", Variants = [] };
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        var transformResponse = await client.PostAsync(
-            "/api/mm/fs/test-memory/transform-batch/",
-            requestContent
-        );
+        var transformResponse = await client.PostAsync("/api/mm/fs/test-memory/transform-batch/", requestContent);
         transformResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
@@ -601,16 +565,9 @@ public class TransformationEndpointsTests
                 new TransformVariantDto { Transformations = "w_800,f_webp", SaveTo = "" }, // Invalid - no saveTo
             ],
         };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
-        var transformResponse = await client.PostAsync(
-            "/api/mm/fs/test-memory/transform-batch/",
-            requestContent
-        );
+        var transformResponse = await client.PostAsync("/api/mm/fs/test-memory/transform-batch/", requestContent);
         transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponseDto>();
@@ -639,11 +596,7 @@ public class TransformationEndpointsTests
 
         // POST transform in bucket
         var request = new TransformRequestDto { SaveTo = "thumbs/test-image_400.webp" };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         var transformResponse = await client.PostAsync(
             "/api/mm/fs/test-memory/bu/my-bucket/transform/w_400,f_webp/test-image.jpg",
@@ -656,7 +609,9 @@ public class TransformationEndpointsTests
         result!.Success.Should().BeTrue();
 
         // Verify the saved file exists in bucket
-        var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/files/thumbs/test-image_400.webp");
+        var downloadResponse = await client.GetAsync(
+            "/api/mm/fs/test-memory/bu/my-bucket/files/thumbs/test-image_400.webp"
+        );
         downloadResponse.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
@@ -682,11 +637,7 @@ public class TransformationEndpointsTests
                 new TransformVariantDto { Transformations = "w_800,f_webp", SaveTo = "thumbs/thumb_800.webp" },
             ],
         };
-        var requestContent = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json"
-        );
+        var requestContent = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
         var transformResponse = await client.PostAsync(
             "/api/mm/fs/test-memory/bu/my-bucket/transform-batch/",

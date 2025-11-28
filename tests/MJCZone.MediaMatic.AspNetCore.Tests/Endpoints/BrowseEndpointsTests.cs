@@ -40,12 +40,18 @@ public class BrowseEndpointsTests
         using var client = factory.CreateClient();
 
         // Create some files and folders
-        await client.PostAsync("/api/mm/fs/test-memory/files/file1.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Content 1")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/file2.pdf",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Content 2")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/folder1/nested.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Nested content")));
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/file1.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Content 1"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/file2.pdf",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Content 2"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/folder1/nested.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Nested content"))
+        );
 
         // Browse root
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/");
@@ -65,10 +71,14 @@ public class BrowseEndpointsTests
         using var client = factory.CreateClient();
 
         // Create files in nested folder
-        await client.PostAsync("/api/mm/fs/test-memory/files/documents/reports/report1.pdf",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Report 1")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/documents/reports/report2.pdf",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Report 2")));
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/documents/reports/report1.pdf",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Report 1"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/documents/reports/report2.pdf",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Report 2"))
+        );
 
         // Browse nested folder
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/documents/reports");
@@ -91,10 +101,14 @@ public class BrowseEndpointsTests
         using var client = factory.CreateClient();
 
         // Create files and folders
-        await client.PostAsync("/api/mm/fs/test-memory/files/file.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Content")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/folder/nested.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Nested")));
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/file.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Content"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/folder/nested.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Nested"))
+        );
 
         // Browse with type=files
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/?type=files");
@@ -114,10 +128,14 @@ public class BrowseEndpointsTests
         using var client = factory.CreateClient();
 
         // Create files in different folders
-        await client.PostAsync("/api/mm/fs/test-memory/files/folder1/file.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Content 1")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/folder2/file.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Content 2")));
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/folder1/file.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Content 1"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/folder2/file.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Content 2"))
+        );
 
         // Browse with type=folders
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/?type=folders");
@@ -141,12 +159,18 @@ public class BrowseEndpointsTests
         using var client = factory.CreateClient();
 
         // Create various files
-        await client.PostAsync("/api/mm/fs/test-memory/files/document.pdf",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("PDF content")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/image.jpg",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Image content")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/report.pdf",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Report content")));
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/document.pdf",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("PDF content"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/image.jpg",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Image content"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/report.pdf",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Report content"))
+        );
 
         // Browse with filter=*.pdf
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/?filter=*.pdf");
@@ -169,12 +193,18 @@ public class BrowseEndpointsTests
         using var client = factory.CreateClient();
 
         // Create nested structure
-        await client.PostAsync("/api/mm/fs/test-memory/files/root.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Root")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/level1/l1.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Level 1")));
-        await client.PostAsync("/api/mm/fs/test-memory/files/level1/level2/l2.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Level 2")));
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/root.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Root"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/level1/l1.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Level 1"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/files/level1/level2/l2.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Level 2"))
+        );
 
         // Browse recursively
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/?recursive=true");
@@ -197,10 +227,14 @@ public class BrowseEndpointsTests
         using var client = factory.CreateClient();
 
         // Create files in bucket
-        await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/files/file1.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Bucket content 1")));
-        await client.PostAsync("/api/mm/fs/test-memory/bu/my-bucket/files/file2.txt",
-            new ByteArrayContent(Encoding.UTF8.GetBytes("Bucket content 2")));
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/bu/my-bucket/files/file1.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Bucket content 1"))
+        );
+        await client.PostAsync(
+            "/api/mm/fs/test-memory/bu/my-bucket/files/file2.txt",
+            new ByteArrayContent(Encoding.UTF8.GetBytes("Bucket content 2"))
+        );
 
         // Browse bucket
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/browse/");
