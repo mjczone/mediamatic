@@ -1,7 +1,7 @@
 {
   "name": "mjczone.mediamatic",
   "version": "1.0.0",
-  "description": "**Intelligent Media Storage & Optimization Library for .NET**",
+  "description": "Intelligent Media Storage & Optimization Library for .NET",
   "main": "index.js",
   "scripts": {
     "build": "dotnet build",
