@@ -170,10 +170,17 @@ builder.Services.AddMediaMatic();
 
 var app = builder.Build();
 
-// Map REST API endpoints
-app.MapMediaMaticEndpoints();
+// Configure MediaMatic (adds middleware and maps REST API endpoints)
+app.UseMediaMatic();
 
 app.Run();
+```
+
+**Advanced: Manual endpoint mapping** (if you need to control middleware separately):
+
+```csharp
+// Just map endpoints without middleware
+app.MapMediaMaticEndpoints();
 ```
 
 ### REST API Examples

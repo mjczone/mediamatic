@@ -22,11 +22,33 @@ builder.Services.AddMediaMatic();
 
 var app = builder.Build();
 
-// Map MediaMatic endpoints (optional)
+// Configure MediaMatic (adds middleware and maps REST API endpoints)
+app.UseMediaMatic();
+
+app.Run();
+```
+
+### Advanced: Manual Endpoint Mapping
+
+If you need to control middleware separately or integrate with existing middleware pipelines:
+
+```csharp
+var app = builder.Build();
+
+// Add your custom middleware first
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Just map MediaMatic endpoints (no middleware)
 app.MapMediaMaticEndpoints();
 
 app.Run();
 ```
+
+**Note**: `UseMediaMatic()` is the recommended approach as it automatically:
+- Adds the MediaMatic middleware
+- Maps all REST API endpoints
+- Allows optional custom middleware configuration via callback
 
 ### Configuration Options
 
@@ -155,15 +177,28 @@ public class ImageController : ControllerBase
 
 ## REST API Endpoints
 
-MediaMatic provides a comprehensive REST API for file and media management. Map the endpoints in your startup:
+MediaMatic provides a comprehensive REST API for file and media management.
+
+### Using UseMediaMatic (Recommended)
 
 ```csharp
 var app = builder.Build();
 
-// Map all MediaMatic endpoints
+// Adds middleware and maps all endpoints
+app.UseMediaMatic();
+```
+
+### Manual Endpoint Mapping (Advanced)
+
+If you need fine-grained control, map individual endpoint groups:
+
+```csharp
+var app = builder.Build();
+
+// Map all MediaMatic endpoints at once
 app.MapMediaMaticEndpoints();
 
-// Or map individual endpoint groups
+// OR map individual endpoint groups for selective API exposure
 app.MapMediaMaticFilesourceEndpoints(); // /fs/ filesource CRUD operations
 app.MapMediaMaticFileEndpoints();       // /files/ operations
 app.MapMediaMaticFolderEndpoints();     // /folders/ operations
