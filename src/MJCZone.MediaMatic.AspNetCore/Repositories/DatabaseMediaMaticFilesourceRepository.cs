@@ -8,6 +8,7 @@ using Dapper;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MJCZone.DapperMatic;
+using MJCZone.DapperMatic.AspNetCore.Factories;
 using MJCZone.DapperMatic.DataAnnotations;
 using MJCZone.DapperMatic.Models;
 using MJCZone.MediaMatic.AspNetCore.Factories;
@@ -20,28 +21,38 @@ namespace MJCZone.MediaMatic.AspNetCore.Repositories;
 /// </summary>
 public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourceRepositoryBase
 {
-    private readonly IFilesourceDbConnectionFactory _connectionFactory;
+    private readonly IDbConnectionFactory _connectionFactory;
     private readonly IFilesourceIdFactory _filesourceIdFactory;
     private readonly ILogger<DatabaseMediaMaticFilesourceRepository> _logger;
+    private readonly string _provider;
+    private readonly string _connectionString;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DatabaseMediaMaticFilesourceRepository"/> class.
     /// </summary>
-    /// <param name="filesourceDbConnectionFactory">The connection factory for creating database connections to store filesource connection information.</param>
+    /// <param name="provider">The database provider name.</param>
+    /// <param name="connectionString">The connection string for the database.</param>
+    /// <param name="connectionFactory">The connection factory for creating database connections to store filesource connection information.</param>
     /// <param name="filesourceIdFactory">The factory for generating filesource IDs.</param>
     /// <param name="options">The MediaMatic options containing the encryption key.</param>
     /// <param name="logger">The logger instance.</param>
     public DatabaseMediaMaticFilesourceRepository(
-        IFilesourceDbConnectionFactory filesourceDbConnectionFactory,
+        string provider,
+        string connectionString,
+        IDbConnectionFactory connectionFactory,
         IFilesourceIdFactory filesourceIdFactory,
         IOptions<MediaMaticOptions> options,
         ILogger<DatabaseMediaMaticFilesourceRepository> logger
     )
         : base(options)
     {
-        ArgumentNullException.ThrowIfNull(filesourceDbConnectionFactory);
+        ArgumentNullException.ThrowIfNull(connectionFactory);
+        ArgumentNullException.ThrowIfNull(provider);
+        ArgumentNullException.ThrowIfNull(connectionString);
 
-        _connectionFactory = filesourceDbConnectionFactory;
+        _provider = provider;
+        _connectionString = connectionString;
+        _connectionFactory = connectionFactory;
         _filesourceIdFactory = filesourceIdFactory;
         _logger = logger;
     }
@@ -50,7 +61,7 @@ public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourc
     public override void Initialize()
     {
         var tableModel = DmTableFactory.GetTable(typeof(DatabaseFilesource));
-        using var connection = _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection(_provider, _connectionString);
         connection.CreateTableIfNotExistsAsync(tableModel).GetAwaiter().GetResult();
     }
 
@@ -88,7 +99,7 @@ public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourc
             return false; // Already exists
         }
 
-        using var connection = _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection(_provider, _connectionString);
 
         var sql =
             @"
@@ -131,7 +142,7 @@ public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourc
             return false; // Doesn't exist
         }
 
-        using var connection = _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection(_provider, _connectionString);
 
         var sql = new StringBuilder();
         sql.Append("UPDATE mm_filesources SET ");
@@ -196,7 +207,7 @@ public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourc
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
 
-        using var connection = _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection(_provider, _connectionString);
 
         var sql = "DELETE FROM mm_filesources WHERE id = @Id";
         var rowsAffected = await connection.ExecuteAsync(sql, new { Id = id.ToLowerInvariant() }).ConfigureAwait(false);
@@ -206,7 +217,7 @@ public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourc
     /// <inheritdoc />
     public override async Task<List<FilesourceDto>> GetFilesourcesAsync(string? tag = null)
     {
-        using var connection = _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection(_provider, _connectionString);
 
         var sql = "SELECT * FROM mm_filesources";
         if (!string.IsNullOrWhiteSpace(tag))
@@ -245,7 +256,7 @@ public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourc
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
 
-        using var connection = _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection(_provider, _connectionString);
 
         var sql = "SELECT * FROM mm_filesources WHERE id = @Id";
         var result = await connection
@@ -280,7 +291,7 @@ public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourc
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
 
-        using var connection = _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection(_provider, _connectionString);
 
         var sql = "SELECT COUNT(1) FROM mm_filesources WHERE id = @Id";
         var count = await connection
@@ -294,7 +305,7 @@ public sealed class DatabaseMediaMaticFilesourceRepository : MediaMaticFilesourc
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
 
-        using var connection = _connectionFactory.CreateConnection();
+        using var connection = _connectionFactory.CreateConnection(_provider, _connectionString);
 
         var sql = "SELECT encrypted_connection_string FROM mm_filesources WHERE id = @Id";
         var encryptedConnectionString = await connection

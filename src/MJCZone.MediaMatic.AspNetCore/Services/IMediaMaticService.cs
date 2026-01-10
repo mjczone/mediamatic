@@ -190,7 +190,7 @@ public interface IMediaMaticService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Browse response containing files and folders with metadata.</returns>
     /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
-    Task<BrowseResponseDto> ListAsync(
+    Task<BrowseResultDto> ListAsync(
         IOperationContext context,
         string filesourceId,
         string? bucketName,
@@ -353,12 +353,12 @@ public interface IMediaMaticService
     /// <returns>Archive response containing job ID and archive information.</returns>
     /// <exception cref="KeyNotFoundException">Thrown when the folder is not found.</exception>
     /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
-    Task<ArchiveResponse> CreateFolderArchiveAsync(
+    Task<ArchiveResultDto> CreateFolderArchiveAsync(
         IOperationContext context,
         string filesourceId,
         string? bucketName,
         string folderPath,
-        ArchiveRequest request,
+        ArchiveRequestDto request,
         CancellationToken cancellationToken = default
     );
 
@@ -372,11 +372,11 @@ public interface IMediaMaticService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Archive response containing job ID and archive information.</returns>
     /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
-    Task<ArchiveResponse> CreateFileListArchiveAsync(
+    Task<ArchiveResultDto> CreateFileListArchiveAsync(
         IOperationContext context,
         string filesourceId,
         string? bucketName,
-        ArchiveRequest request,
+        ArchiveRequestDto request,
         CancellationToken cancellationToken = default
     );
 
@@ -390,7 +390,7 @@ public interface IMediaMaticService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of archive information.</returns>
     /// <exception cref="UnauthorizedAccessException">Thrown when access is denied.</exception>
-    Task<IEnumerable<ArchiveInfo>> ListArchivesAsync(
+    Task<IEnumerable<ArchiveFileDto>> ListArchivesAsync(
         IOperationContext context,
         string filesourceId,
         string? bucketName,

@@ -3,12 +3,12 @@
 // Licensed under the GNU Lesser General Public License v3.0 or later.
 // See LICENSE in the project root for license information.
 
-namespace MJCZone.MediaMatic.AspNetCore.Models;
+namespace MJCZone.MediaMatic.AspNetCore.Models.Dtos;
 
 /// <summary>
 /// Request to create an archive of files and folders.
 /// </summary>
-public class ArchiveRequest
+public class ArchiveRequestDto
 {
     /// <summary>
     /// Gets or sets the name of the archive file (without extension).

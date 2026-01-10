@@ -6,8 +6,8 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
-using MJCZone.MediaMatic.AspNetCore.Endpoints;
 using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
+using MJCZone.MediaMatic.AspNetCore.Models.Responses;
 using MJCZone.MediaMatic.AspNetCore.Tests.Factories;
 using MJCZone.MediaMatic.AspNetCore.Tests.Infrastructure;
 using SkiaSharp;
@@ -102,10 +102,10 @@ public class MetadataEndpointsTests
 
         var result = await metadataResponse.ReadAsJsonAsync<FileMetadataResponse>();
         result.Should().NotBeNull();
-        result!.Metadata.Should().NotBeNull();
-        result.Metadata.Width.Should().Be(800);
-        result.Metadata.Height.Should().Be(600);
-        result.Metadata.MimeType.Should().Be("image/jpeg");
+        result!.Result.Should().NotBeNull();
+        result.Result.Width.Should().Be(800);
+        result.Result.Height.Should().Be(600);
+        result.Result.MimeType.Should().Be("image/jpeg");
     }
 
     [Fact]
@@ -127,10 +127,10 @@ public class MetadataEndpointsTests
 
         var result = await metadataResponse.ReadAsJsonAsync<FileMetadataResponse>();
         result.Should().NotBeNull();
-        result!.Metadata.Should().NotBeNull();
-        result.Metadata.Width.Should().Be(640);
-        result.Metadata.Height.Should().Be(480);
-        result.Metadata.MimeType.Should().Be("image/png");
+        result!.Result.Should().NotBeNull();
+        result.Result.Width.Should().Be(640);
+        result.Result.Height.Should().Be(480);
+        result.Result.MimeType.Should().Be("image/png");
     }
 
     [Fact]
@@ -152,8 +152,8 @@ public class MetadataEndpointsTests
 
         var result = await metadataResponse.ReadAsJsonAsync<FileMetadataResponse>();
         result.Should().NotBeNull();
-        result!.Metadata.Width.Should().Be(1024);
-        result.Metadata.Height.Should().Be(768);
+        result!.Result.Width.Should().Be(1024);
+        result.Result.Height.Should().Be(768);
     }
 
     [Fact]
@@ -178,9 +178,9 @@ public class MetadataEndpointsTests
 
         var result = await metadataResponse.ReadAsJsonAsync<FileMetadataResponse>();
         result.Should().NotBeNull();
-        result!.Metadata.Width.Should().Be(1920);
-        result.Metadata.Height.Should().Be(1080);
-        result.Metadata.MimeType.Should().Be("image/jpeg");
+        result!.Result.Width.Should().Be(1920);
+        result.Result.Height.Should().Be(1080);
+        result.Result.MimeType.Should().Be("image/jpeg");
     }
 
     #endregion
@@ -231,12 +231,12 @@ public class MetadataEndpointsTests
 
         var result = await metadataResponse.ReadAsJsonAsync<FileMetadataResponse>();
         result.Should().NotBeNull();
-        result!.Metadata.Should().NotBeNull();
+        result!.Result.Should().NotBeNull();
 
         // Non-media files should return basic metadata
         // Note: MimeDetective uses content-based detection and may return octet-stream for plain text
-        result.Metadata.MimeType.Should().NotBeNullOrEmpty();
-        result.Metadata.Size.Should().BeGreaterThan(0);
+        result.Result.MimeType.Should().NotBeNullOrEmpty();
+        result.Result.Size.Should().BeGreaterThan(0);
     }
 
     #endregion
@@ -265,7 +265,7 @@ public class MetadataEndpointsTests
         result.Should().NotBeNull();
 
         // Provider should be identified (MetadataExtractor for images)
-        result!.Metadata.Provider.Should().NotBeNullOrEmpty();
+        result!.Result.Provider.Should().NotBeNullOrEmpty();
     }
 
     #endregion

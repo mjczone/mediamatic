@@ -6,8 +6,8 @@
 using System.Net;
 using System.Text;
 using FluentAssertions;
-using MJCZone.MediaMatic.AspNetCore.Endpoints;
 using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
+using MJCZone.MediaMatic.AspNetCore.Models.Responses;
 using MJCZone.MediaMatic.AspNetCore.Tests.Factories;
 using MJCZone.MediaMatic.AspNetCore.Tests.Infrastructure;
 

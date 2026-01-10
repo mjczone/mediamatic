@@ -50,94 +50,265 @@ app.Run();
 - Maps all REST API endpoints
 - Allows optional custom middleware configuration via callback
 
-### Configuration Options
+## Configuration Options
+
+### MediaMaticOptions Properties
 
 ```csharp
-builder.Services.AddMediaMatic(options =>
+builder.Services.Configure<MediaMaticOptions>(options =>
 {
-    // Default storage provider
-    options.DefaultStorageProvider = "aws";
+    // Base path for all MediaMatic endpoints (default: "/api/mm")
+    options.BasePath = "/api/media";
 
-    // Default image processing options
-    options.DefaultImageOptions = new ImageProcessingOptions
+    // Require authentication for all endpoints (default: false)
+    options.RequireAuthentication = true;
+
+    // Require a specific role for write operations
+    options.RequireRole = "Editor";
+
+    // Allow read-only access with a different role
+    options.ReadOnlyRole = "Viewer";
+
+    // Enable CORS (default: false)
+    options.EnableCors = true;
+    options.CorsPolicyName = "MediaMaticCorsPolicy";
+
+    // Encryption key for connection strings (base64-encoded 256-bit key)
+    options.ConnectionStringEncryptionKey = "your-base64-encoded-key";
+});
+```
+
+### Configuration from appsettings.json
+
+```json
+{
+  "MediaMatic": {
+    "BasePath": "/api/mm",
+    "RequireAuthentication": false,
+    "RequireRole": "Editor",
+    "ReadOnlyRole": "Viewer",
+    "EnableCors": false,
+    "CorsPolicyName": "MediaMaticCorsPolicy",
+    "Filesources": [
+      {
+        "Id": "local-storage",
+        "Provider": "Local",
+        "ConnectionString": "file:///var/media",
+        "DisplayName": "Local File Storage",
+        "Description": "Server filesystem storage",
+        "Tags": ["local", "production"],
+        "IsEnabled": true
+      }
+    ],
+    "ConnectionStringEncryptionKey": "base64-encoded-key"
+  }
+}
+```
+
+```csharp
+builder.Services.Configure<MediaMaticOptions>(
+    builder.Configuration.GetSection("MediaMatic")
+);
+
+builder.Services.AddMediaMatic();
+```
+
+## Filesource Configuration
+
+Filesources define storage backends for MediaMatic. You can configure them using the fluent API or via appsettings.json.
+
+### Fluent Configuration
+
+```csharp
+using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
+
+builder.Services.AddMediaMatic(config =>
+{
+    // Add a single filesource
+    config.WithFilesource(new FilesourceDto
     {
-        Quality = 85,
-        Format = ImageFormat.WebP,
-    };
+        Id = "my-storage",
+        Provider = "Memory",
+        ConnectionString = "memory://",
+        DisplayName = "In-Memory Storage",
+        Description = "Development storage",
+        Tags = ["dev", "test"],
+        IsEnabled = true
+    });
 
-    // Default thumbnail sizes
-    options.DefaultThumbnailSizes = new[] { 100, 300, 600, 1200 };
-
-    // Enable browser detection for format negotiation
-    options.EnableBrowserDetection = true;
+    // Or add multiple filesources
+    config.WithFilesources(
+        new FilesourceDto
+        {
+            Id = "local-files",
+            Provider = "Local",
+            ConnectionString = "file:///var/media",
+            DisplayName = "Local Storage",
+            IsEnabled = true
+        },
+        new FilesourceDto
+        {
+            Id = "s3-bucket",
+            Provider = "S3",
+            ConnectionString = "s3://keyId=...;key=...;bucket=my-bucket;region=us-east-1",
+            DisplayName = "AWS S3 Storage",
+            IsEnabled = true
+        }
+    );
 });
 ```
 
-## Storage Providers
+### Filesource Providers
 
-### In-Memory (Development)
+MediaMatic supports these provider types:
+
+| Provider | ConnectionString Format | Example |
+|----------|------------------------|---------|
+| **Memory** | `memory://` | `memory://` |
+| **Local** | `file:///path/to/folder` | `file:///var/media` |
+| **S3** | `s3://keyId=...;key=...;bucket=...;region=...` | `s3://keyId=AKIAIOSFODNN7EXAMPLE;key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY;bucket=my-bucket;region=us-east-1` |
+| **Minio** | `minio://endpoint=...;keyId=...;key=...;bucket=...` | `minio://endpoint=localhost:9000;keyId=minioadmin;key=minioadmin;bucket=my-bucket` |
+| **GCP** | `gcp://projectId=...;bucket=...;jsonKey=...` | `gcp://projectId=my-project;bucket=my-bucket;jsonKey=/path/to/key.json` |
+| **Azure** | `azure://account=...;key=...;container=...` | `azure://account=myaccount;key=...;container=my-container` |
+| **SFTP** | `sftp://host=...;username=...;password=...` | `sftp://host=example.com;username=user;password=pass;root=/uploads` |
+| **ZipFile** | `zip:///path/to/file.zip` | `zip:///var/archives/media.zip` |
+
+### FilesourceDto Properties
 
 ```csharp
-builder.Services.AddMediaMatic(options =>
+public sealed class FilesourceDto
 {
-    options.UseInMemoryStorage();
-});
+    // Unique identifier for this filesource
+    public string? Id { get; set; }
+
+    // Provider type: "Memory", "Local", "S3", "Minio", "GCP", "Azure", "SFTP", "ZipFile"
+    public string? Provider { get; set; }
+
+    // Provider-specific connection string
+    public string? ConnectionString { get; set; }
+
+    // Human-readable display name
+    public string? DisplayName { get; set; }
+
+    // Optional description
+    public string? Description { get; set; }
+
+    // Tags for categorization
+    public ICollection<string>? Tags { get; set; }
+
+    // Enable/disable this filesource (default: true)
+    public bool? IsEnabled { get; set; }
+
+    // Auto-populated timestamps
+    public DateTimeOffset CreatedAt { get; internal set; }
+    public DateTimeOffset UpdatedAt { get; internal set; }
+}
 ```
 
-### Local File System
+## Filesource Repository Configuration
+
+By default, MediaMatic uses an in-memory repository to store filesource configurations. You can configure alternative storage:
+
+### File-Based Repository
 
 ```csharp
-builder.Services.AddMediaMatic(options =>
+builder.Services.AddMediaMatic(config =>
 {
-    options.UseLocalStorage("/var/media");
-});
-```
+    config.UseFileFilesourceRepository("/var/mediamatic/filesources.json");
 
-### AWS S3
-
-```csharp
-builder.Services.AddMediaMatic(options =>
-{
-    options.UseAwsS3(s3 =>
+    // Pre-configure filesources (will be saved to the file)
+    config.WithFilesource(new FilesourceDto
     {
-        s3.AccessKeyId = builder.Configuration["AWS:AccessKeyId"];
-        s3.SecretAccessKey = builder.Configuration["AWS:SecretAccessKey"];
-        s3.Region = "us-east-1";
-        s3.BucketName = "my-media-bucket";
+        Id = "default",
+        Provider = "Local",
+        ConnectionString = "file:///var/media"
     });
 });
 ```
 
-### Google Cloud Storage
+### Database Repository
+
+MediaMatic can store filesource configurations in a database. It uses DapperMatic's `IDbConnectionFactory` for database operations, which is automatically registered by `AddMediaMatic()`.
 
 ```csharp
-builder.Services.AddMediaMatic(options =>
+builder.Services.AddMediaMatic(config =>
 {
-    options.UseGoogleCloudStorage(gcs =>
-    {
-        gcs.ProjectId = builder.Configuration["GCP:ProjectId"];
-        gcs.BucketName = "my-media-bucket";
-        gcs.JsonKeyPath = builder.Configuration["GCP:JsonKeyPath"];
-    });
+    config.UseDatabaseFilesourceRepository(
+        provider: "postgresql",  // or "sqlserver", "mysql", "sqlite"
+        connectionString: builder.Configuration.GetConnectionString("MediaMatic")
+    );
 });
 ```
 
-### Multiple Providers
+**Integration with DapperMatic:** If you're using [DapperMatic](https://github.com/mjczone/MJCZone.DapperMatic) in the same project, MediaMatic will automatically use DapperMatic's `IDbConnectionFactory` (thanks to `TryAddSingleton`). Both libraries can share the same database connection infrastructure.
+
+The repository will automatically create the `mm_filesources` table on startup.
+
+### Custom Repository
 
 ```csharp
-builder.Services.AddMediaMatic(options =>
+public class MyCustomRepository : IMediaMaticFilesourceRepository
 {
-    options.AddStorageProvider("primary", storage =>
-    {
-        storage.UseAwsS3(s3 => { /* ... */ });
-    });
+    // Implement custom storage logic
+}
 
-    options.AddStorageProvider("backup", storage =>
-    {
-        storage.UseGoogleCloudStorage(gcs => { /* ... */ });
-    });
+builder.Services.AddMediaMatic(config =>
+{
+    config.UseCustomFilesourceRepository<MyCustomRepository>();
+});
+```
 
-    options.DefaultStorageProvider = "primary";
+## Custom Implementations
+
+### Custom Filesource ID Factory
+
+By default, filesources without an ID get a GUID assigned. Customize this:
+
+```csharp
+public class CustomFilesourceIdFactory : IFilesourceIdFactory
+{
+    public string GenerateId() => $"fs-{DateTime.UtcNow:yyyyMMddHHmmss}";
+}
+
+builder.Services.AddMediaMatic(config =>
+{
+    config.UseCustomFilesourceIdFactory<CustomFilesourceIdFactory>();
+});
+```
+
+### Custom Permissions
+
+```csharp
+public class MyPermissions : IMediaMaticPermissions
+{
+    public Task<bool> CanAccessFilesourceAsync(IOperationContext context)
+    {
+        // Custom authorization logic
+        return Task.FromResult(true);
+    }
+}
+
+builder.Services.AddMediaMatic(config =>
+{
+    config.UseCustomPermissions<MyPermissions>();
+});
+```
+
+### Custom Audit Logger
+
+```csharp
+public class MyAuditLogger : IMediaMaticAuditLogger
+{
+    public Task LogAsync(MediaMaticAuditEvent auditEvent)
+    {
+        // Custom logging logic
+        return Task.CompletedTask;
+    }
+}
+
+builder.Services.AddMediaMatic(config =>
+{
+    config.UseCustomAuditLogger<MyAuditLogger>();
 });
 ```
 
@@ -148,18 +319,15 @@ builder.Services.AddMediaMatic(options =>
 ```csharp
 public class ImageController : ControllerBase
 {
+    private readonly IMediaMaticService _mediaMaticService;
     private readonly IImageProcessor _imageProcessor;
-    private readonly IVideoProcessor _videoProcessor;
-    private readonly IBlobStorage _storage;
 
     public ImageController(
-        IImageProcessor imageProcessor,
-        IVideoProcessor videoProcessor,
-        IBlobStorage storage)
+        IMediaMaticService mediaMaticService,
+        IImageProcessor imageProcessor)
     {
+        _mediaMaticService = mediaMaticService;
         _imageProcessor = imageProcessor;
-        _videoProcessor = videoProcessor;
-        _storage = storage;
     }
 }
 ```
@@ -168,12 +336,13 @@ public class ImageController : ControllerBase
 
 | Service | Description |
 |---------|-------------|
-| `IImageProcessor` | Image processing operations |
-| `IVideoProcessor` | Video processing operations |
-| `IBlobStorage` | Storage operations |
-| `IMimeTypeDetector` | MIME type detection |
-| `IImageMetadataExtractor` | Image metadata extraction |
-| `IVideoMetadataExtractor` | Video metadata extraction |
+| `IMediaMaticService` | Primary service for file and media operations |
+| `IImageProcessor` | Image processing operations (resize, convert, etc.) |
+| `IMediaMaticFilesourceRepository` | Filesource management repository |
+| `IVfsConnectionFactory` | Factory for creating VFS connections |
+| `IOperationContext` | Current operation context (scoped) |
+| `IMediaMaticPermissions` | Permission checking service |
+| `IMediaMaticAuditLogger` | Audit logging service |
 
 ## REST API Endpoints
 
@@ -207,6 +376,20 @@ app.MapMediaMaticTransformEndpoints();  // /transform/ operations
 app.MapMediaMaticMetadataEndpoints();   // /metadata/ operations
 app.MapMediaMaticArchiveEndpoints();    // /archive/ operations
 ```
+
+### Filesource Management (`/fs/`)
+
+Manage filesource configurations via REST API:
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/mm/fs/` | List all filesources |
+| `GET` | `/api/mm/fs/{filesourceId}` | Get a specific filesource |
+| `GET` | `/api/mm/fs/{filesourceId}/exists` | Check if filesource exists |
+| `POST` | `/api/mm/fs/` | Create a new filesource |
+| `PUT` | `/api/mm/fs/{filesourceId}` | Update a filesource |
+| `PATCH` | `/api/mm/fs/{filesourceId}` | Partially update a filesource |
+| `DELETE` | `/api/mm/fs/{filesourceId}` | Delete a filesource |
 
 ### File Operations (`/files/`)
 
@@ -475,117 +658,64 @@ Response varies by file type:
 
 ## Minimal API Endpoints
 
-### Image Upload
+### Image Upload with Processing
 
 ```csharp
 app.MapPost("/api/images", async (
     IFormFile file,
     IImageProcessor processor,
-    IBlobStorage storage) =>
+    IMediaMaticService mediaService) =>
 {
     using var stream = file.OpenReadStream();
 
     // Process image
-    var result = await processor.ResizeAsync(stream, width: 1920, height: null,
-        new ImageProcessingOptions
-        {
-            Format = ImageFormat.WebP,
-            Quality = 85,
-        });
+    var processed = await processor.ResizeAsync(stream, width: 1920, height: null);
 
-    // Save to storage
-    var path = $"images/{Guid.NewGuid()}.webp";
-    await storage.WriteAsync(path, result.stream);
+    // Save to MediaMatic filesource
+    var filesourceId = "my-storage";
+    var filePath = $"images/{Guid.NewGuid()}.webp";
+
+    // Upload using MediaMatic service
+    var uploadResponse = await mediaService.UploadFileAsync(
+        filesourceId,
+        filePath,
+        processed.stream,
+        file.FileName
+    );
 
     return Results.Ok(new
     {
-        path,
-        width = result.width,
-        height = result.height,
-        size = result.fileSize,
+        path = filePath,
+        width = processed.width,
+        height = processed.height,
+        size = uploadResponse.SizeInBytes,
     });
 })
 .DisableAntiforgery();
 ```
 
-### Image Retrieval with Format Negotiation
+### Image Retrieval
 
 ```csharp
 app.MapGet("/api/images/{*path}", async (
     string path,
-    HttpContext context,
-    IBlobStorage storage) =>
+    IMediaMaticService mediaService) =>
 {
-    // Determine optimal format
-    var userAgent = context.Request.Headers["User-Agent"].ToString();
-    var accept = context.Request.Headers["Accept"].ToString();
-    var format = BrowserFormatSelector.SelectOptimalFormat(userAgent, accept);
+    var filesourceId = "my-storage";
 
-    // Get image with correct format
-    var imagePath = Path.ChangeExtension(path, format.ToString().ToLower());
+    var fileStream = await mediaService.DownloadFileAsync(filesourceId, path);
 
-    if (!await storage.ExistsAsync(imagePath))
+    if (fileStream == null)
     {
         return Results.NotFound();
     }
 
-    using var stream = await storage.OpenReadAsync(imagePath);
+    // Get MIME type
+    var metadata = await mediaService.GetFileMetadataAsync(filesourceId, path);
+    var contentType = metadata?.MimeType ?? "application/octet-stream";
 
-    // Set caching headers
-    context.Response.Headers["Cache-Control"] = "public, max-age=31536000";
-    context.Response.Headers["Vary"] = "Accept";
-
-    return Results.File(stream, GetContentType(format));
+    return Results.File(fileStream, contentType);
 });
-```
-
-### Video Thumbnail Generation
-
-```csharp
-app.MapPost("/api/videos/thumbnails", async (
-    IFormFile file,
-    IVideoProcessor processor,
-    IBlobStorage storage) =>
-{
-    // Save video temporarily
-    var tempPath = Path.GetTempFileName();
-    using (var stream = File.Create(tempPath))
-    {
-        await file.CopyToAsync(stream);
-    }
-
-    try
-    {
-        // Generate thumbnails
-        var options = new ThumbnailOptions
-        {
-            Count = 5,
-            Width = 320,
-            Quality = 85,
-            OutputPath = Path.GetTempPath(),
-        };
-
-        var thumbnails = await processor.GenerateThumbnailsAsync(tempPath, options);
-
-        // Upload thumbnails to storage
-        var uploadedPaths = new List<string>();
-
-        foreach (var thumb in thumbnails)
-        {
-            var path = $"thumbnails/{Guid.NewGuid()}.jpg";
-            using var thumbStream = File.OpenRead(thumb);
-            await storage.WriteAsync(path, thumbStream);
-            uploadedPaths.Add(path);
-        }
-
-        return Results.Ok(new { thumbnails = uploadedPaths });
-    }
-    finally
-    {
-        File.Delete(tempPath);
-    }
-})
-.DisableAntiforgery();
 ```
 
 ## Controller-Based APIs
@@ -598,12 +728,12 @@ app.MapPost("/api/videos/thumbnails", async (
 public class ImagesController : ControllerBase
 {
     private readonly IImageProcessor _processor;
-    private readonly IBlobStorage _storage;
+    private readonly IMediaMaticService _mediaService;
 
-    public ImagesController(IImageProcessor processor, IBlobStorage storage)
+    public ImagesController(IImageProcessor processor, IMediaMaticService mediaService)
     {
         _processor = processor;
-        _storage = storage;
+        _mediaService = mediaService;
     }
 
     [HttpPost]
@@ -614,7 +744,7 @@ public class ImagesController : ControllerBase
         var result = await _processor.ResizeAsync(stream, 1920, null);
 
         var path = $"images/{Guid.NewGuid()}.webp";
-        await _storage.WriteAsync(path, result.stream);
+        await _mediaService.UploadFileAsync("my-storage", path, result.stream, file.FileName);
 
         return Ok(new { path });
     }
@@ -622,178 +752,48 @@ public class ImagesController : ControllerBase
     [HttpGet("{*path}")]
     public async Task<IActionResult> Get(string path)
     {
-        if (!await _storage.ExistsAsync(path))
+        var fileStream = await _mediaService.DownloadFileAsync("my-storage", path);
+
+        if (fileStream == null)
         {
             return NotFound();
         }
 
-        var stream = await _storage.OpenReadAsync(path);
-        return File(stream, "image/webp");
+        return File(fileStream, "image/webp");
     }
 }
-```
-
-## Middleware
-
-### Image Optimization Middleware
-
-```csharp
-public class ImageOptimizationMiddleware
-{
-    private readonly RequestDelegate _next;
-    private readonly IImageProcessor _processor;
-
-    public ImageOptimizationMiddleware(
-        RequestDelegate next,
-        IImageProcessor processor)
-    {
-        _next = next;
-        _processor = processor;
-    }
-
-    public async Task InvokeAsync(HttpContext context)
-    {
-        if (IsImageRequest(context.Request))
-        {
-            // Check for resize parameters
-            if (context.Request.Query.TryGetValue("w", out var widthStr) &&
-                int.TryParse(widthStr, out var width))
-            {
-                // Process image on-the-fly
-                // (In production, cache the result)
-            }
-        }
-
-        await _next(context);
-    }
-
-    private bool IsImageRequest(HttpRequest request)
-    {
-        return request.Path.Value?.EndsWith(".jpg") == true ||
-               request.Path.Value?.EndsWith(".png") == true ||
-               request.Path.Value?.EndsWith(".webp") == true;
-    }
-}
-```
-
-## Configuration from appsettings.json
-
-```json
-{
-  "MediaMatic": {
-    "Storage": {
-      "Provider": "aws",
-      "Aws": {
-        "Region": "us-east-1",
-        "BucketName": "my-bucket"
-      }
-    },
-    "ImageProcessing": {
-      "DefaultQuality": 85,
-      "DefaultFormat": "WebP",
-      "ThumbnailSizes": [100, 300, 600, 1200]
-    },
-    "VideoProcessing": {
-      "ThumbnailCount": 5,
-      "DefaultWidth": 320
-    }
-  }
-}
-```
-
-```csharp
-builder.Services.Configure<MediaMaticOptions>(
-    builder.Configuration.GetSection("MediaMatic")
-);
-
-builder.Services.AddMediaMatic();
-```
-
-## Health Checks
-
-```csharp
-builder.Services.AddHealthChecks()
-    .AddCheck<StorageHealthCheck>("storage");
-
-public class StorageHealthCheck : IHealthCheck
-{
-    private readonly IBlobStorage _storage;
-
-    public StorageHealthCheck(IBlobStorage storage)
-    {
-        _storage = storage;
-    }
-
-    public async Task<HealthCheckResult> CheckHealthAsync(
-        HealthCheckContext context,
-        CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await _storage.ListAsync();
-            return HealthCheckResult.Healthy();
-        }
-        catch (Exception ex)
-        {
-            return HealthCheckResult.Unhealthy(ex.Message);
-        }
-    }
-}
-```
-
-## Error Handling
-
-```csharp
-app.UseExceptionHandler(error =>
-{
-    error.Run(async context =>
-    {
-        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
-
-        var response = exception switch
-        {
-            FileNotFoundException => new { error = "File not found" },
-            NotSupportedException => new { error = "Format not supported" },
-            _ => new { error = "An error occurred" },
-        };
-
-        context.Response.StatusCode = exception switch
-        {
-            FileNotFoundException => 404,
-            NotSupportedException => 400,
-            _ => 500,
-        };
-
-        await context.Response.WriteAsJsonAsync(response);
-    });
-});
 ```
 
 ## Authorization
 
-MediaMatic provides an authorization hook for controlling access to filesources and operations:
+MediaMatic provides a flexible permissions system for controlling access to filesources and operations:
 
 ```csharp
-builder.Services.AddMediaMatic(options =>
+public class MyPermissions : IMediaMaticPermissions
 {
-    options.Authorization = async (context) =>
+    public Task<bool> CanAccessFilesourceAsync(IOperationContext context)
     {
         // Check if user has access to this filesource
         if (context.FilesourceId == "admin-files" &&
             !context.User?.IsInRole("Admin") == true)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
         // Check if user can perform this operation
-        if (context.Operation?.StartsWith("files/delete") == true &&
+        if (context.Operation?.Contains("delete") == true &&
             !context.User?.IsInRole("Editor") == true)
         {
-            return false;
+            return Task.FromResult(false);
         }
 
-        return true;
-    };
+        return Task.FromResult(true);
+    }
+}
+
+builder.Services.AddMediaMatic(config =>
+{
+    config.UseCustomPermissions<MyPermissions>();
 });
 ```
 
@@ -838,7 +838,10 @@ public class ConsoleAuditLogger : IMediaMaticAuditLogger
     }
 }
 
-builder.Services.AddSingleton<IMediaMaticAuditLogger, ConsoleAuditLogger>();
+builder.Services.AddMediaMatic(config =>
+{
+    config.UseCustomAuditLogger<ConsoleAuditLogger>();
+});
 ```
 
 ### Database Audit Logger (CMS Integration)
@@ -960,8 +963,68 @@ This pattern allows:
 - **Browser/device tracking** via User-Agent
 - **Flexible integration** with any CMS or DAM system
 
+## Health Checks
+
+```csharp
+builder.Services.AddHealthChecks()
+    .AddCheck<MediaMaticHealthCheck>("mediamatic");
+
+public class MediaMaticHealthCheck : IHealthCheck
+{
+    private readonly IMediaMaticFilesourceRepository _repository;
+
+    public MediaMaticHealthCheck(IMediaMaticFilesourceRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var filesources = await _repository.GetAllFilesourcesAsync();
+            return HealthCheckResult.Healthy($"Found {filesources.Count} filesource(s)");
+        }
+        catch (Exception ex)
+        {
+            return HealthCheckResult.Unhealthy(ex.Message);
+        }
+    }
+}
+```
+
+## Error Handling
+
+```csharp
+app.UseExceptionHandler(error =>
+{
+    error.Run(async context =>
+    {
+        var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+
+        var response = exception switch
+        {
+            FileNotFoundException => new { error = "File not found" },
+            NotSupportedException => new { error = "Format not supported" },
+            _ => new { error = "An error occurred" },
+        };
+
+        context.Response.StatusCode = exception switch
+        {
+            FileNotFoundException => 404,
+            NotSupportedException => 400,
+            _ => 500,
+        };
+
+        await context.Response.WriteAsJsonAsync(response);
+    });
+});
+```
+
 ## Next Steps
 
-- [Browser Detection](browser-detection.md) - Format negotiation details
-- [Storage Providers](storage-providers.md) - Provider configuration
+- [Storage Providers](storage-providers.md) - Provider configuration details
+- [Transformation URL API](transformation-url-api.md) - Image transformation syntax
 - [Testing](testing.md) - Integration testing

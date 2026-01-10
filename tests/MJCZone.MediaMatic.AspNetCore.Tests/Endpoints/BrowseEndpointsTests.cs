@@ -57,10 +57,10 @@ public class BrowseEndpointsTests
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/");
         browseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
-        result.Should().NotBeNull();
-        result!.Folders.Should().NotBeNull();
-        result.Files.Should().NotBeNull();
+        var res = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
+        res.Should().NotBeNull();
+        res!.Result.Folders.Should().NotBeNull();
+        res.Result.Files.Should().NotBeNull();
     }
 
     [Fact]
@@ -84,9 +84,9 @@ public class BrowseEndpointsTests
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/documents/reports");
         browseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
-        result.Should().NotBeNull();
-        result!.Files.Should().HaveCountGreaterThanOrEqualTo(2);
+        var res = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
+        res.Should().NotBeNull();
+        res!.Result.Files.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
     #endregion
@@ -114,10 +114,10 @@ public class BrowseEndpointsTests
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/?type=files");
         browseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
-        result.Should().NotBeNull();
-        result!.Folders.Should().BeEmpty();
-        result.Files.Should().NotBeEmpty();
+        var res = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
+        res.Should().NotBeNull();
+        res!.Result.Folders.Should().BeEmpty();
+        res.Result.Files.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -141,10 +141,10 @@ public class BrowseEndpointsTests
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/?type=folders");
         browseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
-        result.Should().NotBeNull();
-        result!.Files.Should().BeEmpty();
-        result.Folders.Should().NotBeEmpty();
+        var res = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
+        res.Should().NotBeNull();
+        res!.Result.Files.Should().BeEmpty();
+        res.Result.Folders.Should().NotBeEmpty();
     }
 
     #endregion
@@ -176,9 +176,9 @@ public class BrowseEndpointsTests
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/?filter=*.pdf");
         browseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
-        result.Should().NotBeNull();
-        result!.Files.Should().OnlyContain(f => f.Extension == ".pdf");
+        var res = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
+        res.Should().NotBeNull();
+        res!.Result.Files.Should().OnlyContain(f => f.Extension == ".pdf");
     }
 
     #endregion
@@ -210,9 +210,9 @@ public class BrowseEndpointsTests
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/?recursive=true");
         browseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
-        result.Should().NotBeNull();
-        result!.Files.Should().HaveCountGreaterThanOrEqualTo(3);
+        var res = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
+        res.Should().NotBeNull();
+        res!.Result.Files.Should().HaveCountGreaterThanOrEqualTo(3);
     }
 
     #endregion
@@ -240,9 +240,9 @@ public class BrowseEndpointsTests
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/browse/");
         browseResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
-        result.Should().NotBeNull();
-        result!.Files.Should().HaveCountGreaterThanOrEqualTo(2);
+        var res = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
+        res.Should().NotBeNull();
+        res!.Result.Files.Should().HaveCountGreaterThanOrEqualTo(2);
     }
 
     #endregion

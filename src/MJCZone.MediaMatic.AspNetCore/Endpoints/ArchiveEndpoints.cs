@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using MJCZone.MediaMatic.AspNetCore.Extensions;
 using MJCZone.MediaMatic.AspNetCore.Models;
+using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
+using MJCZone.MediaMatic.AspNetCore.Models.Responses;
 using MJCZone.MediaMatic.AspNetCore.Security;
 using MJCZone.MediaMatic.AspNetCore.Services;
 
@@ -200,7 +202,7 @@ public static class ArchiveEndpoints
         IMediaMaticService service,
         [FromRoute] string filesourceId,
         [FromRoute] string folderPath,
-        [FromBody] ArchiveRequest? request,
+        [FromBody] ArchiveRequestDto? request,
         CancellationToken cancellationToken = default
     ) =>
         CreateFolderArchiveInternalAsync(
@@ -217,7 +219,7 @@ public static class ArchiveEndpoints
         IOperationContext operationContext,
         IMediaMaticService service,
         [FromRoute] string filesourceId,
-        [FromBody] ArchiveRequest request,
+        [FromBody] ArchiveRequestDto request,
         CancellationToken cancellationToken = default
     ) => CreateFileListArchiveInternalAsync(operationContext, service, filesourceId, null, request, cancellationToken);
 
@@ -252,7 +254,7 @@ public static class ArchiveEndpoints
         [FromRoute] string filesourceId,
         [FromRoute] string bucketName,
         [FromRoute] string folderPath,
-        [FromBody] ArchiveRequest? request,
+        [FromBody] ArchiveRequestDto? request,
         CancellationToken cancellationToken = default
     ) =>
         CreateFolderArchiveInternalAsync(
@@ -270,7 +272,7 @@ public static class ArchiveEndpoints
         IMediaMaticService service,
         [FromRoute] string filesourceId,
         [FromRoute] string bucketName,
-        [FromBody] ArchiveRequest request,
+        [FromBody] ArchiveRequestDto request,
         CancellationToken cancellationToken = default
     ) =>
         CreateFileListArchiveInternalAsync(
@@ -317,13 +319,13 @@ public static class ArchiveEndpoints
         string filesourceId,
         string? bucketName,
         string folderPath,
-        ArchiveRequest? request,
+        ArchiveRequestDto? request,
         CancellationToken cancellationToken
     )
     {
-        request ??= new ArchiveRequest();
+        request ??= new ArchiveRequestDto();
 
-        var response = await service
+        var result = await service
             .CreateFolderArchiveAsync(
                 operationContext,
                 filesourceId,
@@ -334,7 +336,7 @@ public static class ArchiveEndpoints
             )
             .ConfigureAwait(false);
 
-        return Results.Ok(response);
+        return Results.Ok(new ArchiveResponse(result));
     }
 
     private static async Task<IResult> CreateFileListArchiveInternalAsync(
@@ -342,7 +344,7 @@ public static class ArchiveEndpoints
         IMediaMaticService service,
         string filesourceId,
         string? bucketName,
-        ArchiveRequest request,
+        ArchiveRequestDto request,
         CancellationToken cancellationToken
     )
     {
@@ -351,11 +353,11 @@ public static class ArchiveEndpoints
             return Results.BadRequest(new { error = "Paths array is required and cannot be empty" });
         }
 
-        var response = await service
+        var result = await service
             .CreateFileListArchiveAsync(operationContext, filesourceId, bucketName, request, cancellationToken)
             .ConfigureAwait(false);
 
-        return Results.Ok(response);
+        return Results.Ok(new ArchiveResponse(result));
     }
 
     private static async Task<IResult> ListArchivesInternalAsync(

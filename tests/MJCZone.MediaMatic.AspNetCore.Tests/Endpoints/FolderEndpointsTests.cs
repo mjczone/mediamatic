@@ -97,10 +97,10 @@ public class FolderEndpointsTests
 
         // Verify folder is gone by browsing
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/to-delete?type=all");
-        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
+        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
         browseResult.Should().NotBeNull();
-        browseResult!.Folders.Should().BeEmpty();
-        browseResult.Files.Should().BeEmpty();
+        browseResult!.Result.Folders.Should().BeEmpty();
+        browseResult.Result.Files.Should().BeEmpty();
     }
 
     [Fact]
@@ -120,9 +120,9 @@ public class FolderEndpointsTests
 
         // Verify child folder is gone (browse the parent)
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/browse/parent?type=folders");
-        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
+        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
         browseResult.Should().NotBeNull();
-        browseResult!.Folders.Should().NotContain(f => f.Name == "child");
+        browseResult!.Result.Folders.Should().NotContain(f => f.Name == "child");
     }
 
     #endregion
@@ -183,10 +183,10 @@ public class FolderEndpointsTests
 
         // Verify folder is gone
         var browseResponse = await client.GetAsync("/api/mm/fs/test-memory/bu/my-bucket/browse/delete-folder?type=all");
-        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponseDto>();
+        var browseResult = await browseResponse.ReadAsJsonAsync<BrowseResponse>();
         browseResult.Should().NotBeNull();
-        browseResult!.Folders.Should().BeEmpty();
-        browseResult.Files.Should().BeEmpty();
+        browseResult!.Result.Folders.Should().BeEmpty();
+        browseResult.Result.Files.Should().BeEmpty();
     }
 
     #endregion
