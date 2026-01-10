@@ -228,15 +228,21 @@ builder.Services.AddMediaMatic(config =>
 
 ### Database Repository
 
+MediaMatic can store filesource configurations in a database. It uses DapperMatic's `IDbConnectionFactory` for database operations, which is automatically registered by `AddMediaMatic()`.
+
 ```csharp
 builder.Services.AddMediaMatic(config =>
 {
     config.UseDatabaseFilesourceRepository(
-        provider: "SqlServer",
+        provider: "postgresql",  // or "sqlserver", "mysql", "sqlite"
         connectionString: builder.Configuration.GetConnectionString("MediaMatic")
     );
 });
 ```
+
+**Integration with DapperMatic:** If you're using [DapperMatic](https://github.com/mjczone/MJCZone.DapperMatic) in the same project, MediaMatic will automatically use DapperMatic's `IDbConnectionFactory` (thanks to `TryAddSingleton`). Both libraries can share the same database connection infrastructure.
+
+The repository will automatically create the `mm_filesources` table on startup.
 
 ### Custom Repository
 
