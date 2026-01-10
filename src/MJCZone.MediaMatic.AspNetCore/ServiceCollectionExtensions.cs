@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+using MJCZone.DapperMatic.AspNetCore.Factories;
 using MJCZone.MediaMatic.AspNetCore.Auditing;
 using MJCZone.MediaMatic.AspNetCore.Factories;
 using MJCZone.MediaMatic.AspNetCore.Repositories;
@@ -46,6 +48,9 @@ public static class ServiceCollectionExtensions
         }
 
         // Register defaults (do this AFTER the fluent configuration to allow overrides by the user)
+
+        // Register the connection factory for the database repository
+        services.TryAddSingleton<IDbConnectionFactory, DbConnectionFactory>(); // Uses DapperMatic's DbConnectionProviderDetector internally
         services.TryAddSingleton<IVfsConnectionFactory, VfsConnectionFactory>();
         services.TryAddSingleton<IFilesourceIdFactory, GuidFilesourceIdFactory>();
         services.TryAddSingleton<IMediaMaticPermissions, DefaultMediaMaticPermissions>();

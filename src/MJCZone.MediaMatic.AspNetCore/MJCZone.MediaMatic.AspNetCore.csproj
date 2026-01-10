@@ -13,7 +13,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Dapper" Version="[2.1.35,3.0.0)" />
-    <PackageReference Include="MJCZone.DapperMatic" Version="[0.1.3,1.0.0)" />
+    <PackageReference Include="MJCZone.DapperMatic" Version="[0.1.4,1.0.0)" />
+    <PackageReference Include="MJCZone.DapperMatic.AspNetCore" Version="[0.1.4,1.0.0)" />
     <PackageReference Include="DeviceDetector.NET" Version="6.4.7" />
     <PackageReference Include="JsonFlatFileDataStore" Version="2.4.2" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.20" />

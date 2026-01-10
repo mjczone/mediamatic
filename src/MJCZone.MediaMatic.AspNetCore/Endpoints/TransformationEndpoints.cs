@@ -71,7 +71,7 @@ public static class TransformationEndpoints
                 "Transform an image and save it to a specified path. Returns metadata about the transformed image instead of the image itself. "
                     + "Ideal for CMS pre-generation workflows where thumbnails are generated ahead of time."
             )
-            .Produces<TransformResultDto>((int)HttpStatusCode.Created)
+            .Produces<TransformResponse>((int)HttpStatusCode.Created)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -112,7 +112,7 @@ public static class TransformationEndpoints
                 "Transform an image from a bucket and save it to a specified path. Returns metadata about the transformed image. "
                     + "Ideal for CMS pre-generation workflows."
             )
-            .Produces<TransformResultDto>((int)HttpStatusCode.Created)
+            .Produces<TransformResponse>((int)HttpStatusCode.Created)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -133,7 +133,7 @@ public static class TransformationEndpoints
                     + "Each variant is saved to its specified path. Returns metadata for all generated images. "
                     + "Ideal for generating all thumbnail sizes at once."
             )
-            .Produces<TransformBatchResponseDto>((int)HttpStatusCode.Created)
+            .Produces<TransformBatchResponse>((int)HttpStatusCode.Created)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -153,7 +153,7 @@ public static class TransformationEndpoints
                 "Transform a single source image from a bucket into multiple variants. "
                     + "Each variant is saved to its specified path within the bucket. Returns metadata for all generated images."
             )
-            .Produces<TransformBatchResponseDto>((int)HttpStatusCode.Created)
+            .Produces<TransformBatchResponse>((int)HttpStatusCode.Created)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.BadRequest)
             .Produces((int)HttpStatusCode.Forbidden);
@@ -350,7 +350,7 @@ public static class TransformationEndpoints
             Success = true,
         };
 
-        return Results.Created($"/{saveTo}", result);
+        return Results.Created($"/{saveTo}", new TransformResponse { Result = result });
     }
 
     private static async Task<IResult> GenerateBatchTransformInternalAsync(
@@ -471,7 +471,7 @@ public static class TransformationEndpoints
             }
         }
 
-        var response = new TransformBatchResponseDto { Results = results };
+        var response = new TransformBatchResponse { Result = results };
         return Results.Created(string.Empty, response);
     }
 

@@ -146,7 +146,7 @@ public partial class MediaMaticService
     }
 
     /// <inheritdoc />
-    public async Task<BrowseResponseDto> ListAsync(
+    public async Task<BrowseResultDto> ListAsync(
         IOperationContext context,
         string filesourceId,
         string? bucketName,
@@ -234,7 +234,7 @@ public partial class MediaMaticService
 
         await LogAuditEventAsync(context, true, $"Browsed path '{path ?? "root"}'").ConfigureAwait(false);
 
-        return new BrowseResponseDto(folders, files);
+        return new BrowseResultDto { Folders = folders, Files = files };
     }
 
     /// <inheritdoc />

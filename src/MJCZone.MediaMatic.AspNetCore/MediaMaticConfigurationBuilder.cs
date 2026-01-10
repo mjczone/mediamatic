@@ -6,6 +6,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+using MJCZone.DapperMatic.AspNetCore.Factories;
 using MJCZone.MediaMatic.AspNetCore.Auditing;
 using MJCZone.MediaMatic.AspNetCore.Factories;
 using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
@@ -209,17 +211,20 @@ public sealed class MediaMaticConfigurationBuilder
     /// <returns>The configuration builder for method chaining.</returns>
     public MediaMaticConfigurationBuilder UseDatabaseFilesourceRepository(string provider, string connectionString)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(provider);
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
         _services.AddSingleton<IMediaMaticFilesourceRepository>(serviceProvider =>
         {
             var options = serviceProvider.GetRequiredService<IOptions<MediaMaticOptions>>();
-            var filesourceDbConnectionFactory = serviceProvider.GetRequiredService<IFilesourceDbConnectionFactory>();
-            var datasourceIdFactory = serviceProvider.GetRequiredService<IFilesourceIdFactory>();
+            var dbConnectionFactory = serviceProvider.GetRequiredService<IDbConnectionFactory>();
+            var filesourceIdFactory = serviceProvider.GetRequiredService<IFilesourceIdFactory>();
             var logger = serviceProvider.GetRequiredService<ILogger<DatabaseMediaMaticFilesourceRepository>>();
             var repository = new DatabaseMediaMaticFilesourceRepository(
-                filesourceDbConnectionFactory,
-                datasourceIdFactory,
+                provider,
+                connectionString,
+                dbConnectionFactory,
+                filesourceIdFactory,
                 options,
                 logger
             );

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using MJCZone.MediaMatic.AspNetCore.Extensions;
+using MJCZone.MediaMatic.AspNetCore.Models.Responses;
 using MJCZone.MediaMatic.AspNetCore.Services;
 
 namespace MJCZone.MediaMatic.AspNetCore.Endpoints;
@@ -367,32 +368,4 @@ public static class FileEndpoints
 
         return exists ? Results.Ok() : Results.NotFound();
     }
-}
-
-/// <summary>
-/// Response containing the path to an uploaded file.
-/// </summary>
-public class FileUploadResponse
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FileUploadResponse"/> class.
-    /// </summary>
-    public FileUploadResponse()
-    {
-        Path = string.Empty;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FileUploadResponse"/> class.
-    /// </summary>
-    /// <param name="path">The path to the uploaded file.</param>
-    public FileUploadResponse(string path)
-    {
-        Path = path;
-    }
-
-    /// <summary>
-    /// Gets or sets the path to the uploaded file.
-    /// </summary>
-    public string Path { get; set; }
 }

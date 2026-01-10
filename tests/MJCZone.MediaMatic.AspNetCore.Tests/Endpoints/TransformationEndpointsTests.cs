@@ -393,13 +393,14 @@ public class TransformationEndpointsTests
         );
         transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await transformResponse.ReadAsJsonAsync<TransformResultDto>();
-        result.Should().NotBeNull();
-        result!.Path.Should().Be("thumbs/test-image_400.webp");
-        result.Success.Should().BeTrue();
-        result.Width.Should().Be(400);
-        result.Format.Should().Be("webp");
-        result.Size.Should().BeGreaterThan(0);
+        var res = await transformResponse.ReadAsJsonAsync<TransformResponse>();
+        res.Should().NotBeNull();
+        res.Result.Should().NotBeNull();
+        res!.Result.Path.Should().Be("thumbs/test-image_400.webp");
+        res.Result.Success.Should().BeTrue();
+        res.Result.Width.Should().Be(400);
+        res.Result.Format.Should().Be("webp");
+        res.Result.Size.Should().BeGreaterThan(0);
 
         // Verify the saved file exists
         var downloadResponse = await client.GetAsync("/api/mm/fs/test-memory/files/thumbs/test-image_400.webp");
@@ -451,10 +452,11 @@ public class TransformationEndpointsTests
         );
         transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await transformResponse.ReadAsJsonAsync<TransformResultDto>();
-        result.Should().NotBeNull();
-        result!.Success.Should().BeTrue();
-        result.Format.Should().Be("jpeg");
+        var res = await transformResponse.ReadAsJsonAsync<TransformResponse>();
+        res.Should().NotBeNull();
+        res.Result.Should().NotBeNull();
+        res!.Result.Success.Should().BeTrue();
+        res.Result.Format.Should().Be("jpeg");
     }
 
     #endregion
@@ -493,10 +495,10 @@ public class TransformationEndpointsTests
         var transformResponse = await client.PostAsync("/api/mm/fs/test-memory/transform-batch/", requestContent);
         transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponseDto>();
+        var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponse>();
         result.Should().NotBeNull();
-        result!.Results.Should().HaveCount(3);
-        result.Results.Should().OnlyContain(r => r.Success);
+        result!.Result.Should().HaveCount(3);
+        result.Result.Should().OnlyContain(r => r.Success);
 
         // Verify all files exist
         var download1 = await client.GetAsync("/api/mm/fs/test-memory/files/thumbs/test-image_400.webp");
@@ -570,12 +572,14 @@ public class TransformationEndpointsTests
         var transformResponse = await client.PostAsync("/api/mm/fs/test-memory/transform-batch/", requestContent);
         transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponseDto>();
-        result.Should().NotBeNull();
-        result!.Results.Should().HaveCount(2);
-        result.Results[0].Success.Should().BeTrue();
-        result.Results[1].Success.Should().BeFalse();
-        result.Results[1].ErrorMessage.Should().NotBeNullOrEmpty();
+        var res = await transformResponse.ReadAsJsonAsync<TransformBatchResponse>();
+        res.Should().NotBeNull();
+        res.Result.Should().NotBeNull();
+        res!.Result.Should().HaveCount(2);
+        var results = res.Result.ToList();
+        results[0].Success.Should().BeTrue();
+        results[1].Success.Should().BeFalse();
+        results[1].ErrorMessage.Should().NotBeNullOrEmpty();
     }
 
     #endregion
@@ -604,9 +608,10 @@ public class TransformationEndpointsTests
         );
         transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await transformResponse.ReadAsJsonAsync<TransformResultDto>();
-        result.Should().NotBeNull();
-        result!.Success.Should().BeTrue();
+        var res = await transformResponse.ReadAsJsonAsync<TransformResponse>();
+        res.Should().NotBeNull();
+        res.Result.Should().NotBeNull();
+        res!.Result.Success.Should().BeTrue();
 
         // Verify the saved file exists in bucket
         var downloadResponse = await client.GetAsync(
@@ -645,10 +650,10 @@ public class TransformationEndpointsTests
         );
         transformResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponseDto>();
+        var result = await transformResponse.ReadAsJsonAsync<TransformBatchResponse>();
         result.Should().NotBeNull();
-        result!.Results.Should().HaveCount(2);
-        result.Results.Should().OnlyContain(r => r.Success);
+        result!.Result.Should().HaveCount(2);
+        result.Result.Should().OnlyContain(r => r.Success);
     }
 
     #endregion

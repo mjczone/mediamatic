@@ -65,7 +65,7 @@ public static class BrowseEndpoints
                     + "Use 'type' to filter by files/folders/all, 'filter' for wildcard patterns (e.g., '*.pdf'), "
                     + "'recursive' to include subdirectories, and 'fields' to select which properties to return."
             )
-            .Produces<BrowseResponseDto>((int)HttpStatusCode.OK)
+            .Produces<BrowseResponse>((int)HttpStatusCode.OK)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.Forbidden);
 
@@ -79,7 +79,7 @@ public static class BrowseEndpoints
                     + "Use 'type' to filter by files/folders/all, 'filter' for wildcard patterns (e.g., '*.pdf'), "
                     + "'recursive' to include subdirectories, and 'fields' to select which properties to return."
             )
-            .Produces<BrowseResponseDto>((int)HttpStatusCode.OK)
+            .Produces<BrowseResponse>((int)HttpStatusCode.OK)
             .Produces((int)HttpStatusCode.NotFound)
             .Produces((int)HttpStatusCode.Forbidden);
     }
@@ -228,6 +228,6 @@ public static class BrowseEndpoints
             .ListAsync(operationContext, filesourceId, bucketName, path, options, cancellationToken)
             .ConfigureAwait(false);
 
-        return Results.Ok(result);
+        return Results.Ok(new BrowseResponse(result));
     }
 }

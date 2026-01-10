@@ -7,6 +7,7 @@ using System.Formats.Tar;
 using System.IO.Compression;
 using FluentStorage.Blobs;
 using MJCZone.MediaMatic.AspNetCore.Models;
+using MJCZone.MediaMatic.AspNetCore.Models.Dtos;
 using MJCZone.MediaMatic.AspNetCore.Security;
 using MJCZone.MediaMatic.AspNetCore.Validation;
 using MJCZone.MediaMatic.Interfaces;
@@ -31,12 +32,12 @@ public partial class MediaMaticService
     #region Archive Methods
 
     /// <inheritdoc />
-    public async Task<ArchiveResponse> CreateFolderArchiveAsync(
+    public async Task<ArchiveResultDto> CreateFolderArchiveAsync(
         IOperationContext context,
         string filesourceId,
         string? bucketName,
         string folderPath,
-        ArchiveRequest request,
+        ArchiveRequestDto request,
         CancellationToken cancellationToken = default
     )
     {
@@ -107,15 +108,20 @@ public partial class MediaMaticService
             )
             .ConfigureAwait(false);
 
-        return new ArchiveResponse(archiveId, archivePath, fileList.Count);
+        return new ArchiveResultDto
+        {
+            ArchiveId = archiveId,
+            ArchivePath = archivePath,
+            FileCount = fileList.Count,
+        };
     }
 
     /// <inheritdoc />
-    public async Task<ArchiveResponse> CreateFileListArchiveAsync(
+    public async Task<ArchiveResultDto> CreateFileListArchiveAsync(
         IOperationContext context,
         string filesourceId,
         string? bucketName,
-        ArchiveRequest request,
+        ArchiveRequestDto request,
         CancellationToken cancellationToken = default
     )
     {
@@ -205,11 +211,16 @@ public partial class MediaMaticService
         await LogAuditEventAsync(context, true, $"Created archive '{archiveId}' from file list ({filesAdded} files)")
             .ConfigureAwait(false);
 
-        return new ArchiveResponse(archiveId, archivePath, filesAdded);
+        return new ArchiveResultDto
+        {
+            ArchiveId = archiveId,
+            ArchivePath = archivePath,
+            FileCount = filesAdded,
+        };
     }
 
     /// <inheritdoc />
-    public async Task<IEnumerable<ArchiveInfo>> ListArchivesAsync(
+    public async Task<IEnumerable<ArchiveFileDto>> ListArchivesAsync(
         IOperationContext context,
         string filesourceId,
         string? bucketName,
@@ -228,7 +239,7 @@ public partial class MediaMaticService
         var connection = await GetVfsConnectionAsync(filesourceId).ConfigureAwait(false);
         var archiveFolderPath = CombineBucketAndPath(bucketName, ArchivesFolder);
 
-        var archives = new List<ArchiveInfo>();
+        var archives = new List<ArchiveFileDto>();
 
         try
         {
@@ -244,7 +255,7 @@ public partial class MediaMaticService
                 )
                 {
                     archives.Add(
-                        new ArchiveInfo
+                        new ArchiveFileDto
                         {
                             ArchiveId = fileName,
                             FileName = fileName,

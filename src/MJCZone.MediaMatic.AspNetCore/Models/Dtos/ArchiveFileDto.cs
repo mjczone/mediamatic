@@ -6,42 +6,14 @@
 namespace MJCZone.MediaMatic.AspNetCore.Models;
 
 /// <summary>
-/// Response containing a list of archives.
-/// </summary>
-public class ArchiveListResponse
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ArchiveListResponse"/> class.
-    /// </summary>
-    public ArchiveListResponse()
-    {
-        Archives = [];
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ArchiveListResponse"/> class.
-    /// </summary>
-    /// <param name="archives">The list of archives.</param>
-    public ArchiveListResponse(IEnumerable<ArchiveInfo> archives)
-    {
-        Archives = archives;
-    }
-
-    /// <summary>
-    /// Gets or sets the list of archives.
-    /// </summary>
-    public IEnumerable<ArchiveInfo> Archives { get; set; }
-}
-
-/// <summary>
 /// Information about an archive file.
 /// </summary>
-public class ArchiveInfo
+public class ArchiveFileDto
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="ArchiveInfo"/> class.
+    /// Initializes a new instance of the <see cref="ArchiveFileDto"/> class.
     /// </summary>
-    public ArchiveInfo()
+    public ArchiveFileDto()
     {
         ArchiveId = string.Empty;
         FileName = string.Empty;
@@ -49,14 +21,14 @@ public class ArchiveInfo
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ArchiveInfo"/> class.
+    /// Initializes a new instance of the <see cref="ArchiveFileDto"/> class.
     /// </summary>
     /// <param name="archiveId">The archive ID.</param>
     /// <param name="fileName">The archive file name.</param>
     /// <param name="path">The archive file path.</param>
     /// <param name="size">The archive size in bytes.</param>
     /// <param name="createdAt">When the archive was created.</param>
-    public ArchiveInfo(string archiveId, string fileName, string path, long size, DateTime createdAt)
+    public ArchiveFileDto(string archiveId, string fileName, string path, long size, DateTime createdAt)
     {
         ArchiveId = archiveId;
         FileName = fileName;
