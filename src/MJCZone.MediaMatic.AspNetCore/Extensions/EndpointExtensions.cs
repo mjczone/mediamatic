@@ -49,7 +49,7 @@ internal static class EndpointExtensions
     /// <returns>The configured route group.</returns>
     private static RouteGroupBuilder WithMediaMaticConventions(this RouteGroupBuilder group, string tag)
     {
-        return group.WithTags(tag).AddEndpointFilter<MediaMaticExceptionFilter>().WithOpenApi();
+        return group.WithTags(tag).AddEndpointFilter<MediaMaticExceptionFilter>();
     }
 
     /// <summary>
